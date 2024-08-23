@@ -1,0 +1,72 @@
+.dashboard-container {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "nav main main"
+        "footer footer footer";
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 200px 1fr;
+    height: 100vh;
+}
+
+.dashboard-header {
+    grid-area: header;
+    background-color: #333;
+    padding: 10px;
+    color: white;
+    text-align: center;
+}
+
+.dashboard-nav {
+    grid-area: nav;
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+.dashboard-nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.dashboard-nav li {
+    margin: 15px 0;
+}
+
+.dashboard-main {
+    grid-area: main;
+    padding: 20px;
+}
+
+.dashboard-section {
+    margin-bottom: 20px;
+}
+
+.dashboard-section h2 {
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.profile-info p, .achievements-list li, .students-list li, .videos-list li, .articles-list li {
+    margin: 5px 0;
+}
+
+.achievements-list, .students-list, .videos-list, .articles-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.videos-list li, .articles-list li {
+    background-color: #f9f9f9;
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+}
+
+.dashboard-footer {
+    grid-area: footer;
+    background-color: #333;
+    padding: 10px;
+    color: white;
+    text-align: center;
+}
