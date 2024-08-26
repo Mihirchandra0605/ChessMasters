@@ -1,0 +1,116 @@
+/* IndexPage.css */
+
+.container {
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    color: #333;
+    line-height: 1.6;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    background-color: #004d99;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+
+.navLink {
+    color: #fff;
+    text-decoration: none;
+    font-size: 1.2rem;
+    margin: 0 1.5rem;
+    transition: color 0.3s ease;
+}
+
+.navLink:hover {
+    color: #cce0ff;
+}
+
+.content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+.flexContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.section {
+    background-color: #fff;
+    padding: 2rem;
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    flex: 1;
+}
+
+.sectionTitle {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #004d99;
+}
+
+.list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.listItem {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #ddd;
+    font-size: 1.1rem;
+}
+
+/* Styling for the Start Game section */
+.startGameSection {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.chessKingImage {
+    width: 180px;
+    height: auto;
+    margin-left: 50px;
+}
+
+.buttonWithImage {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+    color: #fff;
+    background-color: #0073e6;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.buttonWithImage:hover {
+    background-color: #005bb5;
+}
+
+.featuredContent {
+    display: flex;
+    justify-content: space-between;
+}
+
+.featuredItem {
+    flex: 1;
+    margin-right: 1rem;
+}
+
+.link {
+    color: #0073e6;
+    text-decoration: none;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.link:hover {
+    color: #005bb5;
+}
