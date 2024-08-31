@@ -1,13 +1,13 @@
 import express from "express";
-import { connect } from "mongoose";
+import { mongoose } from "mongoose";
 import cors from "cors";
 // import { PlayerUser } from "./Models/PlayerUser.js";
 // import { CoachUser } from "./Models/CoachUser.js";
 import { jwtSecretKey } from "./config.js";
 
 import authRouter from "./routers/auth.js";
-import playerRouter from "./routers/Player.js";
-import coachRouter from "./routers/Coach.js";
+// import playerRouter from "./routers/Player.js";
+// import coachRouter from "./routers/Coach.js";
 
 import cookieParser from "cookie-parser";
 
@@ -49,7 +49,7 @@ mongoose
 
 // Routes
 app.use("/auth", authRouter);
-app.use("/player", playerRouter);
-app.use("/coach", coachRouter);
+// app.use("/player", playerRouter);
+// app.use("/coach", coachRouter);
 
 app.listen(port, () => console.log(`Server running on port ${port}`));

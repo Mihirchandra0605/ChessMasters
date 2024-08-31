@@ -74,3 +74,5 @@ router.post("/signin", async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 });
+
+export default router;

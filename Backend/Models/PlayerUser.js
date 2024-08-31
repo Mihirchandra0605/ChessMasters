@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import * as bcrypt from bcrypt;
+import * as bcrypt from "bcrypt";
 
 const { Schema, model } = mongoose;
 
