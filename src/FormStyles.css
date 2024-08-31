@@ -12,7 +12,7 @@ body {
 
 .form-block {
   position: relative;
-  margin: 100px auto;
+  margin: 10px auto;
   width: 285px;
   padding: 25px;
   background: rgba(255, 255, 255, 0.13);
@@ -22,7 +22,7 @@ body {
 }
 
 .form-block__header {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .form-block__header h1 {
@@ -31,7 +31,7 @@ body {
 }
 
 .form-block__input-wrapper {
-  height: 126px; 
+  height: 110px; 
   position: relative;
   margin-bottom: 2px;
   transition: all 0.25s cubic-bezier(.36, 1, .62, .98) 0.3s;
@@ -85,4 +85,28 @@ body {
 
 .full-width {
   width: 100%;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.form-block__input-wrapper_FIDE_ID {
+  animation: fadeIn 1s ease-out forwards;
+
+  display: block;
+  font-size: 15px;
+  color: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 10px;
+  margin-bottom: 15px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1px;
 }
