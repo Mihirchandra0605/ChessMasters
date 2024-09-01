@@ -1,0 +1,45 @@
+  .coachProfile {
+    align-items: center; 
+    /* justify-conlntent: space-between;  */
+    /* padding: 10px; Optiokk;'nal: add some padding around the profile */
+    gap: 20px;
+    display: flex;
+
+    width:75%;
+    /* max-width: 800px;n m */
+    /* margin-top: 20px;nl */
+    background-color: #151e3d;
+    color:aliceblue;
+    height:50%; 
+    margin-right: 20px;
+    /* padding-right
+    ]l: 200px; */
+    margin-left: auto;
+  }
+.coachProfile h1{
+    color: darkorange
+}
+.profileButton {
+    margin-left:auto;
+}
+/* .coachProfiles {
+    margin: 1000px solid;
+} */
+
+.coachImage img{
+    height: 350px;
+    width: 50vh;
+}
+.coachImage{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.coachContent {
+    flex-grow: 1;
+    font-size: x-large;
+    font-weight: bold;
+    text-wrap: nowrap;
+    text-align: center;
+}
+
