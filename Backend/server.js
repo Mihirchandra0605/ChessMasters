@@ -1,7 +1,7 @@
 import express from "express";
 import { mongoose } from "mongoose";
 import cors from "cors";
-// import { PlayerUser } from "./Models/PlayerUser.js";
+import { PlayerUser } from "./Models/PlayerUser.js";
 // import { CoachUser } from "./Models/CoachUser.js";
 import { jwtSecretKey } from "./config.js";
 
@@ -28,24 +28,24 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("MongoDB connection error: ", err));
 
-// // Route to insert a sample user
-// app.post("/add-player", async (req, res) => {
-//   const playerData = {
-//     PlayerName: "mihircl",
-//     Email: "mihir@gmail.com",
-//     Password: "mihir123",
-//     Level: "Intermediate",
-//     Status: "Active",
-//   };
+// Route to insert a sample user
+app.post("/add-player", async (req, res) => {
+  const playerData = {
+    UserName: "mihircl",
+    Email: "mihir@gmail.com",
+    Password: "mihir123",
+    Level: "Intermediate",
+    Status: "Active",
+  };
 
-//   try {
-//     const player = new PlayerUser(playerData);
-//     await player.save();
-//     res.status(201).send("Player added successfully");
-//   } catch (error) {
-//     res.status(500).send("Error adding player: " + error.message);
-//   }
-// });
+  try {
+    const player = new PlayerUser(playerData);
+    await player.save();
+    res.status(201).send("Player added successfully");
+  } catch (error) {
+    res.status(500).send("Error adding player: " + error.message);
+  }
+});
 
 // Routes
 app.use("/auth", authRouter);

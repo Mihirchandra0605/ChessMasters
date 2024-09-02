@@ -16,7 +16,7 @@ function generateToken(userId, userType) {
 
 router.post("/playerregistration", async (req, res) => {
   try {
-    const playerUser = new PlayerUser({ ...playerData });
+    const playerUser = new PlayerUser({ playerData });
     await playerUser.save();
 
     res.status(201).send({ message: "Player registered successfully" });
@@ -27,7 +27,7 @@ router.post("/playerregistration", async (req, res) => {
 
 router.post("/coachregistration", async (req, res) => {
   try {
-    const playerUser = new CoachUser({ ...coachData });
+    const playerUser = new CoachUser({ coachData });
     await playerUser.save();
 
     res.status(201).send({ message: "Coach registered successfully" });
