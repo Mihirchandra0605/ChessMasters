@@ -21,7 +21,7 @@
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px; /* Adjust font size */
+    font-size: 13px; /* Adjust font size */
     margin: 4px 2px;
     cursor: pointer;
     border-radius: 4px; /* Adjust border radius */
@@ -36,7 +36,7 @@
     color: white; /* Ensure text is readable */
     border: none;
     padding: 10px 20px; /* Match padding with other buttons */
-    font-size: 16px; /* Match font size with other buttons */
+    font-size: 13px; /* Match font size with other buttons */
     border-radius: 4px; /* Match border radius with other buttons */
 }
 
