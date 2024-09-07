@@ -1,5 +1,4 @@
-import "./player.css";
-
+import "../styles/player.css";
 function Player() {
 
     return (

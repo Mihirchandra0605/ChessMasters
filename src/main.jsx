@@ -1,27 +1,35 @@
-import { StrictMode } from "react";
+import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./main.css";
-import Greeting from "./Greetings.jsx";
-import Coach from "./coach.jsx";
-import Player from "./player.jsx";
-import HomePage from "./index.jsx";
+import Greeting from "./components/Greetings.jsx";
+import Coach from "./components/coach.jsx";
+import Player from "./components/player.jsx";
+import HomePage from "./components/index.jsx";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    {/* <div className="section">
-      <Greeting />
-    </div>
-    <div className="section">
-      <Coach />
-    </div>
-    <div className="section">
-      <Player />
-    </div> */}
+function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    <div className="section">
-      <HomePage />
-    </div>
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
 
+  return (
+    <StrictMode>
+      {!isLoggedIn ? (
+        <div className="section">
+          {/* Render Greeting, Coach, and Player before login */}
+          <Greeting onLoginSuccess={handleLogin} />
+          <Coach />
+          <Player />
+        </div>
+      ) : (
+        <div className="section">
+          {/* Render HomePage after login */}
+          <HomePage />
+        </div>
+      )}
+    </StrictMode>
+  );
+}
 
-  </StrictMode>
-);
+createRoot(document.getElementById("root")).render(<App />);

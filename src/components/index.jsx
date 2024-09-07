@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-import "./index.css";
+import "../styles/index.css";
 
 function HomePage() {
   // Refs to access DOM elements

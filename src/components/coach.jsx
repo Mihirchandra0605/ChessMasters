@@ -1,4 +1,4 @@
-import "./coach.css";
+import "../styles/coach.css";
 
 function Coach() {
 
