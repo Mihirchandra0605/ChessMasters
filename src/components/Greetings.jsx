@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import "./Greetings.css";
-import "./FormStyles.css";
+import "../styles/Greetings.css";
+import "../styles/FormStyles.css";
 
-function Greeting() {
+function Greeting({onLoginSuccess}) {
   const [view, setView] = useState("greeting");
 
   useEffect(() => {
@@ -54,7 +54,7 @@ function Greeting() {
       )}
       {view === "login" && (
         <>
-          <LoginForm />
+          <LoginForm onLoginSuccess={onLoginSuccess} />
           <div className="buttons">
             <button className="button button--primary" onClick={handleHomeClick}>
               Home
@@ -82,13 +82,19 @@ function Greeting() {
   );
 }
 
-function LoginForm() {
+function LoginForm({ onLoginSuccess }) {
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
+  };
+
+
   return (
     <div className="form-block">
       <div className="form-block__header">
         <h1>Login</h1>
       </div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div className="form-block__input-wrapper">
           <input
             type="text"
