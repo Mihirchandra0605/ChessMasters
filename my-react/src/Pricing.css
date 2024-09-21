@@ -1,0 +1,123 @@
+/* Container */
+.pricing-plans-container {
+     /* background: linear-gradient(135deg, #d3f9e2, #c4f0eb); */ 
+    /* background-color:  #004d99; */
+    background: linear-gradient(135deg,  #7398bd, #9ddcd5);
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    max-width: 700px;
+    max-height: 500px;
+    margin: 50px auto;
+    box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color:black;
+    
+  }
+  
+  /* Divider below title */
+  .divider {
+    width: 80%;
+    /* margin: 10px auto 30px; */
+    margin-bottom: 50px;
+    border: 0;
+    height: 1.5px;
+    background:black;
+  }
+  
+  /* Plan cards container */
+  .plans {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+  }
+  
+  .plan-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 30px;
+    width: 180px;
+    height: 280px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+     position: relative; 
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;;
+  }
+  
+  /* Hover effect */
+  .plan-card:hover {
+    /* transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); */
+  }
+  
+  .recommended {
+    /* background: #d3f9e2; */
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  }
+  
+  .recommended:hover {
+    /* transform: translateY(-10px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25); */
+  }
+  
+  /* Badge */
+  .recommended-badge {
+    /* background-color: #23d59e; */
+    /* background-color:  #0073e6; */
+    background: linear-gradient(135deg,   #9ddcd5,#7398bd);
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 15px 10px;
+    border-radius: 20px;
+  }
+  
+  /* Plan details */
+  .price {
+    font-size: 32px;
+    color: black;
+    font-weight: 900;
+    margin: 10px 0;
+    text-align: center;
+  }
+  
+  .duration {
+    font-size: 14px;
+    color: #888;
+  }
+  
+  .description {
+    font-size: 14px;
+    /* color: #666; */
+    color: #333;
+    margin: 10px 0 30px;
+  }
+  
+  /* Button */
+  .plan-button {
+    background-color: transparent;
+    color:  #123456;
+    /* border: 2px solid #23d59e; */
+    border: 2px solid  ,#29527b;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .plan-button:hover {
+    /* background-color: #23d59e; */
+    /* background-color:  #0073e6; */
+    background: linear-gradient(135deg,  #7398bd, #9ddcd5);
+    color: white;
+  }
+  
