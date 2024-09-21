@@ -3,8 +3,10 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif; /* Adding a default font */
-    background-color: #f4f4f4; /* Light background for contrast */
+    font-family: 'Roboto', sans-serif; /* Sleeker, modern font */
+    background-color: #f0f0f0;
+    color: #333;
+    scroll-behavior: smooth;
 }
 
 /* Navbar styling */
@@ -12,110 +14,111 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 10px 20px;
-    background-color: #171616;
-    color: white;
+    padding: 15px 30px;
+    background-color: #0d0d0d;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Navbar shadow */
+    position: sticky;
+    top: 0;
+    z-index: 1000;
 }
 
 .navbar-buttons {
     display: flex;
-    gap: 20px; /* More reasonable gap for buttons */
+    gap: 25px;
 }
 
 .navbar-buttons button {
-    background-color: #ea0d0d;
+    background: linear-gradient(135deg, #ea0d0d, #ff4500);
     border: none;
     color: white;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
+    padding: 12px 25px;
     font-size: 16px;
+    font-weight: 500;
+    border-radius: 50px;
     cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.3s ease; /* Smooth transition */
+    transition: background 0.3s ease, transform 0.3s ease;
 }
 
 .navbar-buttons button:hover {
-    background-color: #81060c; /* Darker background on hover */
+    background: linear-gradient(135deg, #ff4500, #ff6b35);
+    transform: scale(1.05);
 }
 
 .logout-button {
-    background-color: rgb(241, 113, 9);
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
+    background: linear-gradient(135deg, #f17309, #f89a02);
 }
 
 .logout-button:hover {
-    background-color: rgb(112, 37, 3);
+    background: linear-gradient(135deg, #f89a02, #ffca37);
 }
 
-/* Content container styling */
+/* Content styling */
 #content {
     display: flex;
     flex-direction: column;
-    gap: 40px; /* Reduced gap for better spacing */
-    padding: 20px;
+    gap: 40px;
+    padding: 30px 15px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .section_content {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Centering content horizontally */
-    animation: fadeIn 2s ease-out forwards;
+    align-items: center;
+    animation: fadeInUp 1s ease-out;
     margin-bottom: 60px;
 }
 
 /* Heading styling */
 .heading {
-    font-size: 26px;
+    font-size: 28px;
     text-align: center;
     margin: 20px 0;
+    color: #333;
+    letter-spacing: 1.2px;
 }
 
 /* Play button styling */
 #play_button {
     color: white;
-    font-size: 24px;
-    font-style: italic;
-    background-color: green;
-    width: 200px;
+    font-size: 22px;
+    background: linear-gradient(135deg, #28a745, #218838);
+    width: 220px;
     height: 60px;
-    border-radius: 10px;
+    border-radius: 30px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    border: none;
+    transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 #play_button:hover {
-    background-color: darkgreen;
+    background: linear-gradient(135deg, #218838, #19692c);
+    transform: scale(1.05);
 }
 
 /* Stat box styling */
 #stat_box {
-    background: peachpuff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    margin: 20px 0;
-    backdrop-filter: blur(10px);
+    background: linear-gradient(145deg, #f7f1d7, #f0dab5);
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    padding: 25px;
+    backdrop-filter: blur(15px);
     border: 2px solid white;
-    width: 100%; /* Responsive width */
-    max-width: 600px; /* Maximum width for better UX */
+    max-width: 700px;
+    width: 100%;
 }
 
 .stat {
     text-align: center;
+    color: #333;
 }
 
 .stat p {
     margin: 10px 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid white;
+    padding-bottom: 12px;
     font-size: 18px;
+    border-bottom: 2px solid #ccc;
 }
 
 .stat p:last-child {
@@ -126,63 +129,80 @@ body {
 #game_box {
     display: flex;
     align-items: center;
-    justify-content: center;
-    /* width: 70%;  */
-    gap: 10px;
+    justify-content: space-between;
+    gap: 15px;
 }
 
 .game_scroll_container {
     display: flex;
-    overflow-x: scroll;
-    scroll-behavior: smooth; /* Smooth scrolling behavior */
-    width: 300px; /* Fixed width to accommodate scrolling */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE and Edge */
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    width: 100%;
+    max-width: 800px;
+    padding: 10px 0;
 }
 
 .game_scroll_container::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
 
 /* Game card styling */
 .game {
     flex: 0 0 auto;
-    margin: 10px;
-    padding: 20px;
     background-color: #ffffff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    transition: transform 0.2s;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin: 10px;
+    transition: transform 0.3s, box-shadow 0.3s;
     cursor: pointer;
 }
 
 .game:hover {
     transform: scale(1.1);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
 /* Scroll button styling */
 #scrollLeft,
 #scrollRight {
     cursor: pointer;
-    transition: transform 0.3s ease; /* Smooth transition */
+    transition: transform 0.3s ease;
+    width: 40px;
 }
 
 #scrollLeft:hover,
 #scrollRight:hover {
-    transform: scale(1.2); /* Enlarge on hover */
+    transform: scale(1.3);
 }
 
 /* Fade-in animation */
-@keyframes fadeIn {
+@keyframes fadeInUp {
     from {
         opacity: 0;
+        transform: translateY(50px);
     }
     to {
         opacity: 1;
+        transform: translateY(0);
     }
 }
 
-#carousel{
-    flex-direction: row;
-    justify-content: space-between;
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    #content {
+        padding: 20px 10px;
+    }
+
+    .navbar-buttons button {
+        padding: 10px 15px;
+    }
+
+    .game_scroll_container {
+        width: 250px;
+    }
+
+    .game {
+        padding: 10px;
+    }
 }
