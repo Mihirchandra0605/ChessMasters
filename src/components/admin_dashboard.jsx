@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   BsFillArchiveFill, BsPeopleFill, BsFillBellFill, BsFillEnvelopeFill, BsFillFileEarmarkTextFill, 
   BsPlayCircle, BsGraphUp, BsFillBarChartLineFill, BsFillPersonLinesFill, BsCashStack, 
@@ -31,6 +31,36 @@ const Dashboard = () => {
     { name: 'Day 7', playersAdded: 40, coachesAdded: 5 },
   ];
 
+  // New state for articles and users
+  const [articles, setArticles] = useState([
+    { id: 1, title: 'Article 1', content: 'Content of article 1' },
+    { id: 2, title: 'Article 2', content: 'Content of article 2' },
+  ]);
+
+  const [users, setUsers] = useState([
+    { id: 1, name: 'User 1', type: 'Coach', premium: true, rating: 4.5 },
+    { id: 2, name: 'User 2', type: 'Standard', premium: false, rating: 3.8 },
+  ]);
+
+  const [searchTermArticles, setSearchTermArticles] = useState('');
+  const [searchTermUsers, setSearchTermUsers] = useState('');
+
+  const filteredArticles = articles.filter(article =>
+    article.title.toLowerCase().includes(searchTermArticles.toLowerCase())
+  );
+
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTermUsers.toLowerCase())
+  );
+
+  const deleteArticle = (id) => {
+    setArticles(articles.filter(article => article.id !== id));
+  };
+
+  const deleteUser = (id) => {
+    setUsers(users.filter(user => user.id !== id));
+  };
+
   return (
     <main className='main-container'>
       <div className='main-title'>
@@ -46,7 +76,6 @@ const Dashboard = () => {
           </div>
           <h1>45 Players, 10 Coaches</h1>
         </div>
-
         {/* User Activity */}
         <div className='card'>
           <div className='card-inner'>
@@ -55,7 +84,6 @@ const Dashboard = () => {
           </div>
           <h1>150 Games</h1>
         </div>
-
         {/* Content Management */}
         <div className='card'>
           <div className='card-inner'>
@@ -64,7 +92,6 @@ const Dashboard = () => {
           </div>
           <h1>12 Articles, 5 Videos</h1>
         </div>
-
         {/* Analytics */}
         <div className='card'>
           <div className='card-inner'>
@@ -73,7 +100,6 @@ const Dashboard = () => {
           </div>
           <h1>350 Views</h1>
         </div>
-
         {/* Messages */}
         <div className='card'>
           <div className='card-inner'>
@@ -82,7 +108,6 @@ const Dashboard = () => {
           </div>
           <h1>20 Sent</h1>
         </div>
-
         {/* Feedback */}
         <div className='card'>
           <div className='card-inner'>
@@ -91,7 +116,6 @@ const Dashboard = () => {
           </div>
           <h1>15 Ratings</h1>
         </div>
-
         {/* Event Management */}
         <div className='card'>
           <div className='card-inner'>
@@ -100,7 +124,6 @@ const Dashboard = () => {
           </div>
           <h1>3 Scheduled</h1>
         </div>
-
         {/* Financial Overview */}
         <div className='card'>
           <div className='card-inner'>
@@ -109,7 +132,6 @@ const Dashboard = () => {
           </div>
           <h1>120 Active</h1>
         </div>
-
         {/* Security */}
         <div className='card'>
           <div className='card-inner'>
@@ -135,22 +157,60 @@ const Dashboard = () => {
         </ResponsiveContainer>
 
         {/* Game Stats Chart */}
-<ResponsiveContainer width='100%' height='100%'>
-  <BarChart data={data_users_added} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-    <CartesianGrid strokeDasharray='3 3' />
-    <XAxis dataKey='name' />
-    <YAxis />
-    <Tooltip />
-    <Legend />
-    <Bar dataKey='playersAdded' fill='#8884d8' />
-    <Bar dataKey='coachesAdded' fill='#82ca9d' />
-  </BarChart>
-</ResponsiveContainer>
+        <ResponsiveContainer width='100%' height='100%'>
+          <BarChart data={data_users_added} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray='3 3' />
+            <XAxis dataKey='name' />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey='playersAdded' fill='#8884d8' />
+            <Bar dataKey='coachesAdded' fill='#82ca9d' />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
+      {/* Articles & Videos Section */}
+      <div className='articles-section'>
+        <h3>Articles & Videos</h3>
+        <input 
+          type='text' 
+          placeholder='Search Articles...' 
+          value={searchTermArticles} 
+          onChange={e => setSearchTermArticles(e.target.value)} 
+        />
+        <ul>
+          {filteredArticles.map(article => (
+            <li key={article.id}>
+              {article.title}
+              <button onClick={() => deleteArticle(article.id)}>Delete</button>
+              {/* Edit functionality can be added here */}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Users Section */}
+      <div className='users-section'>
+        <h3>Users</h3>
+        <input 
+          type='text' 
+          placeholder='Search Users...' 
+          value={searchTermUsers} 
+          onChange={e => setSearchTermUsers(e.target.value)} 
+        />
+        <ul>
+          {filteredUsers.map(user => (
+            <li key={user.id}>
+              {user.name} - {user.type} - {user.premium ? 'Premium' : 'Standard'} - Rating: {user.rating}
+              <button onClick={() => deleteUser(user.id)}>Delete</button>
+              {/* Edit functionality can be added here */}
+            </li>
+          ))}
+        </ul>
       </div>
     </main>
   );
 };
 
 export default Dashboard;
-
