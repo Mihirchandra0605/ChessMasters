@@ -5,6 +5,7 @@ import Greeting from "./components/Greetings.jsx";
 import Coach from "./components/coach.jsx";
 import Player from "./components/player.jsx";
 import HomePage from "./components/index.jsx";
+import AdminDashboard from "./components/admin_dashboard.jsx";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,21 +15,28 @@ function App() {
   };
 
   return (
+    // <StrictMode>
+    //   {!isLoggedIn ? (
+    //     <div className="section">
+    //       {/* Render Greeting, Coach, and Player before login */}
+    //       <Greeting onLoginSuccess={handleLogin} />
+    //       <Coach />
+    //       <Player />
+    //     </div>
+    //   ) : (
+    //     <div className="section">
+    //       {/* Render HomePage after login */}
+    //       <HomePage />
+    //     </div>
+    //   )}
+    // </StrictMode>
+
     <StrictMode>
-      {!isLoggedIn ? (
-        <div className="section">
-          {/* Render Greeting, Coach, and Player before login */}
-          <Greeting onLoginSuccess={handleLogin} />
-          <Coach />
-          <Player />
-        </div>
-      ) : (
-        <div className="section">
-          {/* Render HomePage after login */}
-          <HomePage />
-        </div>
-      )}
-    </StrictMode>
+
+      <AdminDashboard />
+
+
+      </StrictMode>
   );
 }
 
