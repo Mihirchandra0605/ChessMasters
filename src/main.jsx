@@ -6,7 +6,6 @@ import Coach from "./components/coach.jsx";
 import Player from "./components/player.jsx";
 import HomePage from "./components/index.jsx";
 import AdminDashboard from "./components/admin_dashboard.jsx";
-import Profile from "./components/profile.jsx";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -34,17 +33,10 @@ function App() {
 
     <StrictMode>
 
-
-      <Profile />
-
-    </StrictMode>
-
-    // <StrictMode>
-
-    //   <AdminDashboard />
+      <AdminDashboard />
 
 
-    //   </StrictMode>
+      </StrictMode>
   );
 }
 

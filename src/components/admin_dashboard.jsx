@@ -12,33 +12,23 @@ import '../styles/admin_dashboard.css';
 
 const Dashboard = () => {
   const data = [
-    { name: 'January', uv: 4000, pv: 2400 },
-    { name: 'February', uv: 3000, pv: 1398 },
-    { name: 'March', uv: 2000, pv: 9800 },
-    { name: 'April', uv: 2780, pv: 3908 },
-    { name: 'May', uv: 1890, pv: 4800 },
-    { name: 'June', uv: 2390, pv: 3800 },
-    { name: 'July', uv: 3490, pv: 4300 },
-    { name: 'August', uv: 4590, pv: 5300 },
-    { name: 'September', uv: 5690, pv: 6300 },
-    { name: 'October', uv: 6790, pv: 3300 },
-    { name: 'November', uv: 3890, pv: 7300 },
-    { name: 'December', uv: 9990, pv: 5300 },
+    { name: 'Day 1', uv: 4000, pv: 2400 },
+    { name: 'Day 2', uv: 3000, pv: 1398 },
+    { name: 'Day 3', uv: 2000, pv: 9800 },
+    { name: 'Day 4', uv: 2780, pv: 3908 },
+    { name: 'Day 5', uv: 1890, pv: 4800 },
+    { name: 'Day 6', uv: 2390, pv: 3800 },
+    { name: 'Day 7', uv: 3490, pv: 4300 },
   ];
 
   const data_users_added = [
-    { name: 'January', playersAdded: 20, coachesAdded: 5 },
-    { name: 'February', playersAdded: 15, coachesAdded: 2 },
-    { name: 'March', playersAdded: 25, coachesAdded: 3 },
-    { name: 'April', playersAdded: 10, coachesAdded: 4 },
-    { name: 'May', playersAdded: 30, coachesAdded: 1 },
-    { name: 'June', playersAdded: 5, coachesAdded: 2 },
-    { name: 'July', playersAdded: 40, coachesAdded: 5 },
-    { name: 'August', playersAdded: 50, coachesAdded: 6 },
-    { name: 'September', playersAdded: 60, coachesAdded: 7 },
-    { name: 'October', playersAdded: 70, coachesAdded: 8 },
-    { name: 'November', playersAdded: 80, coachesAdded: 9 },
-    { name: 'December', playersAdded: 90, coachesAdded: 10 },
+    { name: 'Day 1', playersAdded: 20, coachesAdded: 5 },
+    { name: 'Day 2', playersAdded: 15, coachesAdded: 2 },
+    { name: 'Day 3', playersAdded: 25, coachesAdded: 3 },
+    { name: 'Day 4', playersAdded: 10, coachesAdded: 4 },
+    { name: 'Day 5', playersAdded: 30, coachesAdded: 1 },
+    { name: 'Day 6', playersAdded: 5, coachesAdded: 2 },
+    { name: 'Day 7', playersAdded: 40, coachesAdded: 5 },
   ];
 
   // New state for articles and users
