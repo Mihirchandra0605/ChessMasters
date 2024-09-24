@@ -140,6 +140,11 @@ function HomePage() {
               <div className="game">Game 3</div>
               <div className="game">Game 4</div>
               <div className="game">Game 5</div>
+              <div className="game">Game 6</div>
+              <div className="game">Game 7</div>
+              <div className="game">Game 8</div>
+              <div className="game">Game 9</div>
+              <div className="game">Game 10</div>
               {/* Add more games here */}
             </div>
 
@@ -174,6 +179,11 @@ function HomePage() {
               <div className="game">Video 3</div>
               <div className="game">Video 4</div>
               <div className="game">Video 5</div>
+              <div className="game">Video 6</div>
+              <div className="game">Video 7</div>
+              <div className="game">Video 8</div>
+              <div className="game">Video 9</div>
+              <div className="game">Video 10</div>
               {/* Add more videos here */}
             </div>
 
@@ -208,6 +218,11 @@ function HomePage() {
               <div className="game">Article 3</div>
               <div className="game">Article 4</div>
               <div className="game">Article 5</div>
+              <div className="game">Article 6</div>
+              <div className="game">Article 7</div>
+              <div className="game">Article 8</div>
+              <div className="game">Article 9</div>
+              <div className="game">Article 10</div>
               {/* Add more articles here */}
             </div>
 

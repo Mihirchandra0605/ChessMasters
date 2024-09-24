@@ -1,20 +1,33 @@
+import React, { useEffect, useRef, useState } from 'react';
 import "../styles/coach.css";
 
 function Coach() {
+  const coachRef = useRef(null);
+  const [isVisible, setIsVisible] = useState(false);
 
-    return (
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      setIsVisible(entry.isIntersecting);
+    });
 
-        <div id = "coach">
+    if (coachRef.current) {
+      observer.observe(coachRef.current);
+    }
 
-            <img id="teacher" src="/teacher.png" alt="teacher" />
+    return () => {
+      if (coachRef.current) {
+        observer.unobserve(coachRef.current);
+      }
+    };
+  }, []);
 
-            <p id="coachMessage">Get access to the best coaches available all over the world. Read their insightful articles and get access to their tutorials. Book a one-on-one session for an ever more personalised learning</p>
-
-        </div>
-    )
-
-
-
+  return (
+    <div ref={coachRef} id="coach" className={isVisible ? 'coach-visible' : ''}>
+      <img id="teacher" src="/teacher.png" alt="teacher" />
+      <p id="coachMessage">Get access to the best coaches available all over the world. Read their insightful articles and get access to their tutorials. Book a one-on-one session for an ever more personalised learning</p>
+    </div>
+  );
 }
 
 export default Coach;

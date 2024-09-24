@@ -5,6 +5,7 @@
     align-items: center;
     height: 100vh;
     gap: 20px;
+    background-image: url(/public/chess.jpg);
 }
 
 #greeting > * {
