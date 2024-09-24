@@ -16,7 +16,10 @@ function generateToken(userId, userType) {
 
 router.post("/playerregistration", async (req, res) => {
   try {
-    const playerUser = new PlayerUser({ playerData });
+    console.log(req);
+    const body = req.body;
+    console.log(body);
+    const playerUser = new PlayerUser(body); // Pass req.body to the model
     await playerUser.save();
 
     res.status(201).send({ message: "Player registered successfully" });
@@ -27,8 +30,11 @@ router.post("/playerregistration", async (req, res) => {
 
 router.post("/coachregistration", async (req, res) => {
   try {
-    const playerUser = new CoachUser({ coachData });
-    await playerUser.save();
+    const body = req.body;
+    console.log(body);
+
+    const coachUser = new CoachUser(body); // Pass req.body to the model
+    await coachUser.save();
 
     res.status(201).send({ message: "Coach registered successfully" });
   } catch (error) {
@@ -39,14 +45,15 @@ router.post("/coachregistration", async (req, res) => {
 // Sign-in route
 router.post("/signin", async (req, res) => {
   try {
+    console.log(req.body)
     const { username, password } = req.body;
 
     // Look for the user in both company and contractor collections
-    const playerUser = await PlayerUser.findOne({ Username: username }).exec();
-    const coachUser = await CoachUser.findOne({ Username: username }).exec();
-
+    const playerUser = await PlayerUser.findOne({ UserName: username }).exec();
+    const coachUser = await CoachUser.findOne({ UserName: username }).exec();
+    console.log(playerUser);
     if (playerUser) {
-      const match = await bcrypt.compare(password, PlayerUser.Password);
+      const match = await bcrypt.compare(password, playerUser.Password);
       if (match) {
         const token = generateToken(PlayerUser._id, "Player");
         res.cookie("authorization", token);

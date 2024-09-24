@@ -20,7 +20,6 @@ function Greeting({onLoginSuccess}) {
   const handleLoginClick = () => setView("login");
   const handleSignupClick = () => setView("signup");
   const handleHomeClick = () => setView("greeting");
-
   return (
     <div id="greeting">
       {view === "greeting" && (
@@ -83,11 +82,27 @@ function Greeting({onLoginSuccess}) {
 }
 
 function LoginForm({ onLoginSuccess }) {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
-  };
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5000/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
+      } else {
+        alert(data.message); // Display error message
+      }
+    } catch (error) {
+      console.error('Error during sign-in:', error);
+    }
+  };
 
   return (
     <div className="form-block">
@@ -98,9 +113,11 @@ function LoginForm({ onLoginSuccess }) {
         <div className="form-block__input-wrapper">
           <input
             type="text"
-            placeholder="UserName"
+            placeholder="Username"
             className="form-group__input"
             required
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
 
@@ -110,6 +127,8 @@ function LoginForm({ onLoginSuccess }) {
             placeholder="Password"
             className="form-group__input"
             required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
@@ -123,18 +142,104 @@ function LoginForm({ onLoginSuccess }) {
 
 function SignupForm() {
   const [role, setRole] = useState("");
+  const [username, setUsername] = useState("");
+  const [email,  setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [level,  setLevel] = useState("");
+  const [Fide_id, setFide_id] =  useState("");
 
+
+
+
+  // States 
+  const handleSubmit = (e) => {
+        e.preventDefault();
+        const userInfo = document.querySelector("#user-info");
+        console.log(userInfo);
+        
+        // body:  JSON.stringify(data),
+
+        const formData = new FormData(userInfo);
+        console.log("formData : ", formData);
+        formData.append("name","mihir");
+        // fetch request 
+        if(role == 'coach'){
+          const data = {
+            role: role,
+            UserName: username,
+            Email: email,
+            Password: password,
+            Fide_id: Fide_id,
+            Status:  "active"
+  
+            // All other states
+          }
+          fetch('http://localhost:5000/auth/coachregistration',{
+              method:"POST",
+              body: JSON.stringify(data),// create a formBody
+              headers: {
+                "Content-Type": "application/json",
+              },
+          })
+          .then((res)=>{
+            const  data = res.json();
+            return data;
+          })
+          .then((data)=>{
+            console.log(data);
+            // {coachData: id}
+          })
+          .catch((err)=>{
+            console.error(err);
+            // Later change this to alters 
+          });
+        }else{
+          const data = {
+            role: role,
+            UserName: username,
+            Email: email,
+            Password: password,
+            Level: level,
+            Status:  "active",
+
+
+  
+            // All other states
+          }
+          fetch('http://localhost:5000/auth/playerregistration',{
+            method:"POST",
+            body: JSON.stringify(data),// create a formBody
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+          .then((res)=>{                              
+            const  data = res.json();
+            return data;
+          })
+          .then((data)=>{
+            console.log(data);
+            // {playerData: id}
+          })
+          .catch((err)=>{
+            console.error(err);
+            // Later change this to alters 
+          });
+        } 
+  }
   return (
     <div className="form-block">
       <div className="form-block__header">
         <h1>Sign Up</h1>
       </div>
-      <form>
+      <form id="user-info" onSubmit={handleSubmit}>
+
         <div className="form-block__input-wrapper">
           <input
             type="text"
             placeholder="UserName"
             className="form-group__input"
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
@@ -160,6 +265,7 @@ function SignupForm() {
               type="text"
               placeholder="FIDE ID"
               className="form-group__input"
+              onChange={(e) => setFide_id(e.target.value)}
               required
             />
           </div>
@@ -169,6 +275,8 @@ function SignupForm() {
           <div className="form-block__input-wrapper_FIDE_ID">
             <select 
               className="form-group__input"
+              value={level}
+              onChange={(e) => setLevel(e.target.value)}
               required
             >
               <option value="" disabled hidden selected>
@@ -186,6 +294,7 @@ function SignupForm() {
             type="email"
             placeholder="Email"
             className="form-group__input"
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </div>
@@ -195,6 +304,7 @@ function SignupForm() {
             type="password"
             placeholder="Password"
             className="form-group__input"
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>
@@ -204,6 +314,7 @@ function SignupForm() {
             type="password"
             placeholder="Confirm Password"
             className="form-group__input"
+            onChange={(e) => setPassword(e.target.value)}
             required
           />
         </div>

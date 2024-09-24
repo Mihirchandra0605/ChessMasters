@@ -14,7 +14,7 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.2",
+    "body-parser": "^1.20.3",
     "cm_folder1": "file:",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -26,6 +26,6 @@
     "node": "^22.6.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "nodemon": "^3.1.7"
   }
 }
