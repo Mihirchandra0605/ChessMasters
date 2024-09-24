@@ -89,6 +89,9 @@ function HomePage() {
           <button onClick={() => (window.location.href = "/videos")}>
             Videos
           </button>
+          <button onClick={() => (window.location.href = "/profile")}>
+            Profile
+          </button>
           <button
             className="logout-button"
             onClick={() => (window.location.href = "/logout")}
