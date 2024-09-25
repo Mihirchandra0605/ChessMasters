@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import "../styles/index.css";
+import Navbar from "./Navbar.jsx";
 
 function HomePage() {
   // Refs to access DOM elements
@@ -77,26 +78,7 @@ function HomePage() {
 
   return (
     <div id="Home">
-      <nav className="navbar">
-        <div className="navbar-buttons">
-          <button onClick={() => (window.location.href = "/")}>Home</button>
-          <button onClick={() => (window.location.href = "/coach-dashboard")}>
-            Coach Dashboard
-          </button>
-          <button onClick={() => (window.location.href = "/articles")}>
-            Articles
-          </button>
-          <button onClick={() => (window.location.href = "/videos")}>
-            Videos
-          </button>
-          <button
-            className="logout-button"
-            onClick={() => (window.location.href = "/logout")}
-          >
-            Logout
-          </button>
-        </div>
-      </nav>
+      <Navbar/>
 
       <div id="content">
         <div className="section_content">

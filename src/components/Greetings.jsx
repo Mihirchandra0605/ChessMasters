@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Greetings.css";
-import "../styles/FormStyles.css";
+// import "../styles/FormStyles.css";
 
 function Greeting({onLoginSuccess}) {
   const [view, setView] = useState("greeting");

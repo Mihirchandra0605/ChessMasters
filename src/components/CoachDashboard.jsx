@@ -1,38 +1,35 @@
 import React from 'react';
 import '../styles/CoachDashboard.css';
+import SubscriptionChart from './subscription.jsx';
+import Viewchart from './views.jsx';
+import EarningsChart from './earnings.jsx';
+import {Link} from 'react-router-dom'
 
 const CoachDashboard = () => {
+
     return (
         <div className="dashboard-container">
             <header className="dashboard-header">
-                <h1>Coach Profile</h1>
+                <h1>John Doe - Coach Dashboard</h1>
             </header>
+            
+            <div className='dashboard'>
             <nav className="dashboard-nav">
-                <ul>
-                    <li>Profile</li>
-                    <li>Achievements</li>
-                    <li>Students</li>
-                    <li>Videos</li>
-                    <li>Articles</li>
-                </ul>
+                {/* <button>Students</button>
+                <button>Videos</button>
+                <button>Articles</button> */}
+                <Link to="/Upload"><button>Add</button></Link>
+                <Link to="/Index"><button>Home</button></Link>
             </nav>
+
+            <div className='charts-main'>
+            <div className="charts-container">
+                <SubscriptionChart />
+                <Viewchart />
+                <EarningsChart />
+            </div>
+
             <main className="dashboard-main">
-                <section className="dashboard-section">
-                    <h2>Profile Information</h2>
-                    <div className="profile-info">
-                        <p><strong>Name:</strong> Coach John Doe</p>
-                        <p><strong>Rating:</strong> 2400</p>
-                        <p><strong>Country:</strong> United States</p>
-                    </div>
-                </section>
-                <section className="dashboard-section">
-                    <h2>Achievements</h2>
-                    <ul className="achievements-list">
-                        <li>National Chess Champion 2018</li>
-                        <li>International Grandmaster Title 2016</li>
-                        <li>Coach of the Year 2020</li>
-                    </ul>
-                </section>
                 <section className="dashboard-section">
                     <h2>Students</h2>
                     <ul className="students-list">
@@ -41,6 +38,7 @@ const CoachDashboard = () => {
                         <li>Student3 (Rating: 2200)</li>
                     </ul>
                 </section>
+
                 <section className="dashboard-section">
                     <h2>Lecture Videos</h2>
                     <ul className="videos-list">
@@ -49,14 +47,7 @@ const CoachDashboard = () => {
                         <li><a href="#">Video 3: Endgame Techniques</a></li>
                     </ul>
                 </section>
-                <section className="dashboard-section">
-                    <h2>Lecture Videos</h2>
-                    <ul className="videos-list">
-                        <li><a href="#">Video 1: Opening Strategies</a></li>
-                        <li><a href="#">Video 2: Mid-Game Tactics</a></li>
-                        <li><a href="#">Video 3: Endgame Techniques</a></li>
-                    </ul>
-                </section>
+
                 <section className="dashboard-section">
                     <h2>Articles</h2>
                     <ul className="articles-list">
@@ -66,9 +57,8 @@ const CoachDashboard = () => {
                     </ul>
                 </section>
             </main>
-            <footer className="dashboard-footer">
-                <p>Chess Website © 2024</p>
-            </footer>
+            </div>
+            </div>
         </div>
     );
 };

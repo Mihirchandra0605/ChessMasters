@@ -22,6 +22,7 @@
     font-size: xx-large;
     width: 540px;
     font-style: italic;
+    color:white;
 }
 
 @keyframes slideInFromLeft {

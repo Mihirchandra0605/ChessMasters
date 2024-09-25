@@ -1,6 +1,6 @@
 import React from 'react';
-import Coachprofile from './Coachprofile';
-import Navbar from './Navbar';
+import Coachprofile from './Coachprofile.jsx';
+import Navbar from './Navbar.jsx';
 import styles from '../styles/Coachdash.module.css';
 
 const Coachdash = () => {
@@ -47,6 +47,7 @@ const Coachdash = () => {
                     <h1>Teaching Methodology</h1>
                     <p>{profileData.teachingMethodology}</p>
                 </div>
+                <button className={`${styles.subscribe}`}>Subscribe</button>
             </div>
         </div>
     );

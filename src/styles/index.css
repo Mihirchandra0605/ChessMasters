@@ -2,15 +2,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',monospace;
 }
 /* Reset some default browser styling */
-body {
+/* body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Roboto', sans-serif; /* Sleeker, modern font */
+    font-family: 'Roboto', sans-serif; 
     background-color: #f0f0f0;
     color: #333;
     scroll-behavior: smooth;
-}
+} */
 
 /* Navbar styling */
 .navbar {
@@ -78,7 +78,7 @@ body {
     font-size: 28px;
     text-align: center;
     margin: 20px 0;
-    color: #333;
+    color: white;
     letter-spacing: 1.2px;
 }
 
@@ -143,6 +143,7 @@ body {
     width: 100%;
     max-width: 800px;
     padding: 10px 0;
+
 }
 
 .game_scroll_container::-webkit-scrollbar {
@@ -152,7 +153,7 @@ body {
 /* Game card styling */
 .game {
     flex: 0 0 auto;
-    background-color: #ffffff;
+    background-color: black;
     border: 2px solid #ddd;
     border-radius: 10px;
     padding: 15px;

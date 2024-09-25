@@ -1,72 +1,132 @@
 .dashboard-container {
-    display: grid;
-    grid-template-areas:
-        "header header header"
-        "nav main main"
-        "footer footer footer";
-    grid-template-rows: auto 1fr auto;
-    grid-template-columns: 200px 1fr;
-    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    height: 0;
+    background-color: black;
+    width: 100%;
+}
+.charts-container {
+    position: relative; /* Allow overlapping with navbar */
+    padding: 20px; /* Add some padding for aesthetics */
+    /* You can add other styles as needed */
 }
 
-.dashboard-header {
-    grid-area: header;
-    background-color: #333;
-    padding: 10px;
-    color: white;
-    text-align: center;
+.dashboard {
+    display: flex;
+}
+
+.charts-main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+    justify-items: center;
 }
 
 .dashboard-nav {
-    grid-area: nav;
-    background-color: #f4f4f4;
+    width: 10%;
+    background-color: black;
+    color: darkorange;
+    height: fit-content;
     padding: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Increase spacing between buttons */
 }
 
-.dashboard-nav ul {
-    list-style-type: none;
-    padding: 0;
+.dashboard-nav button {
+    padding: 12px; /* Add more padding for a nicer look */
+    width: 100%; /* Full width for buttons */
+    border: 2px solid darkorange; /* Button border color matches text color */
+    background-color: darkgoldenrod; 
+    color: black; /* Button text color */
+    cursor: pointer;
+    border-radius: 12px; /* Smooth rounded corners */
+    font-size: 16px;
+    transition: background-color 0.3s ease; /* Smooth hover transition */
 }
 
-.dashboard-nav li {
-    margin: 15px 0;
+.dashboard-nav button:hover {
+    background-color: lightsalmon !important; /* Use !important to override other styles */
+}
+
+
+
+.earn {
+    margin-top: 20px; /* Space above earnings chart */
+    width: 100%;
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flex-container > div {
+    margin: 10px;
+}
+
+
+.dashboard-header {
+    background-color: darkorange;
+    padding: 15px; /* Increase padding for header */
+    color: black;
+    text-align: center;
+    font-size: 24px; /* Larger font for header */
+    font-weight: bold;
 }
 
 .dashboard-main {
-    grid-area: main;
+    position:relative;
+    width: 80%;
     padding: 20px;
+    color: darkorange;
+    left: 4.5rem;
 }
 
 .dashboard-section {
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .dashboard-section h2 {
-    border-bottom: 2px solid #ddd;
+    border-bottom: 2px solid darkorange;
     padding-bottom: 10px;
     margin-bottom: 15px;
+    font-size: 20px;
 }
 
-.profile-info p, .achievements-list li, .students-list li, .videos-list li, .articles-list li {
+.profile-info p, 
+.achievements-list li, 
+.students-list li, 
+.videos-list a, 
+.articles-list a {
     margin: 5px 0;
+    background-color: black;
+    color: darkorange;
 }
 
-.achievements-list, .students-list, .videos-list, .articles-list {
+.achievements-list, 
+.students-list, 
+.videos-list, 
+.articles-list {
     list-style-type: none;
     padding: 0;
+    background-color: black;
+    color: darkorange;
 }
 
-.videos-list li, .articles-list li {
-    background-color: #f9f9f9;
+.videos-list li, 
+.articles-list li {
+    background-color: black;
     padding: 10px;
     margin: 5px 0;
-    border: 1px solid #ddd;
+    border: 1px solid darkorange; /* Border color to match the overall theme */
+    color: darkorange;
+    transition: transform 0.3s ease; /* Add hover animation */
 }
 
-.dashboard-footer {
-    grid-area: footer;
-    background-color: #333;
-    padding: 10px;
-    color: white;
-    text-align: center;
+.videos-list li:hover, 
+.articles-list li:hover {
+    transform: scale(1.05); /* Slight scaling on hover */
 }

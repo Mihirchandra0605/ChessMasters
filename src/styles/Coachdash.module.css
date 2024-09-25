@@ -1,11 +1,11 @@
 .profileSection {
-    width: 75%;
+    width: 100%;
     margin-left: auto;
     display: flex;
     flex-wrap: wrap;
     gap: 20px; /* Adds space between the sections */
     background-color: #151e3d;
-    font-size: x-large;
+    font-size: large;
     color:aliceblue;
     margin-right: 20px;
     align-items:flex-start;
@@ -32,4 +32,14 @@
     list-style-type: none;
     padding-left: 0; /* Remove padding for consistency */
     margin: 5px 0; /* Add some spacing between items */
+}
+.subscribe {
+    border-radius: 10px;
+    color: white;
+    background-color: red;
+    margin-left: auto;
+    margin-right: auto;
+    height:10vh;
+    width:25vh;
+    font-size: large;
 }

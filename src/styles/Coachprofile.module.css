@@ -1,11 +1,11 @@
-  .coachProfile {
+.coachProfile {
     align-items: center; 
     /* justify-conlntent: space-between;  */
     /* padding: 10px; Optiokk;'nal: add some padding around the profile */
     gap: 20px;
     display: flex;
 
-    width:75%;
+    width:100%;
     /* max-width: 800px;n m */
     /* margin-top: 20px;nl */
     background-color: #151e3d;
@@ -37,7 +37,7 @@
 }
 .coachContent {
     flex-grow: 1;
-    font-size: x-large;
+    font-size: large;
     font-weight: bold;
     text-wrap: nowrap;
     text-align: center;
