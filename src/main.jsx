@@ -15,28 +15,28 @@ function App() {
   };
 
   return (
-    // <StrictMode>
-    //   {!isLoggedIn ? (
-    //     <div className="section">
-    //       {/* Render Greeting, Coach, and Player before login */}
-    //       <Greeting onLoginSuccess={handleLogin} />
-    //       <Coach />
-    //       <Player />
-    //     </div>
-    //   ) : (
-    //     <div className="section">
-    //       {/* Render HomePage after login */}
-    //       <HomePage />
-    //     </div>
-    //   )}
-    // </StrictMode>
-
     <StrictMode>
+      {!isLoggedIn ? (
+        <div className="section">
+          {/* Render Greeting, Coach, and Player before login */}
+          <Greeting onLoginSuccess={handleLogin} />
+          <Coach />
+          <Player />
+        </div>
+      ) : (
+        <div className="section">
+          {/* Render HomePage after login */}
+          <HomePage />
+        </div>
+      )}
+    </StrictMode>
 
-      <AdminDashboard />
+    // <StrictMode>
+
+    //   <AdminDashboard />
 
 
-      </StrictMode>
+    //   </StrictMode>
   );
 }
 
