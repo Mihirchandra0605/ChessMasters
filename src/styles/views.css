@@ -1,0 +1,46 @@
+/* ViewChart.css */
+.views {
+  width: 80%;
+  height: 450px; /* Increased height for better layout */
+  margin: 20px auto; /* Center the chart */
+  background-color: #F4DEB3; /* Light background for the chart area */
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for a nice effect */
+  padding: 20px; /* Add padding around the chart */
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+}
+
+.year-selector {
+  display: flex;
+  justify-content: center; /* Center the dropdown */
+  margin-bottom: 15px; /* Space between dropdown and chart */
+}
+
+.year-selector label {
+  margin-right: 10px; /* Space between label and dropdown */
+  font-size: 16px; /* Adjust font size for the label */
+  color: #333; /* Label color */
+}
+
+.year-selector select {
+  padding: 5px 10px; /* Padding for the dropdown */
+  font-size: 16px; /* Font size for the dropdown */
+  border: 1px solid #ccc; /* Border for the dropdown */
+  border-radius: 5px; /* Rounded corners */
+  background-color: #fff; /* Background color for dropdown */
+  cursor: pointer; /* Pointer cursor for better UX */
+}
+
+.year-selector select:focus {
+  outline: none; /* Remove default outline */
+  border-color: #007bff; /* Change border color on focus */
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  font-family: 'Arial', sans-serif;
+  margin-bottom: 20px;
+}

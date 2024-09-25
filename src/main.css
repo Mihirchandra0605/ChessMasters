@@ -5,6 +5,7 @@ body {
   box-sizing: border-box;
   font-family: Arial, sans-serif;
   scroll-behavior: smooth; /* Smooth scrolling for the whole document */
+  background-color: #1f1f1f;
 }
 
 #root {

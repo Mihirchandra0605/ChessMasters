@@ -1,0 +1,45 @@
+.profileSection {
+    width: 100%;
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Adds space between the sections */
+    background-color: #151e3d;
+    font-size: large;
+    color:aliceblue;
+    margin-right: 20px;
+    align-items:flex-start;
+}
+
+.profileSection  h1 {
+    color: darkorange;
+}
+.aboutme, .playex, .teachex, .teachmethod {
+    width: 40%; /* Ensures two sections fit side by side within the parent */
+    text-align: justify;
+    padding: 30px;
+}
+
+.aboutme, .teachex {
+    margin-right: auto;
+}
+
+.playex, .teachmethod {
+    margin-left: auto;
+}
+
+.noBullet {
+    list-style-type: none;
+    padding-left: 0; /* Remove padding for consistency */
+    margin: 5px 0; /* Add some spacing between items */
+}
+.subscribe {
+    border-radius: 10px;
+    color: white;
+    background-color: red;
+    margin-left: auto;
+    margin-right: auto;
+    height:10vh;
+    width:25vh;
+    font-size: large;
+}

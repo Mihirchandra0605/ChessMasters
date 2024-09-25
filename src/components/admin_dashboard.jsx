@@ -7,10 +7,11 @@ import {
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
+import "../styles/admin_dashboard.css"
 
-import '../styles/admin_dashboard.css';
 
 const Dashboard = () => {
+  console.log("yayy");
   const data = [
     { name: 'Day 1', uv: 4000, pv: 2400 },
     { name: 'Day 2', uv: 3000, pv: 1398 },
@@ -62,12 +63,13 @@ const Dashboard = () => {
   };
 
   return (
-    <main className='main-container'>
+    <main className='main-container'>     
       <div className='main-title'>
         <h3>DASHBOARD OVERVIEW</h3>
       </div>
-
-      <div className='main-cards'>
+      
+      <div className='main-cards'
+      >
         {/* User List */}
         <div className='card'>
           <div className='card-inner'>
