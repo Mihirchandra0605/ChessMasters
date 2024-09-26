@@ -13,14 +13,16 @@ export const CoachUserSchema = new Schema({
   Fide_id: { type: String, required: true, unique: true },
   Status: { type: String, default: "Active" },
 
-  //coach's personal info which he will update later after creating his profile(initially, the values will be empty)
-  Quote: { type: String }, 
-  Location: { type: String },
-  Languages: { type: [String] }, // Array of languages
-  Rating: { type: Number }, 
-  PlayingExperience: { type: String }, 
-  TeachingExperience: { type: String }, 
-  HourlyRate: { type: Number }, 
+  quote: { type: String, default: "" }, 
+  location: { type: String, default: "" },
+  languages: { type: [String], default: [] }, 
+  rating: { type: Number, default: null }, 
+  playingExperience: { type: String, default: "" }, 
+  teachingExperience: { type: String, default: "" }, 
+  hourlyRate: { type: Number, default: null },
+  aboutMe: { type:  String, default: "" },
+  teachingMethodology: { type: String, default: ""},
+
 
   // Subscriptions
   SubscribedPlayers: [{ type: Schema.Types.ObjectId, ref: 'PlayerUser' }]

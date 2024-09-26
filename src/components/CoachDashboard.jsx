@@ -19,7 +19,8 @@ const CoachDashboard = () => {
                 <button>Videos</button>
                 <button>Articles</button> */}
                 <Link to="/Upload"><button>Add</button></Link>
-                <Link to="/Index?role=coach"><button>Home</button></Link>
+                <Link to="/Index"><button>Home</button></Link>
+                <Link to="/AddData"><button>Complete Profile</button></Link>
             </nav>
 
             <div className='charts-main'>

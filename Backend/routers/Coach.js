@@ -14,31 +14,58 @@ router.get("/allUsers", verifyToken, authorizeCoach, async (req, res) => {
   }
 });
 
-//this route fetches the entire personal info of the coach when hit***********
-router.get('/coaches/:id', verifyToken, authorizePlayer, async (req, res) => {
+router.get(
+  "/coachesdet",
+  verifyToken,
+  authorizeCoach,
+  async (req, res) => {
     try {
-      const coach = await CoachUser.findById(req.params.id);
+      const coachId = req.user.userId;
+      const coach = await CoachUser.findById(coachId).select("-password"); // Exclude sensitive fields
+
       if (!coach) {
-        return res.status(404).json({ message: 'Coach not found' });
+        return res.status(404).json({ message: "Coach not found" });
       }
+
       res.json(coach);
     } catch (err) {
-      res.status(500).json({ message: 'Error fetching coach profile' });
+      console.error("Error fetching coach profile:", err);
+      res.status(500).json({ message: "Error fetching profile" });
     }
-  });
+  }
+);
 
 
-  //this route fetches list of all coaches*********
-  router.get('/coaches', verifyToken, authorizeCoach, async (req, res) => {
-    try {
-      const coaches = await CoachUser.find({}, 'UserName Quote Rating Location');
-      res.json(coaches);
-    } catch (err) {
-      res.status(500).json({ message: 'Error fetching coaches' });
+//this route fetches the entire personal info of the coach when hit***********
+router.get("/coaches/:id", verifyToken, authorizePlayer, async (req, res) => {
+  try {
+    const coach = await CoachUser.findById(req.params.id);
+    if (!coach) {
+      return res.status(404).json({ message: "Coach not found" });
     }
-  });
-  
-  
+    res.json(coach);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching coach profile" });
+  }
+});
+
+
+router.get("/coaches", verifyToken, authorizePlayer, async (req, res) => {
+  try {
+    console.log("I am at coaches");
+
+    // Fetching all necessary fields for the coach profiles
+    const coaches = await CoachUser.find({}, "UserName quote rating location languages hourlyRate");
+
+    console.log(coaches);
+
+    res.json(coaches);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching coaches" });
+  }
+});
+
+
 router.get("/userdetails", verifyToken, authorizeCoach, async (req, res) => {
   try {
     console.log("i'm at userdetails");
@@ -55,9 +82,9 @@ router.get("/userdetails", verifyToken, authorizeCoach, async (req, res) => {
       id: user._id,
       CoachName: user.UserName,
       CoachEmail: user.Email,
-    //   CoachLevel: user.Level,
-      CoachPassword: user.Password
-      
+      //   CoachLevel: user.Level,
+      CoachPassword: user.Password,
+
       // subscribedCoaches: user.subscribedCoaches, // Include subscribed coaches in the response
     });
   } catch (err) {
@@ -77,7 +104,7 @@ router.post(
     const updatedValues = req.body;
     console.log(updatedValues);
     try {
-      // Update the profile using the CompanyUser model
+      // Update the profile 
       const updatedUser = await CoachUser.findByIdAndUpdate(
         { _id: profileId },
         updatedValues
@@ -106,7 +133,7 @@ router.get("/findcoach", verifyToken, authorizeCoach, async (req, res) => {
     res.json({
       CoachName: user.UserName,
       CoachEmail: user.Email,
-    //   PlayerLevel: user.PlayerLevel,
+      //   PlayerLevel: user.PlayerLevel,
     });
   } catch (err) {
     console.error("Error fetching user details:", err);
@@ -114,38 +141,97 @@ router.get("/findcoach", verifyToken, authorizeCoach, async (req, res) => {
   }
 });
 
-
 // this one is for subscribing to a particular coach**********
-router.post('/coaches/:id/subscribe', verifyToken, authorizePlayer, async (req, res) => {
+router.post(
+  "/coaches/:id/subscribe",
+  verifyToken,
+  authorizePlayer,
+  async (req, res) => {
     try {
       const playerId = req.user.id; // Extracted from token
       const coachId = req.params.id;
-  
+
       const coach = await CoachUser.findById(coachId);
       const player = await PlayerUser.findById(playerId);
-  
+
       if (!coach || !player) {
-        return res.status(404).json({ message: 'Player or Coach not found' });
+        return res.status(404).json({ message: "Player or Coach not found" });
       }
-  
+
       // Add the player to the coach's SubscribedPlayers if not already subscribed
       if (!coach.SubscribedPlayers.includes(playerId)) {
         coach.SubscribedPlayers.push(playerId);
       }
-  
+
       // Add the coach to the player's SubscribedCoaches if not already subscribed
       if (!player.SubscribedCoaches.includes(coachId)) {
         player.SubscribedCoaches.push(coachId);
       }
-  
+
       await coach.save();
       await player.save();
-  
-      res.json({ message: 'Subscription successful' });
+
+      res.json({ message: "Subscription successful" });
     } catch (err) {
-      res.status(500).json({ message: 'Error subscribing to coach' });
+      res.status(500).json({ message: "Error subscribing to coach" });
     }
-  });
-  
+  }
+);
+
+router.put(
+  "/coaches/profile",
+  verifyToken,
+  authorizeCoach,
+  async (req, res) => {
+    try {
+      console.log("Received data:", req.body); // Debugging line
+      const coachId = req.user.userId; // Extract from JWT token
+
+      // Destructure and prepare update data
+      const {
+        quote = "",
+        location = "",
+        languages = [],
+        rating = 0,
+        hourlyRate = 0,
+        aboutMe = "",
+        playingExperience = "",
+        teachingExperience = "",
+        teachingMethodology = "",
+      } = req.body;
+
+      const updateData = {
+        quote,
+        location,
+        languages,
+        rating,
+        hourlyRate,
+        aboutMe,
+        playingExperience,
+        teachingExperience,
+        teachingMethodology,
+      };
+
+      const updatedCoach = await CoachUser.findByIdAndUpdate(
+        coachId,
+        updateData,
+        { new: true }
+      );
+
+      if (!updatedCoach) {
+        return res.status(404).json({ message: "Coach not found" });
+      }
+
+      res.json({
+        message: "Profile updated successfully",
+        coach: updatedCoach,
+      });
+    } catch (err) {
+      console.error("Error updating profile:", err); // Enhanced error logging
+      res.status(500).json({ message: "Error updating profile" });
+    }
+  }
+);
+
 
 export default router;

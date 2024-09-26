@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/AddDetails.css";
+
 const AddCoachForm = () => {
   const [formData, setFormData] = useState({
     quote: "",
@@ -13,44 +14,107 @@ const AddCoachForm = () => {
     teachingMethodology: "",
   });
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch the coach profile data
+  useEffect(() => {
+    const fetchCoachProfile = async () => {
+      try {
+        const token = document.cookie.split("=")[1];
+        const response = await fetch(`http://localhost:5000/coach/coachesdet`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch profile data");
+        }
+
+        const data = await response.json();
+        console.log('Fetched data:', data);
+
+        // Safely handle array fields
+        const languages = Array.isArray(data.languages)
+          ? data.languages.join(", ")
+          : data.languages || "";
+
+        setFormData({
+          quote: data.quote || "",
+          location: data.location || "",
+          languages: languages,
+          rating: data.rating || "",
+          hourlyRate: data.hourlyRate || "",
+          aboutMe: data.aboutMe || "",
+          playingExperience: data.playingExperience || "",
+          teachingExperience: data.teachingExperience || "",
+          teachingMethodology: data.teachingMethodology || "",
+        });
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching coach profile:", error);
+        setError("Failed to load coach profile");
+        setLoading(false);
+      }
+    };
+
+    fetchCoachProfile();
+    console.log("Fetched profile");
+  }, []);
+
   // Handle change for input fields
   const handleChange = (e) => {
+    console.log(e.target);
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Convert languages, playingExperience, and teachingExperience to arrays
-    const formattedData = {
-      ...formData,
-      languages: formData.languages.split(",").map((lang) => lang.trim()),
-      playingExperience: formData.playingExperience
-        .split("\n")
-        .map((exp) => exp.trim()),
-      teachingExperience: formData.teachingExperience
-        .split("\n")
-        .map((exp) => exp.trim()),
-    };
+    try {
+      // Convert languages, playingExperience, and teachingExperience to arrays
+      const formattedData = {
+        ...formData,
+        languages: formData.languages
+          ? formData.languages.split(",").map((lang) => lang.trim())
+          : [],
+      };
+      console.log("Formatted Data to Send:", formattedData); // Debugging line
+      const token = document.cookie.split("=")[1];
+      const response = await fetch(`http://localhost:5000/coach/coaches/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include token in the headers
+        },
+        body: JSON.stringify(formattedData),
+      });
 
-    console.log("Form data:", formattedData);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error updating profile");
+      }
 
-    // Here, you can send the `formattedData` to the backend using fetch or axios
-    // Example:
-    // fetch("http://your-backend-api-url.com/coaches", {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    //   body: JSON.stringify(formattedData),
-    // }).then(response => {
-    //   if (response.ok) {
-    //     alert("Coach added successfully!");
-    //   }
-    // });
+      const result = await response.json();
+      console.log("Profile updated successfully:", result);
+      // Optionally, provide user feedback or redirect
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setError(error.message || "Error updating profile");
+    }
   };
+
+  if (loading) {
+    return <div>Loading profile...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
 
   return (
     <form onSubmit={handleSubmit}>
