@@ -14,6 +14,7 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import Dashboard from "./components/admin_dashboard.jsx";
 import FileUpload  from "./components/fileupload.jsx";
 import CoachesAvaialble from "./components/coachesavailable.jsx";
+import AddCoachForm from "./components/AddDetails.jsx";
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
       {path: '/CoachProfile', element:<CProfile/>},
       {path: '/Index', element:<HomePage/>},
       {path: '/CoachesAvailable', element:<CoachesAvaialble/>},
+      {path: '/AddData',element:<AddCoachForm/>},
       {path: '/Upload', element:<FileUpload/>}
     ])
                                                                 // <StrictMode>

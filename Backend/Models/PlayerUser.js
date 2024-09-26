@@ -9,6 +9,8 @@ export const PlayerUserSchema = new Schema({
   Password: { type: String, required: true },
   Level: { type: String, default: "Beginner" }, //beginner, intermediate,advanced,expert
   Status: { type: String, default: "Active" }, // Active/ offline
+
+  SubscribedCoaches: [{ type: Schema.Types.ObjectId, ref: 'CoachUser' }]
 });
 
 // Mongoose Middleware for hashing password before saving
