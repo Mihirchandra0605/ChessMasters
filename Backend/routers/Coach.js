@@ -2,6 +2,7 @@ import { Router } from "express";
 import { CoachUser } from "../Models/CoachUser.js";
 import { verifyToken } from "../middlewares/verifyToken.js";
 import { authorizeCoach, authorizePlayer } from "../middlewares/roleCheck.js";
+import { console } from "inspector";
 
 const router = Router();
 
@@ -39,16 +40,19 @@ router.get(
 //this route fetches the entire personal info of the coach when hit***********
 router.get("/coaches/:id", verifyToken, authorizePlayer, async (req, res) => {
   try {
-    const coach = await CoachUser.findById(req.params.id);
+    console.log("im at detailed coach profile");
+    const coachId = req.params.id;
+    const coach = await CoachUser.findById(coachId); // Find by ID or UserName as per your schema
+
     if (!coach) {
       return res.status(404).json({ message: "Coach not found" });
     }
-    res.json(coach);
+
+    res.json(coach);  // Send the full coach profile
   } catch (err) {
-    res.status(500).json({ message: "Error fetching coach profile" });
+    res.status(500).json({ message: "Error fetching coach details" });
   }
 });
-
 
 router.get("/coaches", verifyToken, authorizePlayer, async (req, res) => {
   try {
