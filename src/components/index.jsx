@@ -1,8 +1,14 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "../styles/index.css";
 import Navbar from "./Navbar.jsx";
+import NavbarPlay from "./navbarplay.jsx"; // Assuming you have a separate Navbar component for players
 
 function HomePage() {
+  const [role] = useSearchParams()
+  console.log('role', role.get('role'))
+  const [isPlayer, setIsPlayer] = useState(role.get('role')=='player' ? true : false); // Update the state based on the user's role
+
   // Refs to access DOM elements
   const gameScrollContainerRef = useRef(null);
   const scrollLeftRef = useRef(null);
@@ -78,18 +84,17 @@ function HomePage() {
 
   return (
     <div id="Home">
-      <Navbar/>
+      {/* Conditionally render the appropriate navbar based on the user's role */}
+      {isPlayer ? <NavbarPlay /> : <Navbar />}
 
       <div id="content">
         <div className="section_content">
           <h1 className="heading">Welcome back, UserName!</h1>
-
           <button id="play_button">Play Now!</button>
         </div>
 
         <div className="section_content">
           <h2 className="heading">Stats</h2>
-
           <div id="stat_box">
             <div className="stat">
               <p>Games Played: 100</p>
@@ -100,10 +105,9 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Your Games Carousel */}
+        {/* Games Carousel */}
         <div className="section_content" id="carousel">
           <h2 className="heading">Your Games :-</h2>
-
           <div id="game_box">
             <img
               src="/public/back.png"
@@ -111,25 +115,13 @@ function HomePage() {
               id="scrollLeft"
               ref={scrollLeftRef}
             />
-
-            <div
-              className="game_scroll_container"
-              ref={gameScrollContainerRef}
-            >
-              {/* Example game divs */}
+            <div className="game_scroll_container" ref={gameScrollContainerRef}>
               <div className="game">Game 1</div>
               <div className="game">Game 2</div>
               <div className="game">Game 3</div>
               <div className="game">Game 4</div>
               <div className="game">Game 5</div>
-              <div className="game">Game 6</div>
-              <div className="game">Game 7</div>
-              <div className="game">Game 8</div>
-              <div className="game">Game 9</div>
-              <div className="game">Game 10</div>
-              {/* Add more games here */}
             </div>
-
             <img
               src="/public/next.png"
               alt="Scroll Right"
@@ -139,10 +131,9 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Featured Videos Carousel */}
+        {/* Videos Carousel */}
         <div className="section_content" id="carousel">
           <h2 className="heading">Featured Videos :-</h2>
-
           <div id="game_box">
             <img
               src="/public/back.png"
@@ -150,25 +141,11 @@ function HomePage() {
               id="scrollLeft"
               ref={videoScrollLeftRef}
             />
-
-            <div
-              className="game_scroll_container"
-              ref={videoScrollContainerRef}
-            >
-              {/* Example video divs */}
+            <div className="game_scroll_container" ref={videoScrollContainerRef}>
               <div className="game">Video 1</div>
               <div className="game">Video 2</div>
               <div className="game">Video 3</div>
-              <div className="game">Video 4</div>
-              <div className="game">Video 5</div>
-              <div className="game">Video 6</div>
-              <div className="game">Video 7</div>
-              <div className="game">Video 8</div>
-              <div className="game">Video 9</div>
-              <div className="game">Video 10</div>
-              {/* Add more videos here */}
             </div>
-
             <img
               src="/public/next.png"
               alt="Scroll Right"
@@ -178,10 +155,9 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Featured Articles Carousel */}
+        {/* Articles Carousel */}
         <div className="section_content" id="carousel">
           <h2 className="heading">Featured Articles :-</h2>
-
           <div id="game_box">
             <img
               src="/public/back.png"
@@ -189,25 +165,11 @@ function HomePage() {
               id="scrollLeft"
               ref={articleScrollLeftRef}
             />
-
-            <div
-              className="game_scroll_container"
-              ref={articleScrollContainerRef}
-            >
-              {/* Example article divs */}
+            <div className="game_scroll_container" ref={articleScrollContainerRef}>
               <div className="game">Article 1</div>
               <div className="game">Article 2</div>
               <div className="game">Article 3</div>
-              <div className="game">Article 4</div>
-              <div className="game">Article 5</div>
-              <div className="game">Article 6</div>
-              <div className="game">Article 7</div>
-              <div className="game">Article 8</div>
-              <div className="game">Article 9</div>
-              <div className="game">Article 10</div>
-              {/* Add more articles here */}
             </div>
-
             <img
               src="/public/next.png"
               alt="Scroll Right"

@@ -45,7 +45,7 @@ router.post("/coachregistration", async (req, res) => {
 // Sign-in route
 router.post("/signin", async (req, res) => {
   try {
-    console.log(req.body)
+    console.log(req.body);
     const { username, password } = req.body;
 
     // Look for the user in both company and contractor collections
@@ -55,9 +55,10 @@ router.post("/signin", async (req, res) => {
     if (playerUser) {
       const match = await bcrypt.compare(password, playerUser.Password);
       if (match) {
-        const token = generateToken(PlayerUser._id, "Player");
+        const token = generateToken(playerUser._id, "Player");
+        console.log("token", token);
         res.cookie("authorization", token);
-        return res.status(200).send({
+        return res.status(200).json({
           message: "Player signed in successfully",
           userType: "Player",
         });
@@ -65,7 +66,7 @@ router.post("/signin", async (req, res) => {
     } else if (coachUser) {
       const match = await bcrypt.compare(password, coachUser.Password);
       if (match) {
-        const token = generateToken(CoachUser._id, "Coach");
+        const token = generateToken(coachUser._id, "Coach");
         res.cookie("authorization", token);
         return res.status(200).send({
           message: "Coach signed in successfully",
@@ -80,6 +81,11 @@ router.post("/signin", async (req, res) => {
     console.error("Error during sign-in:", error);
     res.status(500).send({ message: "Internal server error" });
   }
+});
+
+router.post("/logout", (req, res) => {
+  res.clearCookie("authorization");
+  return res.status(200).json({ message: "Logged out successfully" });
 });
 
 export default router;

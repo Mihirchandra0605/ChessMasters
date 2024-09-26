@@ -22,7 +22,7 @@ const subscribedCoaches = [
   { id: 3, name: 'Coach C', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' }
 ];
 
-const Profile = () => {
+const CProfile = () => {
   const [isEditing, setIsEditing] = useState({ name: false, email: false, password: false });
   const [formData, setFormData] = useState({
     name: '',
@@ -33,30 +33,30 @@ const Profile = () => {
 
   // Fetch player details on component mount
   useEffect(() => {
-    const fetchPlayerDetails = async () => {
+    const fetchCoachDetails = async () => {
       const token = document.cookie.split("=")[1]
       try {
-        const response = await axios.get('http://localhost:5000/player/userdetails', {
+        const response = await axios.get('http://localhost:5000/coach/userdetails', {
           headers: {
             Authorization: `Bearer ${token}`// using tokens for authentication
           }
         });
-        const player = response.data;
-        console.log('player:', player)
+        const coach = response.data;
+        console.log('coach:', coach)
         setFormData({
-          name: player.PlayerName,
-          email: player.PlayerEmail,
-          level: player.PlayerLevel,
+          name: coach.CoachName,
+          email: coach.CoachEmail,
+          // level: Coach.CoachLevel,
           password: '********' // isme changes required
         });
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching player details:', error);
+        console.error('Error fetching coach details:', error);
         setLoading(false);
       }
     };
 
-    fetchPlayerDetails();
+    fetchCoachDetails();
   }, []);
 
   const handleEdit = (field) => {
@@ -95,7 +95,7 @@ const Profile = () => {
       {/* Profile content */}
       <div className="header">
         <h1>Profile</h1>
-        <Link to="/Index?role=player"><button className="home-btn">Home</button></Link>
+        <Link to="/Index?role=coach"><button className="home-btn">Home</button></Link>
       </div>
 
       <div className="container">
@@ -212,4 +212,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default CProfile;

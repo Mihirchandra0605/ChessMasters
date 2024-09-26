@@ -2,12 +2,12 @@ import express from "express";
 import { mongoose } from "mongoose";
 import cors from "cors";
 import { PlayerUser } from "./Models/PlayerUser.js";
-// import { CoachUser } from "./Models/CoachUser.js";
+import { CoachUser } from "./Models/CoachUser.js";
 import { jwtSecretKey } from "./config.js";
-import bodyParser from 'body-parser';
+import bodyParser from "body-parser";
 import authRouter from "./routers/auth.js";
-// import playerRouter from "./routers/Player.js";
-// import coachRouter from "./routers/Coach.js";
+import playerRouter from "./routers/Player.js";
+import coachRouter from "./routers/Coach.js";
 
 import cookieParser from "cookie-parser";
 
@@ -15,7 +15,12 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -51,7 +56,7 @@ app.post("/add-player", async (req, res) => {
 
 // Routes
 app.use("/auth", authRouter);
-// app.use("/player", playerRouter);
-// app.use("/coach", coachRouter);
+app.use("/player", playerRouter);
+app.use("/coach", coachRouter);
 
 app.listen(port, () => console.log(`Server running on port ${port}`));

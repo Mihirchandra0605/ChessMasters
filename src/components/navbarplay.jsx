@@ -36,17 +36,11 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-buttons">
-        <Link to="/Index?role=coach">
-          <button>Home</button>
-        </Link>
-        <Link to="/CoachDashboard">
-          <button>Coach Dashboard</button>
-        </Link>
-        <Link to="/CoachProfile">
-          <button>Profile</button>
-        </Link>
-
-        {/* Add the LogoutButton component */}
+        <Link to="/Index?role=player"><button>Home</button></Link>
+        <Link to="/CoachesAvailable"><button>Coaches</button></Link>
+        {/* <button onClick={() => window.location.href = "/articles"}>Articles</button>
+        <button onClick={() => window.location.href = "/videos"}>Videos</button> */}
+        <Link to="/Profile"><button>Profile</button></Link>
         <LogoutButton />
       </div>
     </nav>

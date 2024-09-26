@@ -1,6 +1,6 @@
 import React from 'react';
 import Coachprofile from './Coachprofile.jsx';
-import Navbar from './Navbar.jsx';
+import NavbarPlay from './navbarplay.jsx';
 import styles from '../styles/Coachdash.module.css';
 
 const Coachdash = () => {
@@ -20,7 +20,7 @@ const Coachdash = () => {
 
     return (
         <div className="coachdash">
-            <Navbar />
+            <NavbarPlay />
             <Coachprofile />
             <div className={`${styles.profileSection}`}> 
                 <div className={`${styles.aboutme}`}>

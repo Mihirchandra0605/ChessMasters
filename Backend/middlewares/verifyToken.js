@@ -3,7 +3,8 @@ import { jwtSecretKey } from "../config.js";
 
 // Middleware to verify JWT token
 export function verifyToken(req, res, next) {
-  const token = req.cookies["authorization"];
+  console.log("cookies", req.headers["authorization"]);
+  const token = req.headers["authorization"].split(" ")[1];
   console.log(token);
   if (!token) {
     return res.status(401).json({ message: "Token not provided" });

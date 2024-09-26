@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../styles/Greetings.css";
+import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // import "../styles/FormStyles.css";
 
 function Greeting({onLoginSuccess}) {
@@ -81,28 +83,128 @@ function Greeting({onLoginSuccess}) {
   );
 }
 
+// function LoginForm({ onLoginSuccess }) {
+//   const [username, setUsername] = useState('');
+//   const [password, setPassword] = useState('');
+//   const navigate = useNavigate();
+//   const handleSubmit = async (event) => {
+//     event.preventDefault();
+//     try {
+//       const response = await fetch('http://localhost:5000/auth/signin', {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ username, password }),
+//       });
+//       const data = await response.json();
+//       if (response.ok) {
+//         onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
+//         console.log("Success");
+//         const role = data.userType;
+//         if(role == "Player"){
+//           navigate("/PlayerDashboard?role=player");
+//         }else{
+//           navigate("/CoachDashboard?role=coach");
+//         }
+//       } else {
+//         alert(data.message); // Display error message
+//       }
+//     } catch (error) {
+//       console.error('Error during sign-in:', error);
+//     }
+//   };
+
+//   return (
+//     <div className="form-block">
+//       <div className="form-block__header">
+//         <h1>Login</h1>
+//       </div>
+//       <form onSubmit={handleSubmit}>
+//         <div className="form-block__input-wrapper">
+//           <input
+//             type="text"
+//             placeholder="Username"
+//             className="form-group__input"
+//             required
+//             value={username}
+//             onChange={(e) => setUsername(e.target.value)}
+//           />
+//         </div>
+
+//         <div className="form-block__input-wrapper">
+//           <input
+//             type="password"
+//             placeholder="Password"
+//             className="form-group__input"
+//             required
+//             value={password}
+//             onChange={(e) => setPassword(e.target.value)}
+//           />
+//         </div>
+
+//         <button type="submit" className="button button--primary full-width">
+//           Log In
+//         </button>
+//       </form>
+//     </div>
+//   );
+// }
+
 function LoginForm({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [authResponse, setAuthResponse] = useState(null); // Store the API response
+  const [isSubmitting, setIsSubmitting] = useState(false); // Manage submit state
+  const navigate = useNavigate();
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    try {
-      const response = await fetch('http://localhost:5000/auth/signin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
-      } else {
-        alert(data.message); // Display error message
-      }
-    } catch (error) {
-      console.error('Error during sign-in:', error);
-    }
+    setIsSubmitting(true); // Trigger the API call in useEffect
   };
+
+  useEffect(() => {
+    // Only trigger the API call when isSubmitting is true
+    if (isSubmitting) {
+      const login = async () => {
+        try {
+          const response = await fetch('http://localhost:5000/auth/signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ username, password }),
+
+          });
+          const data = await response.json();
+          setAuthResponse({ data, ok: response.ok });
+        } catch (error) {
+          console.error('Error during sign-in:', error);
+          setAuthResponse({ data: null, ok: false, error });
+        } finally {
+          setIsSubmitting(false); // Reset submission state
+        }
+      };
+
+      login();
+    }
+  }, [isSubmitting, username, password]);
+
+  useEffect(() => {
+    if (authResponse) {
+      const { data, ok } = authResponse;
+
+      if (ok) {
+        onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
+        console.log("Success");
+        const role = data.userType;
+        if (role === "Player") {
+          navigate("/PlayerDashboard?role=player");
+        } else {
+          navigate("/CoachDashboard?role=coach");
+        }
+      } else {
+        alert(data?.message || 'Login failed'); // Display error message
+      }
+    }
+  }, [authResponse, onLoginSuccess, navigate]);
 
   return (
     <div className="form-block">
@@ -118,6 +220,7 @@ function LoginForm({ onLoginSuccess }) {
             required
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            disabled={isSubmitting} // Disable input while submitting
           />
         </div>
 
@@ -129,11 +232,12 @@ function LoginForm({ onLoginSuccess }) {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={isSubmitting} // Disable input while submitting
           />
         </div>
 
-        <button type="submit" className="button button--primary full-width">
-          Log In
+        <button type="submit" className="button button--primary full-width" disabled={isSubmitting}>
+          {isSubmitting ? 'Logging in...' : 'Log In'}
         </button>
       </form>
     </div>
