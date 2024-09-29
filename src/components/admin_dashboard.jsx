@@ -8,6 +8,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import "../styles/admin_dashboard.css"
+import AdminNav from './adminnav.jsx';
 
 
 const Dashboard = () => {
@@ -63,7 +64,8 @@ const Dashboard = () => {
   };
 
   return (
-    <main className='main-container'>     
+    <main className='main-container'> 
+    <AdminNav/>    
       <div className='main-title'>
         <h3>DASHBOARD OVERVIEW</h3>
       </div>

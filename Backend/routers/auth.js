@@ -42,21 +42,28 @@ router.post("/coachregistration", async (req, res) => {
   }
 });
 
-// Sign-in route
 router.post("/signin", async (req, res) => {
   try {
-    console.log(req.body);
     const { username, password } = req.body;
 
-    // Look for the user in both company and contractor collections
+    // Hardcoded admin check
+    if (username === 'admin' && password === 'secret') {
+      const token = generateToken("admin_id", "Admin"); // Generate a token for admin
+      res.cookie("authorization", token);
+      return res.status(200).json({
+        message: "Admin signed in successfully",
+        userType: "Admin",
+      });
+    }
+
+    // Look for the user in both Player and Coach collections
     const playerUser = await PlayerUser.findOne({ UserName: username }).exec();
     const coachUser = await CoachUser.findOne({ UserName: username }).exec();
-    console.log(playerUser);
+
     if (playerUser) {
       const match = await bcrypt.compare(password, playerUser.Password);
       if (match) {
         const token = generateToken(playerUser._id, "Player");
-        console.log("token", token);
         res.cookie("authorization", token);
         return res.status(200).json({
           message: "Player signed in successfully",
@@ -68,7 +75,7 @@ router.post("/signin", async (req, res) => {
       if (match) {
         const token = generateToken(coachUser._id, "Coach");
         res.cookie("authorization", token);
-        return res.status(200).send({
+        return res.status(200).json({
           message: "Coach signed in successfully",
           userType: "Coach",
         });
@@ -76,12 +83,13 @@ router.post("/signin", async (req, res) => {
     }
 
     // If user doesn't exist or password doesn't match
-    res.status(401).send({ message: "Invalid email or password" });
+    res.status(401).json({ message: "Invalid username or password" });
   } catch (error) {
     console.error("Error during sign-in:", error);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 router.post("/logout", (req, res) => {
   res.clearCookie("authorization");

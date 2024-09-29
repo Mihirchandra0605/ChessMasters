@@ -11,3 +11,10 @@ export function authorizeCoach(req, res, next) {
   }
   next();
 }
+
+export function authorizeAdmin(req,res,next) {
+  if (req.user.userType !== "admin") {
+    return res.status(403).json({ message: "Unauthorized "});
+  }
+  next();
+}
