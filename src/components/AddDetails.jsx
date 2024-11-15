@@ -20,12 +20,14 @@ const AddCoachForm = () => {
   // Fetch the coach profile data
   useEffect(() => {
     const fetchCoachProfile = async () => {
+      const token = document.cookie.split("=")[1];
+      console.log(token);
       try {
-        const token = document.cookie.split("=")[1];
-        const response = await fetch(`http://localhost:5000/coach/coachesdet`, {
+        const response = await fetch(`http://localhost:3000/coach/details`, {
+          credentials: "include",
           method: "GET",
           headers: {
-            "Content-Type": "application/json",
+            // "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
@@ -85,7 +87,8 @@ const AddCoachForm = () => {
       };
       console.log("Formatted Data to Send:", formattedData); // Debugging line
       const token = document.cookie.split("=")[1];
-      const response = await fetch(`http://localhost:5000/coach/coaches/profile`, {
+      const response = await fetch(`http://localhost:3000/coach/completeProfile`, {
+        credentials: "include",
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

@@ -34,20 +34,20 @@ const Profile = () => {
   // Fetch player details on component mount
   useEffect(() => {
     const fetchPlayerDetails = async () => {
-      const token = document.cookie.split("=")[1]
+      const token = document.cookie.split("=")[1];
+      console.log("Token:", token); // Check if this is a valid token
       try {
-        const response = await axios.get('http://localhost:5000/player/userdetails', {
+        const response = await axios.get('http://localhost:3000/auth/details', {
+          withCredentials: true,
           headers: {
-            Authorization: `Bearer ${token}`// using tokens for authentication
+            Authorization: `Bearer ${token}`
           }
         });
         const player = response.data;
-        console.log('player:', player)
         setFormData({
-          name: player.PlayerName,
-          email: player.PlayerEmail,
-          level: player.PlayerLevel,
-          password: '********' // isme changes required
+          name: player.UserName,
+          email: player.Email,
+          password: '********'
         });
         setLoading(false);
       } catch (error) {
@@ -55,10 +55,9 @@ const Profile = () => {
         setLoading(false);
       }
     };
-
     fetchPlayerDetails();
   }, []);
-
+  
   const handleEdit = (field) => {
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
   };

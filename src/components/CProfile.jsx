@@ -16,10 +16,10 @@ const sampleData = [
 ];
 
 // Static subscribed coaches data
-const subscribedCoaches = [
-  { id: 1, name: 'Coach A', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
-  { id: 2, name: 'Coach B', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
-  { id: 3, name: 'Coach C', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' }
+const subscribedPlayers = [
+  { id: 1, name: 'Player A', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
+  { id: 2, name: 'Player B', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
+  { id: 3, name: 'Player C', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' }
 ];
 
 const CProfile = () => {
@@ -36,7 +36,8 @@ const CProfile = () => {
     const fetchCoachDetails = async () => {
       const token = document.cookie.split("=")[1]
       try {
-        const response = await axios.get('http://localhost:5000/coach/userdetails', {
+        const response = await axios.get('http://localhost:3000/auth/details', {
+          withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`// using tokens for authentication
           }
@@ -44,8 +45,8 @@ const CProfile = () => {
         const coach = response.data;
         console.log('coach:', coach)
         setFormData({
-          name: coach.CoachName,
-          email: coach.CoachEmail,
+          name: coach.UserName,
+          email: coach.Email,
           // level: Coach.CoachLevel,
           password: '********' // isme changes required
         });
@@ -177,7 +178,7 @@ const CProfile = () => {
 
       {/* Subscribed Coaches Carousel - Static */}
       <div className="section_content" id="carousel">
-        <h2 className="heading">Subscribed Coaches:</h2>
+        <h2 className="heading">Subscribed Players:</h2>
         <div id="coach_box">
           <img
             src="/public/back.png"
@@ -188,7 +189,7 @@ const CProfile = () => {
           />
 
           <div className="coach_scroll_container" ref={coachScrollContainerRef}>
-            {subscribedCoaches.map((coach) => (
+            {subscribedPlayers.map((coach) => (
               <div key={coach.id} className="coach">
                 <img src={coach.imageUrl} alt={coach.name} />
                 <span className="coach_name">{coach.name}</span>

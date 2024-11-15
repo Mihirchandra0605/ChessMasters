@@ -15,6 +15,7 @@ import Dashboard from "./components/admin_dashboard.jsx";
 import FileUpload from "./components/fileupload.jsx";
 import CoachesAvaialble from "./components/coachesavailable.jsx";
 import AddCoachForm from "./components/AddDetails.jsx";
+import ArticleDetail from "./components/ArticleDetails.jsx";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -35,7 +36,10 @@ function App() {
         { path: '/Index', element: <HomePage /> },
         { path: '/CoachesAvailable', element: <CoachesAvaialble /> },
         { path: '/AddData', element: <AddCoachForm /> },
-        { path: '/Upload', element: <FileUpload /> }
+        { path: '/coaches', element: <CoachesAvaialble/>},
+        { path: '/Coachdash/:id', element: <Coachdash/>},
+        { path: '/Upload', element: <FileUpload /> },
+        { path: '/ArticleDetail/:id', element: <ArticleDetail /> },
     ]);
 
     return <RouterProvider router={router} />;

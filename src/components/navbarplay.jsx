@@ -8,7 +8,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:5000/auth/logout', {
+      const response = await fetch('http://localhost:3000/auth/logout', {
         method: 'POST',
         credentials: 'include', // Include cookies for this request
       });

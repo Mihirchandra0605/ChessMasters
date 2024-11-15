@@ -166,7 +166,7 @@ function LoginForm({ onLoginSuccess }) {
     if (isSubmitting) {
       const login = async () => {
         try {
-          const response = await fetch('http://localhost:5000/auth/signin', {
+          const response = await fetch('http://localhost:3000/auth/signin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -200,7 +200,7 @@ function LoginForm({ onLoginSuccess }) {
         onLoginSuccess(); // This calls handleLogin in App, changing isLoggedIn to true
         console.log("Success");
         const role = data.userType;
-        if (role === "Player") {
+        if (role === "player") {
           navigate("/PlayerDashboard?role=player");
         } else {
           navigate("/CoachDashboard?role=coach");
@@ -253,111 +253,72 @@ function LoginForm({ onLoginSuccess }) {
 function SignupForm() {
   const [role, setRole] = useState("");
   const [username, setUsername] = useState("");
-  const [email,  setEmail] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [level,  setLevel] = useState("");
-  const [Fide_id, setFide_id] =  useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [level, setLevel] = useState("");
+  const [fideId, setFideId] = useState("");
 
-
-
-
-  // States 
   const handleSubmit = (e) => {
-        e.preventDefault();
-        const userInfo = document.querySelector("#user-info");
-        console.log(userInfo);
-        
-        // body:  JSON.stringify(data),
+    e.preventDefault();
 
-        const formData = new FormData(userInfo);
-        console.log("formData : ", formData);
-        formData.append("name","mihir");
-        // fetch request 
-        if(role == 'coach'){
-          const data = {
-            role: role,
-            UserName: username,
-            Email: email,
-            Password: password,
-            Fide_id: Fide_id,
-            Status:  "active"
-  
-            // All other states
-          }
-          fetch('http://localhost:5000/auth/coachregistration',{
-              method:"POST",
-              body: JSON.stringify(data),// create a formBody
-              headers: {
-                "Content-Type": "application/json",
-              },
-          })
-          .then((res)=>{
-            const  data = res.json();
-            return data;
-          })
-          .then((data)=>{
-            console.log(data);
-            // {coachData: id}
-          })
-          .catch((err)=>{
-            console.error(err);
-            // Later change this to alters 
-          });
-        }else{
-          const data = {
-            role: role,
-            UserName: username,
-            Email: email,
-            Password: password,
-            Level: level,
-            Status:  "active",
+    // Ensure password and confirm password match
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
 
+    // Set up the data object to match the backend structure
+    const data = {
+      UserName: username,
+      Email: email,
+      Password: password,
+      Role: role,
+      Status: "Active",
+      ...(role === "player" && { Level: level }), // Only include Level if the role is player
+      ...(role === "coach" && { Fide_id: fideId }) // Only include Fide_id if the role is coach
+    };
 
-  
-            // All other states
-          }
-          fetch('http://localhost:5000/auth/playerregistration',{
-            method:"POST",
-            body: JSON.stringify(data),// create a formBody
-            headers: {
-              "Content-Type": "application/json",
-            },
-          })
-          .then((res)=>{                              
-            const  data = res.json();
-            return data;
-          })
-          .then((data)=>{
-            console.log(data);
-            // {playerData: id}
-          })
-          .catch((err)=>{
-            console.error(err);
-            // Later change this to alters 
-          });
-        } 
-  }
+    // Perform the fetch request
+    fetch("http://localhost:3000/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        // Handle successful registration (e.g., redirect or display success message)
+      })
+      .catch((err) => {
+        console.error(err);
+        // Display error message
+      });
+  };
+
   return (
     <div className="form-block">
       <div className="form-block__header">
         <h1>Sign Up</h1>
       </div>
       <form id="user-info" onSubmit={handleSubmit}>
-
         <div className="form-block__input-wrapper">
           <input
             type="text"
             placeholder="UserName"
             className="form-group__input"
+            value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
         </div>
 
         <div className="form-block__input-wrapper">
-          <select 
-            className="form-group__input" 
-            value={role} 
+          <select
+            className="form-group__input"
+            value={role}
             onChange={(e) => setRole(e.target.value)}
             required
           >
@@ -370,26 +331,27 @@ function SignupForm() {
         </div>
 
         {role === "coach" && (
-          <div className="form-block__input-wrapper_FIDE_ID">
+          <div className="form-block__input-wrapper">
             <input
               type="text"
               placeholder="FIDE ID"
               className="form-group__input"
-              onChange={(e) => setFide_id(e.target.value)}
+              value={fideId}
+              onChange={(e) => setFideId(e.target.value)}
               required
             />
           </div>
         )}
 
         {role === "player" && (
-          <div className="form-block__input-wrapper_FIDE_ID">
-            <select 
+          <div className="form-block__input-wrapper">
+            <select
               className="form-group__input"
               value={level}
               onChange={(e) => setLevel(e.target.value)}
               required
             >
-              <option value="" disabled hidden selected>
+              <option value="" disabled hidden>
                 Level
               </option>
               <option value="beginner">Beginner</option>
@@ -404,6 +366,7 @@ function SignupForm() {
             type="email"
             placeholder="Email"
             className="form-group__input"
+            value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
@@ -414,6 +377,7 @@ function SignupForm() {
             type="password"
             placeholder="Password"
             className="form-group__input"
+            value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
@@ -424,7 +388,8 @@ function SignupForm() {
             type="password"
             placeholder="Confirm Password"
             className="form-group__input"
-            onChange={(e) => setPassword(e.target.value)}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
         </div>

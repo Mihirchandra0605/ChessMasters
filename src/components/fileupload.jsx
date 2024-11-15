@@ -1,19 +1,40 @@
 import React, { useState } from 'react';
 import '../styles/fileupload.css';
-import {Link} from 'react-router-dom'
+import { Link } from 'react-router-dom';
+
 const FileUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState(null);
   const [fileType, setFileType] = useState('article'); // default to article
+  const [title, setTitle] = useState(''); // title for the article
+  const [content, setContent] = useState(''); // content/description for the article
 
   const handleFileChange = (event) => {
     setSelectedFiles(event.target.files);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     if (selectedFiles) {
-      // handle file upload logic here
-      console.log(`Uploading ${fileType}:`, selectedFiles);
+      const formData = new FormData();
+      formData.append('file', selectedFiles[0]); // Add file to FormData
+      formData.append('title', title);
+      formData.append('content', content);
+
+      try {
+        const response = await fetch('http://localhost:3000/coach/addArticle', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          console.log("Article uploaded successfully!");
+        } else {
+          console.error("Failed to upload article.");
+        }
+      } catch (error) {
+        console.error("Error uploading article:", error);
+      }
     } else {
       alert("Please select a file to upload");
     }
@@ -23,6 +44,23 @@ const FileUpload = () => {
     <div className="upload-container">
       <h2>Upload {fileType === 'article' ? 'Article' : 'Video'}</h2>
       <form onSubmit={handleSubmit}>
+        <label>
+          Title:
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Content:
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+          />
+        </label>
         <label className="file-label">
           Select File:
           <input
@@ -51,8 +89,11 @@ const FileUpload = () => {
             Video
           </label>
         </div>
-        <Link to="/CoachDashboard"><button type="submit" className="upload-btn">Upload</button></Link>
+        <button type="submit" className="upload-btn">Upload</button>
       </form>
+      <Link to="/CoachDashboard">
+        <button className="back-btn">Back to Dashboard</button>
+      </Link>
     </div>
   );
 };
