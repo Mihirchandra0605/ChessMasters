@@ -1,13 +1,19 @@
 import React, { useRef, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import "../styles/index.css";
 import Navbar from "./Navbar.jsx";
 import NavbarPlay from "./navbarplay.jsx"; // Assuming you have a separate Navbar component for players
 
 function HomePage() {
-  const [role] = useSearchParams()
-  console.log('role', role.get('role'))
-  const [isPlayer, setIsPlayer] = useState(role.get('role')=='player' ? true : false); // Update the state based on the user's role
+  const navigate = useNavigate();
+
+  const handlePlayNowClick = () => {
+    navigate('/ChessBoard');
+  };
+
+  const [role] = useSearchParams();
+  console.log('role', role.get('role'));
+  const [isPlayer, setIsPlayer] = useState(role.get('role') === 'player' ? true : false); // Update the state based on the user's role
 
   // Refs to access DOM elements
   const gameScrollContainerRef = useRef(null);
@@ -90,7 +96,7 @@ function HomePage() {
       <div id="content">
         <div className="section_content">
           <h1 className="heading">Welcome back, UserName!</h1>
-          <button id="play_button">Play Now!</button>
+          <button id="play_button" onClick={handlePlayNowClick}>Play Now!</button>
         </div>
 
         <div className="section_content">

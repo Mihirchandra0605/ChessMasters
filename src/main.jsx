@@ -16,6 +16,7 @@ import FileUpload from "./components/fileupload.jsx";
 import CoachesAvaialble from "./components/coachesavailable.jsx";
 import AddCoachForm from "./components/AddDetails.jsx";
 import ArticleDetail from "./components/ArticleDetails.jsx";
+import ChessBoard from "./components/Chessboard.jsx";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -40,6 +41,7 @@ function App() {
         { path: '/Coachdash/:id', element: <Coachdash/>},
         { path: '/Upload', element: <FileUpload /> },
         { path: '/ArticleDetail/:id', element: <ArticleDetail /> },
+        { path: '/ChessBoard', element: <ChessBoard /> }
     ]);
 
     return <RouterProvider router={router} />;
