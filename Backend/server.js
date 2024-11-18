@@ -1,3 +1,5 @@
+// server.js
+
 import express from "express";
 import { mongoose } from "mongoose";
 import cors from "cors";
@@ -10,7 +12,11 @@ import authRouter from "./routers/auth.js";
 // import coachRouter from "./routers/Coach.js";
 
 import cookieParser from "cookie-parser";
-
+import authRoutes from "./routes/authRoutes.js";
+import playerRoutes from './routes/playerRoutes.js'
+import coachRoutes from './routes/coachRoutes.js'
+import gameRoutes from './routes/gameRoutes.js'
+import adminRoutes from './routes/adminRoutes.js'
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -48,8 +54,20 @@ app.post("/add-player", async (req, res) => {
 });
 
 // Routes
-app.use("/auth", authRouter);
-// app.use("/player", playerRouter);
-// app.use("/coach", coachRouter);
+app.use("/auth", authRoutes);
+app.use("/player", playerRoutes);
+app.use("/coach", coachRoutes);
+app.use("/game",gameRoutes );
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+app.use('/admin', adminRoutes);
+// Database connection
+mongoose.connect("mongodb://0.0.0.0:27017/chessApp").then(() => {
+  console.log("Connected to MongoDB");
+}).catch((error) => {
+  console.error("Error connecting to MongoDB:", error);
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

@@ -1,102 +1,126 @@
-/* .chessboard-container {
-    display: flex;
-    justify-content: center;
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
+
+/* body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #1e1e1e;
+  color: #fff;
+} */
+
+.chess-container {
+  display: flex;
+  flex-direction: row; /* Arrange children horizontally */
+  min-height: 100vh;
+  width: 100%;
+}
+
+.chessboard-container {
+  flex: 0 0 auto; /* Prevent flex item from growing */
+  margin-left: 150px; /* Move the board to the right */
+  padding: 40px;
+  display: flex;
+  align-items: center; /* Vertically center the board */
+  justify-content: center;
+}
+
+.chessboard-container .rc-chessboard {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+}
+
+.move-history {
+  flex: 1; /* Allow move history to take remaining space */
+  background-color: #2a2a2a;
+  padding: 20px;
+  min-height: 100vh;
+  overflow-y: auto;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.move-history h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: 500;
+  color: #fff;
+  border-bottom: 1px solid #444;
+  padding-bottom: 10px;
+}
+
+/* Beautify move history */
+.move-history ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.move-history li {
+  padding: 12px 10px;
+  border-bottom: 1px solid #3a3a3a;
+  color: #ddd;
+  font-size: 16px;
+  transition: background 0.3s;
+}
+
+.move-history li:nth-child(odd) {
+  background-color: #333;
+}
+
+.move-history li:nth-child(even) {
+  background-color: #2e2e2e;
+}
+
+.move-history li:hover {
+  background-color: #444;
+}
+
+.game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(30, 30, 30, 0.95);
+  padding: 30px 40px;
+  border-radius: 10px;
+  text-align: center;
+  color: #fff;
+}
+
+.game-over p {
+  margin: 10px 0;
+  font-size: 18px;
+}
+
+.chessboard-container .rc-chessboard-board {
+  border-radius: 10px;
+}
+
+@media screen and (max-width: 768px) {
+  .chess-container {
+    flex-direction: column;
     align-items: center;
-    height: 100vh; 
-    background-color: #f5f5f5; 
   }
-  
-  body {
-    display: flex;
-    justify-content: center; 
-    align-items: center; 
-    height: 100vh; 
-    margin: 0; 
-  }
-  
-  .chessboard {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr); 
-    grid-template-rows: repeat(8, 1fr);
-    width: 80vmin; 
-    height: 80vmin; 
-    border: 2px solid #333;
-  }
-  
-  .square {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0vmin; 
-  }
-  
-  .white {
-    background-color: #f0d9b5;
-  }
-  
-  .black {
-    background-color: #b58863;
-  }
-  
-  .piece {
-    color: #000;
-    font-weight: 900;
-    font-size: 8vh;
-  } */
-  /* .chessboard {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    width: 400px;
-    height: 400px;
-  }
-  
-  .square {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem;
-    cursor: pointer;
-  }
-  
-  .white {
-    background-color: #f0d9b5;
-  }
-  
-  .black {
-    background-color: #b58863;
-  }
-  
-  .selected {
-    background-color: #ffcc00;
-  }*/
 
-  .chessboard {
-    display: grid;
-    grid-template-columns: repeat(8, 60px); /* Adjust square size */
-    grid-template-rows: repeat(8, 60px); /* Adjust square size */
+  .chessboard-container {
+    margin-left: 0;
+  }
+
+  .chessboard-container,
+  .move-history {
+    width: 100%;
+    flex: none;
+  }
+
+  .move-history {
+    min-height: initial;
+    border-left: none;
+    border-top: 1px solid #444;
+  }
 }
 
-.square {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2rem; /* Adjust font size for pieces */
-}
-
-.white {
-    background-color: #f0d9b5;
-}
-
-.black {
-    background-color: #b58863;
-}
-
-.selected {
-    background-color: yellow; /* Highlight selected square */
-}
-
-.turn {
-    margin-top: 20px;
-}
+.loading {
+    color: #fff;
+    text-align: center;
+    margin-top: 50px;
+    font-size: 24px;
+  }

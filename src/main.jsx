@@ -13,6 +13,7 @@ import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import Dashboard from "./components/admin_dashboard.jsx";
 import FileUpload  from "./components/fileupload.jsx";
 import CoachesAvaialble from "./components/coachesavailable.jsx";
+<<<<<<< Updated upstream
 
 
 const router = createBrowserRouter([
@@ -30,6 +31,36 @@ const router = createBrowserRouter([
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+=======
+import AddCoachForm from "./components/AddDetails.jsx";
+import ArticleDetail from "./components/ArticleDetails.jsx";
+import Chessboard from "./components/Chessboard.jsx";
+
+function App() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    
+    function handleLogin() {
+        setIsLoggedIn(true);
+    };
+    
+    const router = createBrowserRouter([
+        { path: '/', element: <Greeting onLoginSuccess={handleLogin} /> },
+        { path: '/AdminDashboard', element: <Dashboard /> },
+        { path: '/CoachDashboard', element: <CoachDashboard /> },
+        { path: '/PlayerDashboard', element: <Profile /> },
+        { path: '/CoachProfiles', element: <Coachprofile /> },
+        { path: '/CoachInfo/:id', element: <Coachdash /> },
+        { path: '/Profile', element: <Profile /> },
+        { path: '/CoachProfile', element: <CProfile /> },
+        { path: '/Index', element: <HomePage /> },
+        { path: '/CoachesAvailable', element: <CoachesAvaialble /> },
+        { path: '/AddData', element: <AddCoachForm /> },
+        { path: '/coaches', element: <CoachesAvaialble/>},
+        { path: '/Coachdash/:id', element: <Coachdash/>},
+        { path: '/Upload', element: <FileUpload /> },
+        { path: '/Chessboard', element: <Chessboard /> }, // Add this line
+    ]);
+>>>>>>> Stashed changes
 
   const handleLogin = () => {
     setIsLoggedIn(true);

@@ -1,8 +1,25 @@
 import React, { useRef, useEffect } from "react";
 import "../styles/index.css";
 import Navbar from "./Navbar.jsx";
+<<<<<<< Updated upstream
 
 function HomePage() {
+=======
+import NavbarPlay from "./navbarplay.jsx"; // Assuming you have a separate Navbar component for players
+import { useNavigate } from 'react-router-dom';
+
+function HomePage() {
+  const [role] = useSearchParams()
+  console.log('role', role.get('role'))
+  const [isPlayer, setIsPlayer] = useState(role.get('role')=='player' ? true : false); // Update the state based on the user's role
+
+  const navigate = useNavigate();
+
+    const handlePlayNowClick = () => {
+        navigate('/Chessboard');
+    };
+
+>>>>>>> Stashed changes
   // Refs to access DOM elements
   const gameScrollContainerRef = useRef(null);
   const scrollLeftRef = useRef(null);
@@ -83,8 +100,12 @@ function HomePage() {
       <div id="content">
         <div className="section_content">
           <h1 className="heading">Welcome back, UserName!</h1>
+<<<<<<< Updated upstream
 
           <button id="play_button">Play Now!</button>
+=======
+          <button onClick={handlePlayNowClick}>Play Now</button>
+>>>>>>> Stashed changes
         </div>
 
         <div className="section_content">
