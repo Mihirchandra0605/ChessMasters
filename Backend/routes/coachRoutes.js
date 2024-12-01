@@ -5,6 +5,7 @@ import {
   getCoachById,
   getSubscribedPlayers,
   addArticle,
+  addVideo,
   completeProfile,
   getArticles,
   getArticleById,
@@ -21,6 +22,7 @@ router.get("/coaches", getAllCoaches);
 router.get("/:id", getCoachById);
 router.get("/subscribedPlayers", isCoach, getSubscribedPlayers);
 router.post("/addArticle", isCoach, addArticle);
+router.post("/addVideo", isCoach, addVideo);
 router.get("/getArticles", isCoach, getArticles);
 router.get("/Articledetail/:id", isCoach, getArticleById);
 

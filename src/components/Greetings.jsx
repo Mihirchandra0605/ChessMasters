@@ -48,7 +48,6 @@ function Greeting({onLoginSuccess}) {
                 Sign Up
               </button>
             </div>
-            <img className="arrow" src="/public/down.png" alt="down arrow" />
           </div>
           
         </>

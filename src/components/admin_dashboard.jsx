@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   BsFillArchiveFill, BsPeopleFill, BsFillBellFill, BsFillEnvelopeFill, BsFillFileEarmarkTextFill, 
   BsPlayCircle, BsGraphUp, BsFillBarChartLineFill, BsFillPersonLinesFill, BsCashStack, 
@@ -9,10 +9,41 @@ import {
 } from 'recharts';
 import "../styles/admin_dashboard.css"
 import AdminNav from './adminnav.jsx';
+import axios from 'axios';
 
 
 const Dashboard = () => {
   console.log("yayy");
+  const[players , setplayers]= useState([])
+  const[coaches , setcoaches]= useState([])
+  const fetchPlayers = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/admin/players");
+      console.log("Players fetched:", response.data); // Debugging output
+      setplayers(response.data); // Assuming response.data contains the array of players
+    } catch (error) {
+      console.error("Error fetching players:", error); // Log the error
+    }
+  };
+  const fetchCoahes = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/admin/coaches");
+      console.log("Players fetched:", response.data); // Debugging output
+      setcoaches(response.data); // Assuming response.data contains the array of players
+    } catch (error) {
+      console.error("Error fetching players:", error); // Log the error
+    }
+  };
+  const fetchArticles = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/admin/articles");
+      console.log("Players fetched:", response.data); // Debugging output
+      setArticles(response.data); // Assuming response.data contains the array of players
+    } catch (error) {
+      console.error("Error fetching players:", error); // Log the error
+    }
+  };
+
   const data = [
     { name: 'Day 1', uv: 4000, pv: 2400 },
     { name: 'Day 2', uv: 3000, pv: 1398 },
@@ -34,14 +65,11 @@ const Dashboard = () => {
   ];
 
   // New state for articles and users
-  const [articles, setArticles] = useState([
-    { id: 1, title: 'Article 1', content: 'Content of article 1' },
-    { id: 2, title: 'Article 2', content: 'Content of article 2' },
-  ]);
+  const [articles, setArticles] = useState([  ]);
 
   const [users, setUsers] = useState([
-    { id: 1, name: 'User 1', type: 'Coach', premium: true, rating: 4.5 },
-    { id: 2, name: 'User 2', type: 'Standard', premium: false, rating: 3.8 },
+    // { id: 1, name: 'User 1', type: 'Coach', premium: true, rating: 4.5 },
+    // { id: 2, name: 'User 2', type: 'Standard', premium: false, rating: 3.8 },
   ]);
 
   const [searchTermArticles, setSearchTermArticles] = useState('');
@@ -51,18 +79,76 @@ const Dashboard = () => {
     article.title.toLowerCase().includes(searchTermArticles.toLowerCase())
   );
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTermUsers.toLowerCase())
+  const filteredUsers = (players || []).filter(user =>
+    user.name?.toLowerCase().includes(searchTermUsers.toLowerCase())
   );
+  
 
-  const deleteArticle = (id) => {
-    setArticles(articles.filter(article => article.id !== id));
-  };
+  // const deleteArticle = (id) => {
+  //   setArticles(articles.filter(article => article.id !== id));
+  // };
+  const deleteArticle = async (id) => {
+    if (window.confirm("Are you sure you want to delete this article?")) {
+        try {
+            // Send a DELETE request to the backend
+            const response = await axios.delete(`http://localhost:3000/admin/articles/${id}`);
+            
+            if (response.status === 200) {
+                // Update frontend state only if the deletion is successful
+                // setArticles(articles.filter(article => article._id !== id));
+                fetchArticles()
+                console.log("Article deleted successfully");
+            } else {
+                console.error("Failed to delete article");
+            }
+        } catch (error) {
+            console.error("Error deleting article:", error);
+        }
+    }
+};
 
-  const deleteUser = (id) => {
-    setUsers(users.filter(user => user.id !== id));
-  };
 
+  // const deleteUser = (id) => {
+  //   setUsers(users.filter(user => user.id !== id));
+  // };
+
+  const deleteUser = async (id) => {
+    try {
+        // Make a DELETE request to the backend
+        const response = await axios.delete(`http://localhost:3000/admin/users/${id}`);
+        if (response.status === 200) {
+            // Update frontend state only if the deletion is successful
+            fetchPlayers()
+            console.log("User deleted successfully");
+        } else {
+            console.error("Failed to delete user");
+        }
+    } catch (error) {
+        console.error("Error deleting user:", error);
+    }
+};
+  const deleteCoach = async (id) => {
+    try {
+        // Make a DELETE request to the backend
+        const response = await axios.delete(`http://localhost:3000/admin/coaches/${id}`);
+        if (response.status === 200) {
+            // Update frontend state only if the deletion is successful
+            fetchCoahes()
+            console.log("User deleted successfully");
+        } else {
+            console.error("Failed to delete user");
+        }
+    } catch (error) {
+        console.error("Error deleting user:", error);
+    }
+};
+
+  useEffect(() => {
+    fetchPlayers();
+    fetchCoahes()
+    fetchArticles()
+  }, []); // Empty dependency array ensures this runs only once on mount
+  
   return (
     <main className='main-container'> 
     <AdminNav/>    
@@ -78,7 +164,7 @@ const Dashboard = () => {
             <h3>Users</h3>
             <BsPeopleFill className='card_icon' />
           </div>
-          <h1>45 Players, 10 Coaches</h1>
+          <h1>{ players&& players.length} Players, { coaches&& coaches.length} Coaches</h1>
         </div>
         {/* User Activity */}
         <div className='card'>
@@ -94,7 +180,7 @@ const Dashboard = () => {
             <h3>Articles & Videos</h3>
             <BsFillFileEarmarkTextFill className='card_icon' />
           </div>
-          <h1>12 Articles, 5 Videos</h1>
+          <h1>{articles.length} Articles, 5 Videos</h1>
         </div>
         {/* Analytics */}
         <div className='card'>
@@ -187,7 +273,7 @@ const Dashboard = () => {
           {filteredArticles.map(article => (
             <li key={article.id}>
               {article.title}
-              <button onClick={() => deleteArticle(article.id)}>Delete</button>
+              <button onClick={() => deleteArticle(article._id)}>Delete</button>
               {/* Edit functionality can be added here */}
             </li>
           ))}
@@ -204,10 +290,29 @@ const Dashboard = () => {
           onChange={e => setSearchTermUsers(e.target.value)} 
         />
         <ul>
-          {filteredUsers.map(user => (
+          {players.map(user => (
+            <li key={user._id}>
+              {user.UserName} - {user.type} - {user.premium ? 'Premium' : 'Standard'} - Rating: {user.rating}
+              <button onClick={() => deleteUser(user._id)}>Delete</button>
+              {/* Edit functionality can be added here */}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {/* coach Section */}
+      <div className='users-section'>
+        <h3>coaches</h3>
+        <input 
+          type='text' 
+          placeholder='Search Users...' 
+          value={searchTermUsers} 
+          onChange={e => setSearchTermUsers(e.target.value)} 
+        />
+        <ul>
+          {coaches.map(user => (
             <li key={user.id}>
-              {user.name} - {user.type} - {user.premium ? 'Premium' : 'Standard'} - Rating: {user.rating}
-              <button onClick={() => deleteUser(user.id)}>Delete</button>
+              {user.user.UserName} - {user.user.Role} - {user.premium ? 'Premium' : 'Standard'} - Rating: {user.rating}
+              <button onClick={() => deleteCoach(user._id)}>Delete</button>
               {/* Edit functionality can be added here */}
             </li>
           ))}

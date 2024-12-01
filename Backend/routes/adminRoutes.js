@@ -7,6 +7,7 @@ import {
     getAllCoaches,
     getAllPlayers,
     getAllGames,
+    getAllArticles,
     adminLogin
 } from '../controllers/adminControllers.js';
 import { isAdmin } from '../middlewares/isAdmin.js';
@@ -19,7 +20,8 @@ router.delete('/coaches/:coachId', deleteCoach);
 router.delete('/articles/:articleId', deleteArticle);
 router.delete('/games/:gameId', deleteGame);
 
-router.get('/coaches', isAdmin,getAllCoaches);
+router.get('/articles',getAllArticles);
+router.get('/coaches',getAllCoaches);
 router.get('/players', getAllPlayers);
 router.get('/games', getAllGames);
 export default router;

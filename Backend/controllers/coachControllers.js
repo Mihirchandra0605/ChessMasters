@@ -2,6 +2,7 @@
 import CoachDetails from "../models/CoachModel.js";
 import ArticleModel from "../models/articleModel.js"; // for default export
 import UserModel  from "../models/userModel.js";
+import videoModel from "../models/videoModel.js";
 import jwt from "jsonwebtoken";
 import upload from '../middlewares/uploadMiddleware.js';
 import { jwtSecretKey } from "../config.js";
@@ -104,6 +105,35 @@ export const addArticle = [
       res.status(201).json({ message: "Article added successfully", article });
     } catch (error) {
       console.error("Error adding article:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+];
+
+export const addVideo = [
+  upload.single('file'),
+  async (req, res) => {
+    try {
+      const { title, content } = req.body; 
+      const coachId = req.userId; 
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+
+      // Create a new video document
+      const video = new videoModel({
+        coach: coachId,
+        title,
+        content,
+        filePath: req.file.path, 
+      });
+
+      await video.save(); 
+
+      res.status(201).json({ message: "Video added successfully", video });
+    } catch (error) {
+      console.error("Error adding video:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   }

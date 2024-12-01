@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 
 const FileUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState(null);
-  const [fileType, setFileType] = useState('article'); // default to article
-  const [title, setTitle] = useState(''); // title for the article
-  const [content, setContent] = useState(''); // content/description for the article
+  const [fileType, setFileType] = useState('article'); // Default to article
+  const [title, setTitle] = useState(''); // Title for the article/video
+  const [content, setContent] = useState(''); // Content/description for the article/video
+  const [uploadMessage, setUploadMessage] = useState(''); // Message to display upload status
 
   const handleFileChange = (event) => {
     setSelectedFiles(event.target.files);
@@ -21,22 +22,31 @@ const FileUpload = () => {
       formData.append('content', content);
 
       try {
-        const response = await fetch('http://localhost:3000/coach/addArticle', {
+        const endpoint =
+          fileType === 'article'
+            ? 'http://localhost:3000/coach/addArticle'
+            : 'http://localhost:3000/coach/addVideo'; // Dynamic API endpoint
+
+        const response = await fetch(endpoint, {
           method: 'POST',
           body: formData,
-          credentials: 'include',
+          credentials: 'include', // Include cookies for authentication
         });
 
         if (response.ok) {
-          console.log("Article uploaded successfully!");
+          setUploadMessage(`${fileType.charAt(0).toUpperCase() + fileType.slice(1)} uploaded successfully!`);
+          setSelectedFiles(null);
+          setTitle('');
+          setContent('');
         } else {
-          console.error("Failed to upload article.");
+          setUploadMessage(`Failed to upload ${fileType}.`);
         }
       } catch (error) {
-        console.error("Error uploading article:", error);
+        console.error(`Error uploading ${fileType}:`, error);
+        setUploadMessage(`Error uploading ${fileType}.`);
       }
     } else {
-      alert("Please select a file to upload");
+      alert('Please select a file to upload');
     }
   };
 
@@ -54,7 +64,7 @@ const FileUpload = () => {
           />
         </label>
         <label>
-          Content:
+          Content/Description:
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -67,6 +77,7 @@ const FileUpload = () => {
             type="file"
             accept={fileType === 'article' ? '.pdf,.docx' : 'video/*'}
             onChange={handleFileChange}
+            required
           />
         </label>
         <div className="type-selector">
@@ -91,6 +102,7 @@ const FileUpload = () => {
         </div>
         <button type="submit" className="upload-btn">Upload</button>
       </form>
+      {uploadMessage && <p className="upload-message">{uploadMessage}</p>}
       <Link to="/CoachDashboard">
         <button className="back-btn">Back to Dashboard</button>
       </Link>

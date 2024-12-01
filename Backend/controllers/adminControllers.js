@@ -61,7 +61,7 @@ export const getAllCoaches = async (req, res) => {
 
 export const getAllPlayers = async (req, res) => {
     try {
-        const players = await UserModel.find({Role : "Player"});
+        const players = await UserModel.find({Role : "player"});
         res.status(200).json(players);
     } catch (error) {
         res.status(500).json({ message: "Error fetching players", error });
@@ -74,6 +74,14 @@ export const getAllGames = async (req, res) => {
         res.status(200).json(games);
     } catch (error) {
         res.status(500).json({ message: "Error fetching games", error });
+    }
+};
+export const getAllArticles = async (req, res) => {
+    try {
+        const articles = await ArticleModel.find();
+        res.status(200).json(articles);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching articles", error });
     }
 };
 

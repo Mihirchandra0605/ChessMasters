@@ -1,284 +1,137 @@
-.greeting {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    gap: 20px;
-    width: 100%;
-    background-image: url(/public/chess.jpg);
-}
-/* #greeting .h1{
-  color:white;
-} */
-/* Importing font */
-@import url('https://fonts.googleapis.com/css?family=Open+Sans:300,400,700');
-
-
-/* body {
-  font-family: 'Open Sans', sans-serif;
-  font-size: 16px;
+/* Greetings.css */
+#greeting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  min-height: 100vh;
   color: #fff;
-  margin: 0;
-  background-color: #f4f4f9;
-} */
+}
+
+#greeting .content {
+  text-align: center;
+  animation: fadeIn 1.2s ease-in-out;
+}
+
+#greeting .header-with-rooks {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+#greeting .header-with-rooks h1 {
+  font-size: 2.5rem;
+  margin: 0 1rem;
+  font-family: "Poppins", sans-serif;
+  color: #ffe57f;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+#greeting .header-with-rooks img {
+  width: 60px;
+  height: 60px;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+}
+
+#greeting .buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+#greeting .button {
+  padding: 0.8rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+#greeting .button--primary {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+#greeting .button--primary:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+}
+
+#greeting .button--primary:active {
+  transform: scale(0.98);
+}
 
 .form-block {
-  position: relative;
-  margin: 10px auto;
-  width: 285px;
-  padding: 25px;
-  background: rgba(255, 255, 255, 0.13);
-  border-radius: 2px; 
-  color: #fff;
-  box-shadow: 0px 0px 16px 9px rgba(0, 0, 0, 0.07);
-}
-
-.form-block__header {
-  margin-bottom: 10px;
+  max-width: 400px;
+  width: 90%;
+  margin: auto;
+  background: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: slideIn 1s ease-out;
 }
 
 .form-block__header h1 {
-  font-size: 30px;
-  margin: 0 0 20px;
+  margin: 0 0 1rem;
+  font-size: 2rem;
+  color: #ffe57f;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
 }
 
 .form-block__input-wrapper {
-  height: 110px; 
-  position: relative;
-  margin-bottom: 2px;
-  transition: all 0.25s cubic-bezier(.36, 1, .62, .98) 0.3s;
+  margin-bottom: 1.2rem;
 }
 
 .form-group__input {
-  display: block;
-  font-size: 15px;
-  color: #fff;
   width: 100%;
-  box-sizing: border-box;
-  padding: 14px 10px;
-  margin-bottom: 15px;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .form-group__input:focus {
-  outline: none;
-  border: 1px solid #fff;
-  background: transparent;
+  border-color: #6a11cb;
+  box-shadow: 0 0 8px rgba(106, 17, 203, 0.5);
 }
 
-.button {
-  display: inline-block;
-  padding: 15px 12px;
-  margin-bottom: 0;
-  font-size: 16px;
-  font-weight: 400;
-  text-transform: uppercase;
-  text-align: center;
-  white-space: nowrap;
-  vertical-align: middle;
-  cursor: pointer;
-  background-image: none;
-  border: none;
-  border-radius: 2px; 
-  transition: all 0.2s ease-in-out;
-  box-shadow: 0px 0px 13px 8px rgba(0, 0, 0, 0.1);
+.form-group__input::placeholder {
+  color: #aaa;
 }
 
-.button--primary {
-  background: #ED6A5E; 
-  color: #fff;
-}
-
-.button:hover {
-  box-shadow: 0px 0px 18px 15px rgba(0, 0, 0, 0.15);
-}
-
-.full-width {
+.button.full-width {
   width: 100%;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
-.form-block__input-wrapper_FIDE_ID {
-  animation: fadeIn 1s ease-out forwards;
-
-  display: block;
-  font-size: 15px;
-  color: #fff;
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 10px;
-  margin-bottom: 15px;
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 1px;
-}
-
-.greeting > * {
-    animation: fadeIn 1s ease-out forwards;
+@keyframes slideIn {
+  from {
     opacity: 0;
-    will-change: transform, opacity;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.content {
-    display: flex;
-    flex-direction: column; 
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 1s ease-out forwards;
-    gap: 20px;
+    transform: translateX(-30px);
   }
-
-  .header-with-rooks {
-    margin-top: 120px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
-  
-.buttons {
-    display: flex;
-    gap: 10px;
 }
-
-.button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-}
-
-.login {
-    background-color: #007bff;
-    color: white;
-}
-
-.signup {
-    background-color: #28a745;
-    color: white;
-}
-
-.button:hover {
-    transform: scale(1.05);
-}
-
-.rook{
-    height: 90px;
-}
-
-.login-form,
-.signup-form {
-  max-width: 300px;
-  margin: auto;
-  padding: 20px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: left;
-}
-
-form > div {
-  margin-bottom: 15px;
-}
-
-label {
-  display: block;
-  margin-bottom: 5px;
-  color: #333;
-}
-
-input[type="email"],
-input[type="password"] {
-  width: calc(100% - 20px);
-  padding: 10px;
-  margin-top: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-button[type="submit"] {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  border: none;
-  color: white;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-button[type="submit"]:hover {
-  background-color: #0056b3;
-}
-
-
-
-.rook{
-    height: 80px;
-}
-
-/* Arrow animation */
-.arrow {
-    margin-top: 120px; /* Adds space above the arrow */
-    width: 100px; /* Adjust the size of the arrow */
-    height: 100px;
-    animation: bob 1.5s infinite; /* Animation for the bobbing effect */
-  }
-  
-  @keyframes bob {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  body.scroll-lock {
-    overflow: hidden;
-    position: fixed;
-    width: 100%;
-  }
-
- 
-.video-container {
-  position: relative;
-  width: 100%;
-  height: auto;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px; /* Adjust as needed */
-}
-
-.background-video {
-  width: 100%;
-  max-height: 50%; /* Adjust height as needed */
-  object-fit: cover;
-  z-index: -1;
-}
-
-  
-
