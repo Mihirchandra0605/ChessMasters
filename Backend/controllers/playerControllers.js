@@ -64,21 +64,24 @@ export const subscribeToCoach = async (req, res) => {
   }
 };
 
+
 export const getSubscribedCoaches = async (req, res) => {
-  const { playerId } = req.params;
-  
   try {
-    // Find the player's subscriptions by their player ID
-    const player = await UserModel.findById(playerId).populate('subscribedCoaches');
+    const { playerId } = req.params;
+
+    const player = await UserModel.findById(playerId).populate({
+      path: 'subscribedCoaches',
+      select: 'user Fide_id quote location languages rating hourlyRate'
+    });
+
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
-    
-    const subscribedCoaches = player.subscribedCoaches;
-    res.status(200).json(subscribedCoaches);
+
+    res.status(200).json(player.subscribedCoaches);
   } catch (error) {
     console.error("Error fetching subscribed coaches:", error);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 

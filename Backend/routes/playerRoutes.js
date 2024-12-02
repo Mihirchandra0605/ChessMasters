@@ -13,7 +13,7 @@ const router = Router();
 router.get("/details", isPlayer, getPlayerDetails);
 router.get("/:id", getPlayerDetailsById);
 router.post("/subscribe", isPlayer, subscribeToCoach);
-router.get("/:id/subscribedCoaches", getSubscribedCoaches);
+router.get("/:playerId/subscribedCoaches", getSubscribedCoaches);
 router.get("/:id/subscriptionstatus", subscriptionStatus);
 
 export default router;

@@ -40,8 +40,14 @@ const Profile = () => {
         });
         setLoading(false);
 
-        const coachesResponse = await axios.get(`http://localhost:3000/player/${id}/subscribedCoaches`);
+        const coachesResponse = await axios.get(`http://localhost:3000/player/${id}/subscribedCoaches`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: true,
+        });
         setSubscribedCoaches(coachesResponse.data);
+        
       } catch (error) {
         console.error('Error fetching player details:', error);
         setLoading(false);
@@ -166,23 +172,26 @@ const Profile = () => {
               className="flex overflow-x-auto space-x-4 py-4 px-8 scrollbar-hide"
             >
               {subscribedCoaches.length > 0 ? (
-                subscribedCoaches.map((coach) => (
-                  <div key={coach._id} className="flex-none w-48">
-                    <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
-                      <img src={coach.imageUrl || "/default-image.png"} alt={coach.name} className="w-full h-32 object-cover rounded-md mb-2" />
-                      <h3 className="font-semibold text-gray-800 mb-2">{coach.name}</h3>
-                      <button
-                        onClick={() => console.log(`Unsubscribing from ${coach.name}`)}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
-                      >
-                        Unsubscribe
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-600">No subscribed coaches</p>
-              )}
+  subscribedCoaches.map((coach) => (
+    <div key={coach._id} className="flex-none w-48">
+      <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
+        <img src={coach.imageUrl || "/default-image.png"} alt={coach.user.UserName} className="w-full h-32 object-cover rounded-md mb-2" />
+        <h3 className="font-semibold text-gray-800 mb-2">{coach.user.UserName}</h3>
+        <p className="text-gray-600">{coach.location}</p>
+        <p className="text-gray-600">Rating: {coach.rating}</p>
+        <button
+          onClick={() => console.log(`Unsubscribing from ${coach.user.UserName}`)}
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+        >
+          Unsubscribe
+        </button>
+      </div>
+    </div>
+  ))
+) : (
+  <p className="text-gray-600">No subscribed coaches</p>
+)}
+
             </div>
 
             <button

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const LogoutButton = () => {
@@ -42,18 +42,24 @@ const NavButton = ({ to, children }) => (
 );
 
 const Navbar = () => {
-  const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+  const playerId = localStorage.getItem('userId');
+  console.log(playerId);
+  const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png";
 
   return (
     <nav className="bg-purple-600 shadow-lg">
       <div className="max-w-full mx-auto">
         <div className="flex items-stretch">
           <div className="flex-shrink-0 flex items-center px-4 bg-purple-700 hover:bg-purple-800 transition-all duration-300">
-            <img className="h-12 w-12 rounded-full transform hover:rotate-180 transition-all duration-500" src={logoSrc} alt="Chess Logo" />
+            <img
+              className="h-12 w-12 rounded-full transform hover:rotate-180 transition-all duration-500"
+              src={logoSrc}
+              alt="Chess Logo"
+            />
           </div>
           <NavButton to="/Index?role=player">Home</NavButton>
           <NavButton to="/CoachesAvailable">Coaches</NavButton>
-          <NavButton to="/Profile">Profile</NavButton>
+          {playerId && <NavButton to={`/player/${playerId}/profile`}>Profile</NavButton>}
           <LogoutButton />
         </div>
       </div>

@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { jwtDecode } from "jwt-decode";
+
+console.log(jwtDecode); // Replace with the name of your import
+
 
 function LoginForm({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
@@ -27,7 +31,19 @@ function LoginForm({ onLoginSuccess }) {
           });
 
           const data = await response.json();
-          setAuthResponse({ data, ok: response.ok });
+
+          if (response.ok) {
+            const token = data.token;
+            const decodedToken = jwtDecode(token); // Decode the JWT token
+            const userId = decodedToken.userId; // Extract userId from the payload
+            
+            console.log("userId", userId);
+            localStorage.setItem("userId", userId); // Store userId in local storage
+            setAuthResponse({ data, ok: response.ok });
+          } else {
+            console.error("Error during login:", data.message);
+            setAuthResponse({ data, ok: false });
+          }
         } catch (error) {
           console.error("Error during sign-in:", error);
           setAuthResponse({ data: null, ok: false, error });
