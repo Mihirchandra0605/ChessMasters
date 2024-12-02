@@ -52,7 +52,7 @@ const Coachdash = () => {
               <p className="text-gray-600">{profileData?.teachingMethodology || "Information not available."}</p>
             </section>
            
-            <Link to={"/pricingplans"} 
+            <Link to={"/pricingplans?coachId=${id}"} 
               className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-150 ease-in-out">
               Subscribe
               </Link>
