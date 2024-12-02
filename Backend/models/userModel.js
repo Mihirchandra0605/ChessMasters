@@ -1,15 +1,17 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 
-const { Schema, model } = mongoose;
+const { Schema, model } = mongoose; // Destructure Schema and model from mongoose
 
 const UserModelSchema = new Schema({
   UserName: { type: String, required: true, unique: true },
   Email: { type: String, required: true, unique: true },
   Password: { type: String, required: true },
   Status: { type: String, default: "Active" },
-  Role: { type: String, required: true, enum: ["player", "coach"] }, 
-  subscribedCoaches: [{ type: Schema.Types.ObjectId, ref: "CoachDetails" }], // will remain null(empty) in the case of coach
+  Role: { type: String, required: true, enum: ["player", "coach"] },
+  subscribedCoaches: [{ type: Schema.Types.ObjectId, ref: "CoachDetails" }],
+  gamesWon: { type: Number, default: 0 },
+  gamesLost: { type: Number, default: 0 },
 });
 
 UserModelSchema.pre("save", async function (next) {

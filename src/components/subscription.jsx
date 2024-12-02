@@ -78,23 +78,20 @@
 import React, { useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import '../styles/subscription.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const SubscriptionChart = () => {
-  // State to manage selected year
   const [selectedYear, setSelectedYear] = useState('2023');
 
-  // Hardcoded data for 2023 and 2024
   const data2023 = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     datasets: [
       {
         label: 'Monthly Subscriptions (2023)',
-        data: [10, 15, 12, 18, 20, 25, 23, 27, 29, 19, 31, 32], // Hardcoded 2023 subscription counts
-        backgroundColor: 'darkyellow',
-        borderColor: 'darkorange',
+        data: [10, 15, 12, 18, 20, 25, 23, 27, 29, 19, 31, 32],
+        backgroundColor: 'rgba(255, 159, 64, 0.8)',
+        borderColor: 'rgb(255, 159, 64)',
         borderWidth: 1,
       },
     ],
@@ -105,81 +102,86 @@ const SubscriptionChart = () => {
     datasets: [
       {
         label: 'Monthly Subscriptions (2024)',
-        data: [12, 18, 14, 22, 26, 30, 28, 32, 34, 22, 35, 36], // Hardcoded 2024 subscription counts
-        backgroundColor: 'darkblue',
-        borderColor: 'darkgreen',
+        data: [12, 18, 14, 22, 26, 30, 28, 32, 34, 22, 35, 36],
+        backgroundColor: 'rgba(54, 162, 235, 0.8)',
+        borderColor: 'rgb(54, 162, 235)',
         borderWidth: 1,
       },
     ],
   };
 
-  // Choose data based on selected year
   const data = selectedYear === '2023' ? data2023 : data2024;
 
   const options = {
     responsive: true,
-    maintainAspectRatio: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
         labels: {
           font: {
             size: 14,
+            weight: 'bold',
           },
-          color: 'darkorange',
+          color: '#4a5568',
         },
       },
       title: {
         display: true,
         text: `Coach Subscriptions Analysis (${selectedYear})`,
         font: {
-          size: 25,
+          size: 20,
+          weight: 'bold',
         },
-        color: 'black',
+        color: '#2d3748',
+        padding: {
+          top: 10,
+          bottom: 30
+        }
       },
     },
     scales: {
       x: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-          color: 'black',
-        },
         grid: {
-          color: 'rgba(0, 0, 0, 1)',
+          color: 'rgba(0, 0, 0, 0.1)',
         },
+        ticks: {
+          color: '#4a5568',
+        }
       },
       y: {
-        ticks: {
-          font: {
-            size: 12,
-          },
-          color: 'black',
-        },
         grid: {
-          color: 'rgba(0, 0, 0, 1)',
+          color: 'rgba(0, 0, 0, 0.1)',
         },
+        ticks: {
+          color: '#4a5568',
+        }
       },
     },
   };
 
   return (
-    <div className='subscription'>
-      {/* Dropdown to select year */}
-      <div className="year-selector">
-        <label htmlFor="year">Select Year: </label>
-        <select
-          id="year"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-        >
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-        </select>
+    <div className="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen p-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">Subscription Analysis</h1>
+          <div className="mb-6">
+            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">Select Year:</label>
+            <select
+              id="year"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <div className="h-96 mb-8">
+            <Bar data={data} options={options} />
+          </div>
+        </div>
       </div>
-      {/* Chart rendering based on selected year */}
-      <Bar data={data} options={options} />
     </div>
   );
 };

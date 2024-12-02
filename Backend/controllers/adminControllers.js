@@ -3,6 +3,7 @@
 import UserModel from '../models/userModel.js';
 import CoachDetails from '../models/CoachModel.js';
 import ArticleModel from '../models/articleModel.js';
+import VideoModel from '../models/videoModel.js';
 import GameModel from '../models/gameModel.js';
 import AdminModel from '../models/AdminModel.js';
 import bcrypt from "bcrypt";
@@ -37,6 +38,15 @@ export const deleteArticle = async (req, res) => {
         res.status(200).json({ message: "Article deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Error deleting article", error });
+    }
+};
+export const deleteVideo = async (req, res) => {
+    try {
+        const { videoId } = req.params;
+        await VideoModel.findByIdAndDelete(videoId);
+        res.status(200).json({ message: "video deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting video", error });
     }
 };
 
@@ -84,6 +94,26 @@ export const getAllArticles = async (req, res) => {
         res.status(500).json({ message: "Error fetching articles", error });
     }
 };
+export const getAllVideos = async (req, res) => {
+    try {
+        const coachId = req.userId;
+        console.log(coachId);
+        const videos = await CoachDetails.find(coachId).populate("videos");
+        res.status(200).json(videos);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching videos", error });
+    }
+};
+
+
+export const getvideos = async (req, res) =>{
+    try{
+        const videos = await VideoModel.find();
+        res.status(200).json(videos);
+    }catch{
+        res.status(500).json({ message: "Error fetching videos", error });
+    }
+}
 
 export const adminLogin = async (req, res) => {
     const { email, password } = req.body;

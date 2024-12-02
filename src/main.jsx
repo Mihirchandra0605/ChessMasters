@@ -1,6 +1,8 @@
 import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./main.css";
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
 import Greeting from "./components/Greetings.jsx";
 import Coach from "./components/coach.jsx";
 import Player from "./components/player.jsx";
@@ -17,6 +19,8 @@ import CoachesAvaialble from "./components/coachesavailable.jsx";
 import AddCoachForm from "./components/AddDetails.jsx";
 import ArticleDetail from "./components/ArticleDetails.jsx";
 import ChessBoard from "./components/Chessboard.jsx";
+import PricingPlans from "./components/PricingPlans.jsx"
+import PaymentPage from "./components/PaymentPage.jsx";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -41,10 +45,19 @@ function App() {
         { path: '/Coachdash/:id', element: <Coachdash/>},
         { path: '/Upload', element: <FileUpload /> },
         { path: '/ArticleDetail/:id', element: <ArticleDetail /> },
-        { path: '/ChessBoard', element: <ChessBoard /> }
+        { path: '/ChessBoard', element: <ChessBoard /> },
+        { path: '/pricingplans', element: <PricingPlans /> },
+        { path: '/payment', element: <PaymentPage /> },
+
+        
+        
     ]);
 
-    return <RouterProvider router={router} />;
+    return (
+        <Provider store={store}>
+            <RouterProvider router={router} />
+        </Provider>
+    );
 }
 
             // <StrictMode>

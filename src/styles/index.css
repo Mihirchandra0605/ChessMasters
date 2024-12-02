@@ -56,14 +56,17 @@ code {
 }
 
 /* Content styling */
+/* Content styling */
 #content {
     display: flex;
     flex-direction: column;
+    align-items: center; /* Center content horizontally */
     gap: 40px;
     padding: 30px 15px;
     max-width: 1200px;
     margin: 0 auto;
 }
+
 
 .section_content {
     display: flex;

@@ -44,6 +44,16 @@ const Dashboard = () => {
     }
   };
 
+  const fetchVideos = async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/admin/videos");
+      console.log("Players fetched:", response.data); // Debugging output
+      setVideos(response.data); // Assuming response.data contains the array of players
+    } catch (error) {
+      console.error("Error fetching players:", error); // Log the error
+    }
+  };
+
   const data = [
     { name: 'Day 1', uv: 4000, pv: 2400 },
     { name: 'Day 2', uv: 3000, pv: 1398 },
@@ -66,6 +76,7 @@ const Dashboard = () => {
 
   // New state for articles and users
   const [articles, setArticles] = useState([  ]);
+  const [videos, setVideos] = useState([  ]);
 
   const [users, setUsers] = useState([
     // { id: 1, name: 'User 1', type: 'Coach', premium: true, rating: 4.5 },
@@ -105,6 +116,25 @@ const Dashboard = () => {
             console.error("Error deleting article:", error);
         }
     }
+};
+
+const deleteVideo = async (id) => {
+  if (window.confirm("Are you sure you want to delete this video?")) {
+      try {
+          // Send a DELETE request to the backend
+          const response = await axios.delete(`http://localhost:3000/admin/videos/${id}`);  
+          if (response.status === 200) {
+              // Update frontend state only if the deletion is successful
+              // setArticles(articles.filter(article => article._id !== id));
+              fetchVideos()
+              console.log("video deleted successfully");
+          } else {
+              console.error("Failed to delete video");
+          }
+      } catch (error) {
+          console.error("Error deleting video:", error);
+      }
+  }
 };
 
 
@@ -147,6 +177,8 @@ const Dashboard = () => {
     fetchPlayers();
     fetchCoahes()
     fetchArticles()
+    fetchPlayers()
+    fetchVideos()
   }, []); // Empty dependency array ensures this runs only once on mount
   
   return (
@@ -180,7 +212,7 @@ const Dashboard = () => {
             <h3>Articles & Videos</h3>
             <BsFillFileEarmarkTextFill className='card_icon' />
           </div>
-          <h1>{articles.length} Articles, 5 Videos</h1>
+          <h1>{articles.length} Articles, {videos.length} Videos</h1>
         </div>
         {/* Analytics */}
         <div className='card'>
@@ -222,47 +254,21 @@ const Dashboard = () => {
           </div>
           <h1>120 Active</h1>
         </div>
-        {/* Security */}
+        {/* Security
         <div className='card'>
           <div className='card-inner'>
             <h3>Activity Logs</h3>
             <BsFillShieldLockFill className='card_icon' />
           </div>
           <h1>350 Events</h1>
-        </div>
+        </div> */}
       </div>
 
-      <div className='charts'>
-        {/* User Engagement Chart */}
-        <ResponsiveContainer width='100%' height='100%'>
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='name' />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type='monotone' dataKey='pv' stroke='#8884d8' />
-            <Line type='monotone' dataKey='uv' stroke='#82ca9d' />
-          </LineChart>
-        </ResponsiveContainer>
-
-        {/* Game Stats Chart */}
-        <ResponsiveContainer width='100%' height='100%'>
-          <BarChart data={data_users_added} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='name' />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey='playersAdded' fill='#8884d8' />
-            <Bar dataKey='coachesAdded' fill='#82ca9d' />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <br /><br /><br />
 
       {/* Articles & Videos Section */}
       <div className='articles-section'>
-        <h3>Articles & Videos</h3>
+        <h3>Articles</h3>
         <input 
           type='text' 
           placeholder='Search Articles...' 
@@ -279,6 +285,25 @@ const Dashboard = () => {
           ))}
         </ul>
       </div>
+      <div className='articles-section'>
+        <h3>Videos</h3>
+        <input 
+          type='text' 
+          placeholder='Search videos...' 
+          value={searchTermArticles} 
+          onChange={e => setSearchTermArticles(e.target.value)} 
+        />
+        <ul>
+          {videos.map(video => (
+            <li key={video.id}>
+              {video.title}
+              <button onClick={() => deleteVideo(video._id)}>Delete</button>
+              {/* Edit functionality can be added here */}
+            </li>
+          ))}
+        </ul>
+      </div>
+
 
       {/* Users Section */}
       <div className='users-section'>

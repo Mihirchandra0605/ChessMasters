@@ -1,16 +1,17 @@
-import  UserModel  from "../models/userModel.js";
+import UserModel from "../models/userModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { jwtSecretKey } from "../config.js";
-import  CoachDetails  from "../models/CoachModel.js";
-import AdminModel from "../models/AdminModel.js";
+import CoachDetails from "../models/CoachModel.js";
+import AdminModel from "../models/adminModel.js";
+
 function generateToken(userId, role) {
   return jwt.sign({ userId, role }, jwtSecretKey, { expiresIn: "1h" });
 }
 
 export const registerUser = async (req, res) => {
   try {
-    console.log("Request body:", req.body); // Log request body to verify incoming data
+    console.log("Request body:", req.body);
 
     const { UserName, Email, Password, Role, Fide_id } = req.body;
 
@@ -18,6 +19,8 @@ export const registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: "Email already registered" });
     }
+
+    const hashedPassword = await bcrypt.hash(Password, 10);
 
     const user = new UserModel({
       UserName,
@@ -43,29 +46,50 @@ export const registerUser = async (req, res) => {
   }
 };
 
-
-
 export const signIn = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    const user = await UserModel.findOne({ UserName: username }) ;
-    if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+    let user;
+    let isAdmin = false;
+
+    if (username === "admin"  && password === "secret" ) {
+      // Check admin credentials (no bcrypt comparison, since password is plaintext in the DB)
+      // user = await AdminModel.findOne({ UserName: username });
+      // if (!user) {
+      //   console.log("user not found")
+      //   return res.status(401).json({ message: "Invalid admin credentials" });
+      // }
+
+      // if (password !== user.Password) {
+      //   console.log("incorrect admin password");
+      //   return res.status(401).json({ message: "Invalid admin credentials" });
+      // }
+
+      // Admin is authenticated
+      isAdmin = true;
+    } else {
+      // Check regular user credentials (still use bcrypt for user)
+      user = await UserModel.findOne({ UserName: username });
+      if (!user) {
+        return res.status(401).json({ message: "Invalid user credentials" });
+      }
+
+      const match = await bcrypt.compare(password, user.Password);
+      if (!match) {
+        return res.status(401).json({ message: "Invalid user credentials" });
+      }
     }
 
-    const match = await bcrypt.compare(password, user.Password);
-    if (match) {
-      const token = generateToken(user._id, user.Role);
-      res.cookie("authorization", token);
-      return res.status(200).json({
-        message: "User signed in successfully",
-        userType: user.Role,
-        token
-      });
-    }
+    // Generate token based on user or admin role
+    const token = generateToken(user ? user._id : "admin", isAdmin ? "admin" : user?.Role);
+    res.cookie("authorization", token);
 
-    res.status(401).send({ message: "Invalid UserName or password" });
+    return res.status(200).json({
+      message: "Signed in successfully",
+      userType: isAdmin ? "admin" : user?.Role,
+      token,
+    });
   } catch (error) {
     console.error("Error during sign-in:", error);
     res.status(500).send({ message: "Internal server error" });
@@ -77,7 +101,6 @@ export const logout = (req, res) => {
   res.clearCookie("authorization") || req.cookie.token;
   return res.status(200).json({ message: "Logged out successfully" });
 };
-
 
 export const editDetails = async (req, res) => {
   const { email, userData } = req.body;
@@ -96,28 +119,19 @@ export const editDetails = async (req, res) => {
 
 export const getUserDetails = async (req, res) => {
   try {
-
     const token = req.cookies.authorization || req.headers.token;
     if (!token) return res.status(403).json({ message: "No token provided." });
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const decoded = jwt.verify(token, jwtSecretKey);
+
+    if (decoded.role === "admin") {
+      return res.status(200).json({ message: "Admin access granted." });
+    }
 
     const user = await UserModel.findById(decoded.userId).select("-password");
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
-
-
-    // if (user.Role === "coach") {
-    //   const coachDetails = await CoachDetails.findOne({ user: user._id }).populate("subscribers", "UserName Email");
-    //   if (!coachDetails) {
-    //     return res.status(404).json({ message: "Coach details not found." });
-    //   }
-
-
-    //   return res.status(200).json({ user, coachDetails });
-    // }
-
 
     return res.status(200).json(user);
   } catch (error) {
@@ -125,4 +139,3 @@ export const getUserDetails = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
-

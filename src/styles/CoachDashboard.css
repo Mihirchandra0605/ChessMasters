@@ -1,132 +1,111 @@
+/* Overall dashboard container styling */
 .dashboard-container {
-    display: flex;
-    flex-direction: column;
-    height: 0;
-    background-color: black;
-    width: 100%;
-}
-.charts-container {
-    position: relative; /* Allow overlapping with navbar */
-    padding: 20px; /* Add some padding for aesthetics */
-    /* You can add other styles as needed */
-}
-
-.dashboard {
-    display: flex;
-}
-
-.charts-main {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    justify-content: center;
-    justify-items: center;
-}
-
-.dashboard-nav {
-    width: 10%;
-    background-color: black;
-    color: darkorange;
-    height: fit-content;
-    padding: 10px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 15px; /* Increase spacing between buttons */
-}
-
-.dashboard-nav button {
-    padding: 12px; /* Add more padding for a nicer look */
-    width: 100%; /* Full width for buttons */
-    border: 2px solid darkorange; /* Button border color matches text color */
-    background-color: darkgoldenrod; 
-    color: black; /* Button text color */
-    cursor: pointer;
-    border-radius: 12px; /* Smooth rounded corners */
-    font-size: 16px;
-    transition: background-color 0.3s ease; /* Smooth hover transition */
-}
-
-.dashboard-nav button:hover {
-    background-color: lightsalmon !important; /* Use !important to override other styles */
-}
-
-
-
-.earn {
-    margin-top: 20px; /* Space above earnings chart */
-    width: 100%;
-}
-
-.flex-container {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.flex-container > div {
-    margin: 10px;
-}
-
-
-.dashboard-header {
-    background-color: darkorange;
-    padding: 15px; /* Increase padding for header */
-    color: black;
-    text-align: center;
-    font-size: 24px; /* Larger font for header */
-    font-weight: bold;
-}
-
-.dashboard-main {
-    position:relative;
-    width: 80%;
+    font-family: 'Arial', sans-serif;
+    color: #333;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
-    color: darkorange;
-    left: 4.5rem;
-}
+  }
+  
+  /* Header styling */
+  .dashboard-header {
+    background-color: rgb(235, 139, 104);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+  
+  /* Navigation menu styling */
+  .dashboard-nav {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-nav button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    background-color: coral;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .dashboard-nav button:hover {
+    background-color: coral;
+  }
+  
+  /* Main dashboard layout */
+  .dashboard-main {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  /* Section styling */
+  .dashboard-section {
+     background: #f8f9fa; 
+    /* ;
+     */
 
-.dashboard-section {
-    margin-bottom: 25px;
-}
 
-.dashboard-section h2 {
-    border-bottom: 2px solid darkorange;
-    padding-bottom: 10px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  }
+  
+  .dashboard-section h2 {
+    font-size: 1.5rem;
     margin-bottom: 15px;
-    font-size: 20px;
-}
-
-.profile-info p, 
-.achievements-list li, 
-.students-list li, 
-.videos-list a, 
-.articles-list a {
-    margin: 5px 0;
-    background-color: black;
-    color: darkorange;
-}
-
-.achievements-list, 
-.students-list, 
-.videos-list, 
-.articles-list {
+    color: rgb(10, 9, 9);
+  }
+  
+  /* List styling */
+  .students-list, .videos-list, .articles-list {
     list-style-type: none;
     padding: 0;
-    background-color: black;
-    color: darkorange;
-}
-
-.videos-list li, 
-.articles-list li {
-    background-color: black;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid darkorange; /* Border color to match the overall theme */
-    color: darkorange;
-    transition: transform 0.3s ease; /* Add hover animation */
-}
-
-.videos-list li:hover, 
-.articles-list li:hover {
-    transform: scale(1.05); /* Slight scaling on hover */
-}
+    /* Consistent background color */
+    background-color:  #2c3e50;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    color: #ddd;
+    
+  }
+  
+  .students-list li, .videos-list li, .articles-list li {
+    padding: 8px 0;
+    
+  }
+  
+  .students-list li:last-child, .videos-list li:last-child, .articles-list li:last-child {
+    border-bottom: none;
+  }
+  
+  /* Link styling */
+  .articles-list a {
+    text-decoration: none;
+    color: #007bff;
+    background-color: #2c3e50; /* Consistent background color */
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 20px;
+    color: #ddd;
+  }
+  
+  .articles-list a:hover {
+    text-decoration: underline;
+  }
+  

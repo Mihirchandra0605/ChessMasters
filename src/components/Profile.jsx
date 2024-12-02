@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import "../styles/profile.css";
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
-import { Link } from 'react-router-dom';
-import axios from 'axios'; // For API requests
-
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Link, useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const sampleData = [
   { name: 'Game 1', elo: 400 },
@@ -15,27 +11,20 @@ const sampleData = [
   { name: 'Game 5', elo: 1250 }
 ];
 
-// Static subscribed coaches data
-const subscribedCoaches = [
-  { id: 1, name: 'Coach A', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
-  { id: 2, name: 'Coach B', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
-  { id: 3, name: 'Coach C', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' }
-];
-
 const Profile = () => {
+  const { id } = useParams();
   const [isEditing, setIsEditing] = useState({ name: false, email: false, password: false });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '********'
   });
-  const [loading, setLoading] = useState(true); // For loading state
+  const [loading, setLoading] = useState(true);
+  const [subscribedCoaches, setSubscribedCoaches] = useState([]);
 
-  // Fetch player details on component mount
   useEffect(() => {
     const fetchPlayerDetails = async () => {
       const token = document.cookie.split("=")[1];
-      console.log("Token:", token); // Check if this is a valid token
       try {
         const response = await axios.get('http://localhost:3000/auth/details', {
           withCredentials: true,
@@ -50,14 +39,17 @@ const Profile = () => {
           password: '********'
         });
         setLoading(false);
+
+        const coachesResponse = await axios.get(`http://localhost:3000/player/${id}/subscribedCoaches`);
+        setSubscribedCoaches(coachesResponse.data);
       } catch (error) {
         console.error('Error fetching player details:', error);
         setLoading(false);
       }
     };
     fetchPlayerDetails();
-  }, []);
-  
+  }, [id]);
+
   const handleEdit = (field) => {
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
   };
@@ -67,12 +59,8 @@ const Profile = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Scroll Refs
-  const scrollLeftRef = useRef(null);
-  const scrollRightRef = useRef(null);
   const coachScrollContainerRef = useRef(null);
 
-  // Scroll Handlers
   const scrollLeft = () => {
     if (coachScrollContainerRef.current) {
       coachScrollContainerRef.current.scrollLeft -= 100;
@@ -86,125 +74,126 @@ const Profile = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex justify-center items-center h-screen">
+      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>;
   }
 
   return (
-    <div className="profile-page">
-      {/* Profile content */}
-      <div className="header">
-        <h1>Profile</h1>
-        <Link to="/Index?role=player"><button className="home-btn">Home</button></Link>
-      </div>
-
-      <div className="container">
-        <div className="profile-section">
-          <div className="avatar-holder">
-            <img
-              src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1820405/profile/profile-512.jpg"
-              alt={formData.name}
-            />
-          </div>
-          <div className="info">
-            <div className="field">
-              <label>Name</label>
-              {isEditing.name ? (
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                />
-              ) : (
-                <span>{formData.name}</span>
-              )}
-              <button onClick={() => handleEdit('name')}>
-                {isEditing.name ? 'Save' : 'Edit'}
-              </button>
-            </div>
-
-            <div className="field">
-              <label>Email</label>
-              {isEditing.email ? (
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
-              ) : (
-                <span>{formData.email}</span>
-              )}
-              <button onClick={() => handleEdit('email')}>
-                {isEditing.email ? 'Save' : 'Edit'}
-              </button>
-            </div>
-
-            <div className="field">
-              <label>Password</label>
-              {isEditing.password ? (
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                />
-              ) : (
-                <span>{formData.password}</span>
-              )}
-              <button onClick={() => handleEdit('password')}>
-                {isEditing.password ? 'Save' : 'Edit'}
-              </button>
-            </div>
-          </div>
+    <div className="bg-gray-100 min-h-screen p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-800">Profile</h1>
+          <Link to="/Index?role=player">
+            <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+              Home
+            </button>
+          </Link>
         </div>
 
-        {/* Chart section */}
-        <div className="chart-section">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={sampleData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="elo" stroke="#8884d8" />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* Subscribed Coaches Carousel - Static */}
-      <div className="section_content" id="carousel">
-        <h2 className="heading">Subscribed Coaches:</h2>
-        <div id="coach_box">
-          <img
-            src="/public/back.png"
-            alt="Scroll Left"
-            id="scrollLeft"
-            onClick={scrollLeft} // Trigger scroll left
-            ref={scrollLeftRef}
-          />
-
-          <div className="coach_scroll_container" ref={coachScrollContainerRef}>
-            {subscribedCoaches.map((coach) => (
-              <div key={coach.id} className="coach">
-                <img src={coach.imageUrl} alt={coach.name} />
-                <span className="coach_name">{coach.name}</span>
-                <button className="unsubscribe-btn" onClick={() => console.log(`Unsubscribing from ${coach.name}`)}>
-                  Unsubscribe
-                </button>
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-1/3 mb-6 md:mb-0">
+              <div className="rounded-full overflow-hidden w-48 h-48 mx-auto mb-4">
+                <img
+                  src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1820405/profile/profile-512.jpg"
+                  alt={formData.name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
+            </div>
+            <div className="md:w-2/3 md:pl-8">
+              {['name', 'email', 'password'].map((field) => (
+                <div key={field} className="mb-4">
+                  <label className="block text-gray-700 text-sm font-bold mb-2">
+                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                  </label>
+                  <div className="flex items-center">
+                    {isEditing[field] ? (
+                      <input
+                        type={field === 'password' ? 'password' : 'text'}
+                        name={field}
+                        value={formData[field]}
+                        onChange={handleChange}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                      />
+                    ) : (
+                      <span className="text-gray-700">{formData[field]}</span>
+                    )}
+                    <button
+                      onClick={() => handleEdit(field)}
+                      className="ml-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+                    >
+                      {isEditing[field] ? 'Save' : 'Edit'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
 
-          <img
-            src="/public/next.png"
-            alt="Scroll Right"
-            id="scrollRight"
-            onClick={scrollRight} // Trigger scroll right
-            ref={scrollRightRef}
-          />
+        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">ELO Progress</h2>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={sampleData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="elo" stroke="#4299E1" strokeWidth={2} dot={{ r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Subscribed Coaches</h2>
+          <div className="relative">
+            <button
+              onClick={scrollLeft}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div
+              ref={coachScrollContainerRef}
+              className="flex overflow-x-auto space-x-4 py-4 px-8 scrollbar-hide"
+            >
+              {subscribedCoaches.length > 0 ? (
+                subscribedCoaches.map((coach) => (
+                  <div key={coach._id} className="flex-none w-48">
+                    <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
+                      <img src={coach.imageUrl || "/default-image.png"} alt={coach.name} className="w-full h-32 object-cover rounded-md mb-2" />
+                      <h3 className="font-semibold text-gray-800 mb-2">{coach.name}</h3>
+                      <button
+                        onClick={() => console.log(`Unsubscribing from ${coach.name}`)}
+                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+                      >
+                        Unsubscribe
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600">No subscribed coaches</p>
+              )}
+            </div>
+
+            <button
+              onClick={scrollRight}
+              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
+            >
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

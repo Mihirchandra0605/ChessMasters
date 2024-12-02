@@ -29,6 +29,29 @@ app.use("/coach", coachRoutes);
 app.use("/game", gameRoutes);
 app.use("/admin", adminRoutes);
 
+app.post("/updateGameStats", async (req, res) => {
+  try {
+    const { userId, result } = req.body; // `result` can be "win" or "loss"
+
+    if (!userId || !["win", "loss"].includes(result)) {
+      return res.status(400).json({ error: "Invalid data provided" });
+    }
+
+    const update = result === "win" ? { $inc: { gamesWon: 1 } } : { $inc: { gamesLost: 1 } };
+    const user = await UserModel.findByIdAndUpdate(userId, update, { new: true });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "Game stats updated successfully", user });
+  } catch (error) {
+    console.error("Error updating game stats:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 // Create an HTTP server
 const server = http.createServer(app);
 
@@ -122,7 +145,7 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
       console.log(`Player disconnected: ${socket.id}`);
       let room = null;
-
+    
       // Find the room the socket was in
       for (const [roomId, roomData] of Object.entries(games)) {
         if (roomData.players.includes(socket.id)) {
@@ -130,11 +153,11 @@ io.on('connection', (socket) => {
           break;
         }
       }
-
+    
       if (room) {
         // Remove the player from the room
         games[room].players = games[room].players.filter(id => id !== socket.id);
-
+    
         if (games[room].players.length === 0) {
           // If no players left, delete the room
           delete games[room];
@@ -143,13 +166,19 @@ io.on('connection', (socket) => {
           const remainingPlayerId = games[room].players[0];
           const gameInstance = games[room].game;
           const winnerColor = gameInstance.turn() === 'w' ? 'Black' : 'White';
+    
+          // Emit the winner to the remaining player
           io.to(room).emit('playerDisconnected', { winner: winnerColor });
-
+    
+          // Log the winner in the console
+          console.log(`Player disconnected. Winner: ${winnerColor}`);
+    
           // Reset the game for the remaining player
           games[room].game = new Chess();
         }
       }
     });
+    
   });
 });
 

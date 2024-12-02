@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Chessboard } from 'react-chessboard';
-import { Chess } from 'chess.js';
-import MoveHistory from './MoveHistory';
-import io from 'socket.io-client';
-import '../styles/Chessboard.css';
+import React, { useState, useEffect, useRef } from "react";
+import { Chessboard } from "react-chessboard";
+import { Chess } from "chess.js";
+import MoveHistory from "./MoveHistory";
+import io from "socket.io-client";
+import axios from "axios";
+import "../styles/Chessboard.css";
 
 function ChessBoard() {
   const [game, setGame] = useState(new Chess());
@@ -29,55 +30,39 @@ function ChessBoard() {
 
   useEffect(() => {
     // Initialize Socket.IO connection
-    socket.current = io('http://localhost:3000', {
+    socket.current = io("http://localhost:3000", {
       withCredentials: true,
     });
 
     // Join a game room
-    socket.current.emit('joinGame');
+    socket.current.emit("joinGame");
 
     // Receive assigned color
-    socket.current.on('assignColor', (assignedColor) => {
+    socket.current.on("assignColor", (assignedColor) => {
       setColor(assignedColor);
     });
 
     // Receive assigned room
-    socket.current.on('roomAssigned', (assignedRoom) => {
+    socket.current.on("roomAssigned", (assignedRoom) => {
       setRoom(assignedRoom);
     });
 
     // Receive start game signal with initial FEN
-    socket.current.on('startGame', (fen) => {
+    socket.current.on("startGame", (fen) => {
       setIsConnected(true);
       setGame(new Chess(fen));
     });
 
     // Receive moves from opponent
-    socket.current.on('move', ({ move, san }) => {
+    socket.current.on("move", ({ move, san }) => {
       safeGameMutate((gameInstance) => {
         gameInstance.move(move);
       });
       setHistory((prevHistory) => [...prevHistory, san]);
     });
 
-    // Handle opponent disconnection
-    socket.current.on('playerDisconnected', ({ winner }) => {
-      alert('Opponent disconnected. You win!');
-      setWinner(winner);
-      setGameOver(true);
-      setIsConnected(false);
-    });
-
-    // Handle opponent refreshing the page
-    socket.current.on('opponentRefreshed', ({ fen }) => {
-      alert('Opponent refreshed the page. You win!');
-      setWinner(color === 'w' ? 'White' : 'Black');
-      setGameOver(true);
-      setIsConnected(false);
-    });
-
-    // Handle game over event
-    socket.current.on('gameOver', ({ winner }) => {
+    // Handle game over
+    socket.current.on("gameOver", ({ winner }) => {
       setWinner(winner);
       setGameOver(true);
       setIsConnected(false);
@@ -86,7 +71,7 @@ function ChessBoard() {
     return () => {
       socket.current.disconnect();
     };
-  }, []); // Empty dependencies ensure this runs once on mount
+  }, []);
 
   // Handle piece drop
   function onDrop(sourceSquare, targetSquare) {
@@ -96,7 +81,6 @@ function ChessBoard() {
   // Handle square click for selecting and moving pieces
   function onSquareClick(square) {
     if (selectedSquare === square) {
-      // Deselect square if clicked again
       setSelectedSquare(null);
       setLegalMoves([]);
       return;
@@ -104,18 +88,15 @@ function ChessBoard() {
 
     const piece = game.get(square);
     if (piece && piece.color === game.turn() && piece.color === color) {
-      // Select square and show legal moves
       setSelectedSquare(square);
       const moves = game.moves({ square, verbose: true });
       const newLegalMoves = moves.map((move) => move.to);
       setLegalMoves(newLegalMoves);
     } else if (selectedSquare && legalMoves.includes(square)) {
-      // Move piece to clicked square
       makeMove(selectedSquare, square);
       setSelectedSquare(null);
       setLegalMoves([]);
     } else {
-      // Deselect if clicked on empty or opponent's square
       setSelectedSquare(null);
       setLegalMoves([]);
     }
@@ -129,24 +110,33 @@ function ChessBoard() {
     const move = {
       from: sourceSquare,
       to: targetSquare,
-      promotion: 'q', // Always promote to queen
+      promotion: "q", // Always promote to queen
     };
 
     const result = game.move(move);
     if (result === null) return; // Illegal move
 
-    // Emit move to the server with room information
-    socket.current.emit('move', { move, room });
-
-    // Update move history
+    socket.current.emit("move", { move, room });
     setHistory((prevHistory) => [...prevHistory, result.san]);
 
-    // Check for game over
     if (game.in_checkmate()) {
-      const winnerColor = game.turn() === 'w' ? 'Black' : 'White';
-      setWinner(winnerColor);
+      const winnerColor = game.turn() === "w" ? "Black" : "White";
+      const result = winnerColor === color ? "win" : "loss";
+      setWinner(winnerColor === color ? "You" : "Opponent");
       setGameOver(true);
-      socket.current.emit('gameOver', { winner: winnerColor, room });
+
+      // Send game result to the backend
+      const userId = localStorage.getItem("userId"); // Assuming userId is stored in local storage
+      axios
+        .post("http://localhost:3000/updateGameStats", { userId, result })
+        .then(() => {
+          console.log("Game stats updated successfully");
+        })
+        .catch((err) => {
+          console.error("Error updating game stats:", err);
+        });
+
+      socket.current.emit("gameOver", { winner: winnerColor, room });
     }
   }
 
@@ -154,11 +144,11 @@ function ChessBoard() {
   const customSquareStyles = {};
   if (selectedSquare) {
     customSquareStyles[selectedSquare] = {
-      backgroundColor: 'rgba(255, 255, 0, 0.4)',
+      backgroundColor: "rgba(255, 255, 0, 0.4)",
     };
     legalMoves.forEach((sq) => {
       customSquareStyles[sq] = {
-        backgroundColor: 'rgba(0, 255, 0, 0.4)',
+        backgroundColor: "rgba(0, 255, 0, 0.4)",
       };
     });
   }
@@ -166,46 +156,22 @@ function ChessBoard() {
   // Handle game restart on "Enter" key press
   useEffect(() => {
     function handleKeyDown(event) {
-      if (event.key === 'Enter' && gameOver) {
+      if (event.key === "Enter" && gameOver) {
         setGame(new Chess());
         setHistory([]);
         setWinner(null);
         setGameOver(false);
         setIsConnected(false);
-        socket.current.emit('joinGame');
+        socket.current.emit("joinGame");
       }
     }
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameOver]);
 
-  // Handle tab refresh or closing
-  useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      if (!gameOver && isConnected) {
-        event.preventDefault();
-        event.returnValue = 'If you refresh, you will lose the game.';
-      }
-    };
-
-    const handleUnload = () => {
-      if (!gameOver && isConnected) {
-        socket.current.emit('playerRefresh', { room, fen: game.fen() });
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.addEventListener('unload', handleUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('unload', handleUnload);
-    };
-  }, [gameOver, isConnected, room, game]);
-
   // Display loading screen while waiting for opponent
-  if (!color || !isConnected) {
+  if (!color || (!isConnected && !gameOver)) {
     return <div className="loading">Waiting for an opponent...</div>;
   }
 
@@ -217,7 +183,7 @@ function ChessBoard() {
           onPieceDrop={onDrop}
           onSquareClick={onSquareClick}
           customSquareStyles={customSquareStyles}
-          boardOrientation={color === 'b' ? 'black' : 'white'}
+          boardOrientation={color === "b" ? "black" : "white"}
           boardWidth={750}
         />
         {gameOver && (

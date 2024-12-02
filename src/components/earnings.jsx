@@ -98,7 +98,6 @@
 import React, { useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
-import '../styles/earnings.css'; // Import the CSS file
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -167,7 +166,7 @@ const EarningsChart = () => {
       },
       title: {
         display: true,
-        text: `Coach Earnings per Month (${year})`, // Dynamic title based on year
+        text: `Coach Earnings per Month (${year})`,
         font: {
           size: 25,
         },
@@ -177,18 +176,35 @@ const EarningsChart = () => {
   };
 
   return (
-    <div className="earnings-chart-container">
-      <div className="year-selector">
-        <label htmlFor="year">Select Year:</label>
-        <select id="year" value={year} onChange={(e) => setYear(e.target.value)}>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-        </select>
-      </div>
-      <Pie data={data} options={options} />
-      <div className="earnings-summary">
-        <h2>Total Earnings for {year}: ${year === '2023' ? totalEarnings2023 : totalEarnings2024}</h2>
-        <h2>Combined Earnings (2023 & 2024): ${totalCombinedEarnings}</h2>
+    <div className="bg-gradient-to-br from-purple-100 to-indigo-200 min-h-screen p-8">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="p-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">Earnings Dashboard</h1>
+          <div className="mb-6">
+            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">Select Year:</label>
+            <select
+              id="year"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+            </select>
+          </div>
+          <div className="h-96 mb-8">
+            <Pie data={data} options={options} />
+          </div>
+          <div className="bg-gray-50 rounded-xl p-6 shadow-inner">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Earnings Summary</h2>
+            <p className="text-lg text-gray-600 mb-2">
+              Total Earnings for {year}: <span className="font-bold text-indigo-600">${year === '2023' ? totalEarnings2023 : totalEarnings2024}</span>
+            </p>
+            <p className="text-lg text-gray-600">
+              Combined Earnings (2023 & 2024): <span className="font-bold text-indigo-600">${totalCombinedEarnings}</span>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

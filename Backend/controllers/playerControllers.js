@@ -16,14 +16,31 @@ export const getPlayerDetails = async (req, res) => {
   }
 };
 
+export const getPlayerDetailsById = async (req, res) => {
+  try {
+    const { playerId } = req.params; // playerId is passed as a route parameter
+    const player = await UserModel.findById(playerId);
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+    res.status(200).json(player);
+  } catch (error) {
+    console.error("Error fetching player details by ID:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 export const subscribeToCoach = async (req, res) => {
   try {
-    const { coachId } = req.body; 
+    console.log("Request body:", req.body);
+    console.log("User ID from token:", req.userId);
+
+    const { coachId } = req.body;
     const playerId = req.userId;
 
     const coach = await CoachDetails.findById(coachId);
-    const player = await UserModel.findById(playerId);
+    console.log("Found coach:", coach);
 
     if (!coach) {
       return res.status(404).json({ message: "Coach not found" });
@@ -36,6 +53,7 @@ export const subscribeToCoach = async (req, res) => {
     coach.subscribers.push(playerId);
     await coach.save();
 
+    const player = await UserModel.findById(playerId);
     player.subscribedCoaches.push(coachId);
     await player.save();
 
@@ -47,17 +65,33 @@ export const subscribeToCoach = async (req, res) => {
 };
 
 export const getSubscribedCoaches = async (req, res) => {
+  const { playerId } = req.params;
+  
   try {
-    const playerId = req.userId; 
-    const player = await UserModel.findById(playerId).populate("subscribedCoaches");
-
+    // Find the player's subscriptions by their player ID
+    const player = await UserModel.findById(playerId).populate('subscribedCoaches');
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
-
-    res.status(200).json(player.subscribedCoaches);
+    
+    const subscribedCoaches = player.subscribedCoaches;
+    res.status(200).json(subscribedCoaches);
   } catch (error) {
     console.error("Error fetching subscribed coaches:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+export const subscriptionStatus = async (req,res) => {
+  const { coachId } = req.params;
+  const { playerId } = req.query;
+  try {
+    const coach = await CoachDetails.findById(coachId);
+    const isSubscribed = coach.subscribers.includes(playerId);
+
+    res.status(200).json({ isSubscribed });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to check subscription status." });
+  }
+}

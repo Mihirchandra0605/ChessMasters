@@ -1,20 +1,21 @@
-// import CoachDashboard from './components/CoachDashboard';
-// import UserDashboard from './components/UserDashboard';
-import Coachprofile from './components/Coachprofile';
-import Navbar from  './components/Navbar';
-import Coachdash from './components/Coachdash'
-import './App.css'
+  import React from "react";
+  import { BrowserRouter , Routes, Route} from "react-router-dom";
+  import Navbar from "./components/Navbar";
+  import Coachdash from "./components/Coachdash";
+  import PricingPlans from "./components/PricingPlans";
+  import './App.css';
 
-function App() {
-  return (
-    <div className="App">
-          {/* <UserDashboard />  */}
-          {/* <CoachDashboard /> */}
-          {/* <Navbar />
-          <div><Coachprofile /></div> */}
-         <Coachdash /> 
-    </div>
-  );
-}
+  function App() {
+    return (
+     <BrowserRouter> 
+          <Navbar /> {/* Navbar remains consistent across all pages */}
+          <Routes>
+            {/* Default route to Coachdash */}
+            <Route path="/" element={<Coachdash />} />
+            
+          </Routes>
+    </BrowserRouter>
+    );
+  }
 
-export default App;
+  export default App;
