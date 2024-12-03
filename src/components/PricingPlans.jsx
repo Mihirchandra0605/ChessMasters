@@ -9,6 +9,7 @@ const PricingPlans = () => {
   // Extract the query parameters from the URL
   const queryParams = new URLSearchParams(location.search);
   const coachId = queryParams.get("coachId"); // Get the coachId from query params
+  console.log(coachId);
 
   const handlePlanSelection = (plan) => {
     // Navigate to the payment page with the selected plan and coachId
