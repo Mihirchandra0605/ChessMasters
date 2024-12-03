@@ -14,32 +14,32 @@ const CoachDashboard = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  const fetchVideos = async () => {
-    if (!details) return; // Wait until details are available
+  // const fetchVideos = async () => {
+  //   if (!details) return; // Wait until details are available
 
-    try {
-      const response = await fetch('http://localhost:3000/admin/videos', { //isme thoda sa change karna hai
-        method: 'GET',
-        credentials: 'include',
-      });
+  //   try {
+  //     const response = await fetch('http://localhost:3000/admin/videos', { //isme thoda sa change karna hai
+  //       method: 'GET',
+  //       credentials: 'include',
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Videos Data:', data);
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       console.log('Videos Data:', data);
 
-        const allVideos = data
-          .map((item) => item.videos || []) // Extract videos array or return an empty array if missing
-          .flat(); // Flatten the array of arrays into a single array
+  //       const allVideos = data
+  //         .map((item) => item.videos || []) // Extract videos array or return an empty array if missing
+  //         .flat(); // Flatten the array of arrays into a single array
 
-        const coachVideos = allVideos.filter((video) => video.coach === details._id);
-        setVideos(coachVideos);
-      } else {
-        console.error('Failed to fetch videos');
-      }
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-    }
-  };
+  //       const coachVideos = allVideos.filter((video) => video.coach === details._id);
+  //       setVideos(coachVideos);
+  //     } else {
+  //       console.error('Failed to fetch videos');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching videos:', error);
+  //   }
+  // };
 
 
   useEffect(() => {
@@ -73,13 +73,32 @@ const CoachDashboard = () => {
       }
     };
 
+    const fetchVideos = async () => {
+      try {
+        const response = await fetch ('http://localhost:3000/admin/videos', {
+          method: 'GET',
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setVideos(data || []);
+        }
+        else {
+          console.error('Failed to fetch videos');
+        }
+      } catch (error) {
+        console.error('Error fetching videos:', error);
+      }
+    };
+
     fetchDetails();
     fetchArticles();
+    fetchVideos();
   }, []);
 
-  useEffect(() => {
-    fetchVideos();
-  }, [details]); // Re-fetch videos once details are loaded
+  // useEffect(() => {
+  //   fetchVideos();
+  // }, [details]); // Re-fetch videos once details are loaded
 
   const toggleAnalytics = () => {
     setShowAnalytics(!showAnalytics);
@@ -211,7 +230,7 @@ const CoachDashboard = () => {
               {videos.length > 0 ? (
                 videos.map((video) => (
                   <li key={video._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
-                    <Link to={`/videos/${video._id}`} className="text-blue-600 hover:text-blue-800">{video.title}</Link>
+                    <Link to={`/Videodetail/${video._id}`} className="text-blue-600 hover:text-blue-800">{video.title}</Link>
                   </li>
                 ))
               ) : (
@@ -231,7 +250,7 @@ const CoachDashboard = () => {
               {articles.length > 0 ? (
                 articles.map((article) => (
                   <li key={article._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
-                    <Link to={`/article/${article._id}`} className="text-blue-600 hover:text-blue-800">{article.title}</Link>
+                    <Link to={`/Articledetail/${article._id}`} className="text-blue-600 hover:text-blue-800">{article.title}</Link>
                   </li>
                 ))
               ) : (

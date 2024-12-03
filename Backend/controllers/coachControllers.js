@@ -196,3 +196,29 @@ export const getArticleById = async (req, res) => {
 };
 
 
+export const getVideos = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.userId)) {
+      return res.status(400).json({ message: "Invalid coach ID" });
+    }
+
+    const videos = await videoModel.find({ coach: req.userId });
+    res.status(200).json(videos);
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+export const getVideoById = async (req, res) => {
+  try {
+    const video = await videoModel.findById(req.params.id);
+    if(!video){
+      return res.status(404).json({ message: "Video not found" });
+    }
+    res.status(200).json(video)
+  } catch (error) {
+    console.error("Error fetching video:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

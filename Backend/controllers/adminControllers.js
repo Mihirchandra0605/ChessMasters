@@ -96,9 +96,9 @@ export const getAllArticles = async (req, res) => {
 };
 export const getAllVideos = async (req, res) => {
     try {
-        const coachId = req.userId;
-        console.log(coachId);
-        const videos = await CoachDetails.find(coachId).populate("videos");
+        // const coachId = req.userId;
+        // console.log(coachId);
+        const videos = await VideoModel.find();
         res.status(200).json(videos);
     } catch (error) {
         res.status(500).json({ message: "Error fetching videos", error });

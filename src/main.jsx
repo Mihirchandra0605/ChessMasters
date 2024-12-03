@@ -21,6 +21,7 @@ import ArticleDetail from "./components/ArticleDetails.jsx";
 import ChessBoard from "./components/Chessboard.jsx";
 import PricingPlans from "./components/PricingPlans.jsx"
 import PaymentPage from "./components/PaymentPage.jsx";
+import VideoDetail from "./components/VideoDetails.jsx";
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -45,6 +46,7 @@ function App() {
         { path: '/Coachdash/:id', element: <Coachdash/>},
         { path: '/Upload', element: <FileUpload /> },
         { path: '/ArticleDetail/:id', element: <ArticleDetail /> },
+        { path: '/VideoDetail/:id', element: <VideoDetail/>},
         { path: '/ChessBoard', element: <ChessBoard /> },
         { path: '/pricingplans', element: <PricingPlans /> },
         { path: '/payment', element: <PaymentPage /> },
