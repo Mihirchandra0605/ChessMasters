@@ -4,13 +4,13 @@
 
 import { Router } from "express";
 import {
-  createGame,
+  saveGameResult,
   getGameDetails,
   getAllGames,
 } from "../controllers/gameControllers.js";
 const router = Router();
 
-router.post("/", createGame);
+router.post("/saveGameResult", saveGameResult);
 router.get("/:gameId", getGameDetails);
 router.get("/", getAllGames);
 

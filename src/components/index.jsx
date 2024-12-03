@@ -105,6 +105,11 @@ function HomePage() {
   if (!details || !articles) {
     return <div className="flex justify-center items-center h-screen bg-black text-green-400">Loading...</div>;
   }
+  
+  // When a player joins ---> room 
+  // When player 2 joins ---> player1 room id emit ---> player 2 id emit 
+  // player1 and player2 will save these values as opponentId
+
 
   return (
     <div className="min-h-screen bg-black text-green-400">

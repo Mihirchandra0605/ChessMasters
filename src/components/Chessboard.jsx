@@ -121,21 +121,39 @@ function ChessBoard() {
 
     if (game.in_checkmate()) {
       const winnerColor = game.turn() === "w" ? "Black" : "White";
-      const result = winnerColor === color ? "win" : "loss";
-      setWinner(winnerColor === color ? "You" : "Opponent");
-      setGameOver(true);
+  
+      // Retrieve user IDs from local storage
+      const playerWhite = color === "w" ? localStorage.getItem("userId") : localStorage.getItem("userId");
+      const playerBlack = color === "b" ? localStorage.getItem("userId") : localStorage.getItem("userId");
+  
+      // Prepare payload for backend
+      const gameResult = {
+        playerWhite,
+        playerBlack,
+        moves: {
+          whiteMoves: history.filter((_, i) => i % 2 === 0), // Even indices for white moves
+          blackMoves: history.filter((_, i) => i % 2 !== 0), // Odd indices for black moves
+        },
+        winner: winnerColor,
+        additionalAttributes: {
+          duration: Math.floor(performance.now() / 1000), // Example duration
+        },
+      };
+      
+        // Log the IDs before making the API request
+        console.log("Game Over!");
+        console.log("Player White:", playerWhite);
+        console.log("Player Black:", playerBlack);
 
-      // Send game result to the backend
-      const userId = localStorage.getItem("userId"); // Assuming userId is stored in local storage
+      // Send game result to backend
       axios
-        .post("http://localhost:3000/updateGameStats", { userId, result })
-        .then(() => {
-          console.log("Game stats updated successfully");
-        })
-        .catch((err) => {
-          console.error("Error updating game stats:", err);
-        });
-
+        .post("http://localhost:3000/game/saveGameResult", gameResult)
+        .then((res) => console.log("Game stats updated successfully", res.data))
+        .catch((err) => console.error("Error updating game stats:", err));
+  
+      setWinner(winnerColor);
+      setGameOver(true);
+  
       socket.current.emit("gameOver", { winner: winnerColor, room });
     }
   }

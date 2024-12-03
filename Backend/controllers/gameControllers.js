@@ -1,27 +1,33 @@
 import Game  from "../models/gameModel.js"; 
 
-export const createGame = async (req, res) => {
+export const saveGameResult = async (req, res) => {
   try {
-    const { playerWhite, playerBlack, winner, moves, additionalAttributes } =
-      req.body;
+    const { playerWhite, playerBlack, moves, winner, additionalAttributes } = req.body;
 
+    // Validate incoming data
+    if (!playerWhite || !playerBlack || !winner) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    // Create and save the game record
     const newGame = new Game({
       playerWhite,
       playerBlack,
-      winner,
       moves,
+      winner,
       additionalAttributes,
     });
 
     await newGame.save();
-    res
-      .status(201)
-      .json({ message: "Game created successfully", game: newGame });
+
+    res.status(201).json({ message: "Game saved successfully", game: newGame });
   } catch (error) {
-    console.error("Error creating game:", error);
+    console.error("Error saving game result:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 
 export const getGameDetails = async (req, res) => {
   const { gameId } = req.params;
