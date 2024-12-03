@@ -63,13 +63,14 @@ function LoginForm({ onLoginSuccess }) {
       if (ok) {
         onLoginSuccess(); // Notify App that login is successful
         const role = data.userType || data.role; // Ensure proper role field is used
-
+        const playerId = localStorage.getItem('userId');
+        const coachId = localStorage.getItem('userId');
         if (role === "admin") {
           navigate("/AdminDashboard");
         } else if (role === "player") {
-          navigate("/PlayerDashboard?role=player");
+          navigate(`/player/${playerId}/profile`);
         } else if (role === "coach") {
-          navigate("/CoachDashboard?role=coach");
+          navigate(`/coach/${coachId}/CoachDashboard?role=coach`);
         }
       } else {
         alert(data?.message || "Login failed"); // Display error message

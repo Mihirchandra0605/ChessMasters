@@ -1,104 +1,54 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SubscriptionChart from './subscription.jsx';
 import Viewchart from './views.jsx';
 import EarningsChart from './earnings.jsx';
 import axios from "axios";
 
-
 const CoachDashboard = () => {
+  const { coachId } = useParams();
   const [articles, setArticles] = useState([]);
   const [videos, setVideos] = useState([]);
-  const [details, setDetails] = useState(null);
   const [isNavOpen, setIsNavOpen] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
-
-  // const fetchVideos = async () => {
-  //   if (!details) return; // Wait until details are available
-
-  //   try {
-  //     const response = await fetch('http://localhost:3000/admin/videos', { //isme thoda sa change karna hai
-  //       method: 'GET',
-  //       credentials: 'include',
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       console.log('Videos Data:', data);
-
-  //       const allVideos = data
-  //         .map((item) => item.videos || []) // Extract videos array or return an empty array if missing
-  //         .flat(); // Flatten the array of arrays into a single array
-
-  //       const coachVideos = allVideos.filter((video) => video.coach === details._id);
-  //       setVideos(coachVideos);
-  //     } else {
-  //       console.error('Failed to fetch videos');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching videos:', error);
-  //   }
-  // };
-
+  const [loading, setLoading] = useState(true);
+  const [subscribedPlayers, setSubscribedPlayers] = useState([]);
 
   useEffect(() => {
-    const fetchDetails = async () => {
+    const fetchData = async () => {
+      const token = document.cookie.split("=")[1];
       try {
-        const resp = await axios.get("http://localhost:3000/auth/details", {
-          withCredentials: true,
-        });
-        console.log('Fetched Details:', resp.data);
-        setDetails(resp.data);
-      } catch (err) {
-        console.error("Error fetching details:", err);
-      }
-    };
+        const [articlesResponse, videosResponse, playersResponse] = await Promise.all([
+          fetch('http://localhost:3000/admin/articles', {
+            method: 'GET',
+            credentials: 'include',
+          }),
+          fetch('http://localhost:3000/admin/videos', {
+            method: 'GET',
+            credentials: 'include',
+          }),
+          axios.get(`http://localhost:3000/coach/subscribedPlayers/${coachId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          })
+        ]);
 
+        const articlesData = await articlesResponse.json();
+        const videosData = await videosResponse.json();
 
-    const fetchArticles = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/admin/articles', {
-          method: 'GET',
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setArticles(data || []);
-        } else {
-          console.error('Failed to fetch articles');
-        }
+        setArticles(articlesData || []);
+        setVideos(videosData || []);
+        setSubscribedPlayers(playersResponse.data.subscribers);
       } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchVideos = async () => {
-      try {
-        const response = await fetch ('http://localhost:3000/admin/videos', {
-          method: 'GET',
-          credentials: 'include',
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setVideos(data || []);
-        }
-        else {
-          console.error('Failed to fetch videos');
-        }
-      } catch (error) {
-        console.error('Error fetching videos:', error);
-      }
-    };
-
-    fetchDetails();
-    fetchArticles();
-    fetchVideos();
-  }, []);
-
-  // useEffect(() => {
-  //   fetchVideos();
-  // }, [details]); // Re-fetch videos once details are loaded
+    fetchData();
+  }, [coachId]);
 
   const toggleAnalytics = () => {
     setShowAnalytics(!showAnalytics);
@@ -212,52 +162,59 @@ const CoachDashboard = () => {
               transition={{ duration: 0.5, delay: 0.6 }}
               className="bg-white bg-opacity-80 p-6 rounded-lg shadow-lg"
             >
-              <h2 className="text-xl font-semibold mb-4 border-b-2 border-orange-500 pb-2 text-orange-700">Students</h2>
+              <h2 className="text-xl font-semibold mb-4 border-b-2 border-orange-500 pb-2 text-orange-700">Subscribed Students</h2>
+              {loading ? (
+                <p>Loading...</p>
+              ) : subscribedPlayers.length > 0 ? (
+                <ul className="space-y-2">
+                  {subscribedPlayers.map((player) => (
+                    <li key={player._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
+                      {player.UserName} (Rating: {player.rating || 'N/A'})
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No subscribed students available</p>
+              )}
+            </motion.section>
+            <motion.section
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+              className="bg-white bg-opacity-80 p-6 rounded-lg shadow-lg"
+            >
+              <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2 text-blue-700">Videos</h2>
               <ul className="space-y-2">
-                <li className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">Student1 (Rating: 2000)</li>
-                <li className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">Student2 (Rating: 2100)</li>
-                <li className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">Student3 (Rating: 2200)</li>
+                {videos.length > 0 ? (
+                  videos.map((video) => (
+                    <li key={video._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
+                      <Link to={`/Videodetail/${video._id}`} className="text-blue-600 hover:text-blue-800">{video.title}</Link>
+                    </li>
+                  ))
+                ) : (
+                  <li>No videos available</li>
+                )}
               </ul>
             </motion.section>
             <motion.section
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.7 }}
-            className="bg-white bg-opacity-80 p-6 rounded-lg shadow-lg"
-          >
-            <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2 text-blue-700">Videos</h2>
-            <ul className="space-y-2">
-              {videos.length > 0 ? (
-                videos.map((video) => (
-                  <li key={video._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
-                    <Link to={`/Videodetail/${video._id}`} className="text-blue-600 hover:text-blue-800">{video.title}</Link>
-                  </li>
-                ))
-              ) : (
-                <li>No videos available</li>
-              )}
-            </ul>
-          </motion.section>
-
-          <motion.section
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.8 }}
-            className="bg-white bg-opacity-80 p-6 rounded-lg shadow-lg"
-          >
-            <h2 className="text-xl font-semibold mb-4 border-b-2 border-purple-500 pb-2 text-purple-700">Articles</h2>
-            <ul className="space-y-2">
-              {articles.length > 0 ? (
-                articles.map((article) => (
-                  <li key={article._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
-                    <Link to={`/Articledetail/${article._id}`} className="text-blue-600 hover:text-blue-800">{article.title}</Link>
-                  </li>
-                ))
-              ) : (
-                <li>No articles available</li>
-              )}
-            </ul>
-          </motion.section>
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="bg-white bg-opacity-80 p-6 rounded-lg shadow-lg"
+            >
+              <h2 className="text-xl font-semibold mb-4 border-b-2 border-purple-500 pb-2 text-purple-700">Articles</h2>
+              <ul className="space-y-2">
+                {articles.length > 0 ? (
+                  articles.map((article) => (
+                    <li key={article._id} className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
+                      <Link to={`/Articledetail/${article._id}`} className="text-blue-600 hover:text-blue-800">{article.title}</Link>
+                    </li>
+                  ))
+                ) : (
+                  <li>No articles available</li>
+                )}
+              </ul>
+            </motion.section>
           </div>
         </main>
       </div>

@@ -54,7 +54,7 @@ const Navbar = () => {
             <img className="h-12 w-12 rounded-full transform hover:rotate-180 transition-all duration-500" src={logoSrc} alt="Chess Logo" />
           </div>
           <NavButton to="/Index?role=coach">Home</NavButton>
-          <NavButton to="/CoachDashboard">Coach Dashboard</NavButton>
+          <NavButton to={`/coach/${coachId}/CoachDashboard`}>Coach Dashboard</NavButton>
           {coachId && <NavButton to={`/coach/${coachId}/CoachProfile`}>Profile</NavButton>}
           <LogoutButton />
         </div>

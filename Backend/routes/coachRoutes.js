@@ -28,7 +28,7 @@ router.post("/addArticle", isCoach, addArticle);
 router.post("/addVideo", isCoach, addVideo);
 router.put("/completeProfile", authMiddleware, isCoach, completeProfile);
 router.get("/articles", isCoach, getArticles);
-router.get("/Articledetail/:id", isCoach, getArticleById);
+router.get("/Articledetail/:id", getArticleById);
 router.get("/videos", getVideos);
 router.get("/Videodetail/:id", getVideoById);
 

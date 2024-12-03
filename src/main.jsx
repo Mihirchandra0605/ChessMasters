@@ -33,7 +33,7 @@ function App() {
     const router = createBrowserRouter([
         { path: '/', element: <Greeting onLoginSuccess={handleLogin} /> },
         { path: '/AdminDashboard', element: <Dashboard /> },
-        { path: '/CoachDashboard', element: <CoachDashboard /> },
+        { path: '/coach/:coachId/CoachDashboard', element: <CoachDashboard /> },
         { path: '/PlayerDashboard', element: <Profile /> },
         { path: '/CoachProfiles', element: <Coachprofile /> },
         { path: '/CoachInfo/:id', element: <Coachdash /> },

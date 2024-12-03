@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Link ,useParams} from "react-router-dom";
 // import "../styles/AddDetails.css";
 
 const AddCoachForm = () => {
@@ -16,6 +18,7 @@ const AddCoachForm = () => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const coachId = localStorage.getItem('userId');
 
   // Fetch the coach profile data
   useEffect(() => {
@@ -313,6 +316,9 @@ const AddCoachForm = () => {
               >
                 Submit
               </button>
+              <Link to={`/coach/${coachId}/CoachDashboard`} className="mt-6 block text-center">
+                  <button className="text-indigo-600 hover:text-indigo-500 bg-indigo-100 px-4 py-2 rounded-md transition duration-150 ease-in-out hover:bg-indigo-200">Back to Dashboard</button>
+              </Link>
             </div>
           </form>
         </div>

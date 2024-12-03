@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 // import '../styles/fileupload.css';
-import { Link } from 'react-router-dom';
+import { Link,useParams } from 'react-router-dom';
 
 const FileUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState(null);
@@ -8,6 +8,9 @@ const FileUpload = () => {
   const [title, setTitle] = useState(''); // Title for the article/video
   const [content, setContent] = useState(''); // Content/description for the article/video
   const [uploadMessage, setUploadMessage] = useState(''); // Message to display upload status
+  // const {coachId} = useParams();
+
+  const coachId = localStorage.getItem('userId');
 
   const handleFileChange = (event) => {
     setSelectedFiles(event.target.files);
@@ -133,7 +136,7 @@ const FileUpload = () => {
         </div>
       </form>
       {uploadMessage && <p className="mt-4 text-sm text-center text-green-600 bg-green-100 p-2 rounded-md">{uploadMessage}</p>}
-      <Link to="/CoachDashboard" className="mt-6 block text-center">
+      <Link to={`/coach/${coachId}/CoachDashboard?role=coach`} className="mt-6 block text-center">
         <button className="text-indigo-600 hover:text-indigo-500 bg-indigo-100 px-4 py-2 rounded-md transition duration-150 ease-in-out hover:bg-indigo-200">Back to Dashboard</button>
       </Link>
     </div>
