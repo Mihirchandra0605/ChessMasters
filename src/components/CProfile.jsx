@@ -170,7 +170,7 @@ const CProfile = () => {
               <div ref={coachScrollContainerRef} className="flex space-x-6 overflow-x-auto py-6 px-10 scrollbar-hide">
                 {subscribedPlayers.map((player) => (
                   <div key={player._id} className="flex-shrink-0 w-56 bg-blue-100 rounded-2xl shadow-lg p-6 space-y-4 transform transition duration-300 hover:scale-105">
-                    <img src={player.imageUrl} alt={player.UserName} className="w-full h-40 object-cover rounded-xl" />
+                    <img src={player.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"} alt={player.UserName} className="w-full h-40 object-cover rounded-xl" />
                     <h3 className="text-xl font-semibold text-teal-800">{player.UserName}</h3>
                     <button className="w-full bg-red-500 text-white py-2 rounded-full hover:bg-red-600 transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1">
                       Unsubscribe

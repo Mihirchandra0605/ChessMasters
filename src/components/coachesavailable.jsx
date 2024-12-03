@@ -11,36 +11,36 @@ const CoachesAvailable = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brown  to-black py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-gray-700 to-cyan-800 py-20 px-6 sm:px-8 lg:px-12">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="max-w-7xl mx-auto"
+        transition={{ duration: 0.8 }}
+        className="max-w-9xl mx-auto"
       >
-        <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-orange-600 text-center mb-12">
+        <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-600 text-center mb-16">
           Available Coaches
         </h1>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.6 }}
+          transition={{ delay: 0.4, duration: 0.8 }}
         >
           <Coachprofile />
         </motion.div>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.6 }}
-          className="mt-16 flex justify-center"
+          transition={{ delay: 0.6, duration: 0.8 }}
+          className="mt-20 flex justify-center"
         >
           <button
             onClick={handleBackToDashboard}
-            className="group relative inline-flex items-center overflow-hidden rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-3 text-white shadow-lg transition-all duration-300 ease-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
+            className="group relative inline-flex items-center overflow-hidden rounded-full bg-gradient-to-r from-purple-600 to-pink-600 px-10 py-4 text-white shadow-xl transition-all duration-300 ease-out hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2"
           >
             <span className="absolute left-0 -translate-x-full transition-transform duration-300 ease-out group-hover:translate-x-4">
               <svg
-                className="h-5 w-5"
+                className="h-6 w-6"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -54,7 +54,7 @@ const CoachesAvailable = () => {
                 />
               </svg>
             </span>
-            <span className="text-sm font-medium transition-all duration-300 ease-out group-hover:ml-4">
+            <span className="text-xl font-medium transition-all duration-300 ease-out group-hover:ml-4">
               Back to Home
             </span>
           </button>

@@ -175,10 +175,10 @@ const Profile = () => {
   subscribedCoaches.map((coach) => (
     <div key={coach._id} className="flex-none w-48">
       <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
-        <img src={coach.imageUrl || "/default-image.png"} alt={coach.user.UserName} className="w-full h-32 object-cover rounded-md mb-2" />
-        <h3 className="font-semibold text-gray-800 mb-2">{coach.user.UserName}</h3>
-        <p className="text-gray-600">{coach.location}</p>
-        <p className="text-gray-600">Rating: {coach.rating}</p>
+        <img src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"} alt={coach.user.UserName} className="w-full h-32 object-cover rounded-md mb-2" />
+        <h3 className="font-semibold text-gray-800 mb-2 text-center">{coach.user.UserName}</h3>
+        <p className="text-gray-600 text-center">{coach.user.Email}</p>
+        <p className="text-gray-600 text-center">Rating: {coach.rating}</p>
         <button
           onClick={() => console.log(`Unsubscribing from ${coach.user.UserName}`)}
           className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"

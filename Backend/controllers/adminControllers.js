@@ -23,7 +23,7 @@ export const deletePlayer = async (req, res) => {
 export const deleteCoach = async (req, res) => {
     try {
         const { coachId } = req.params;
-        await UserModel.findByIdAndDelete(coachId);
+        await CoachModel.findByIdAndDelete(coachId);
         await CoachDetails.findOneAndDelete({ user: coachId });
         res.status(200).json({ message: "Coach deleted successfully" });
     } catch (error) {

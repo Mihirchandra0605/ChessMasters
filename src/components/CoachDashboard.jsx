@@ -63,7 +63,7 @@ const CoachDashboard = () => {
         className="bg-gradient-to-r from-blue-600 to-purple-600 py-4 px-6 shadow-lg flex justify-between items-center"
       >
         <div className="flex items-center space-x-4">
-          <img src="public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png" alt="Logo" className="h-10 w-10 rounded-full border-2 border-white" />
+          <img src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png" alt="Logo" className="h-10 w-10 rounded-full " />
           <h1 className="text-2xl font-bold text-white">Coach Dashboard</h1>
         </div>
         <button

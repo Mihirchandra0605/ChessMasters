@@ -404,7 +404,7 @@ function HomePage() {
       {isPlayer ? <NavbarPlay /> : <Navbar />}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-          <h1 className="text-3xl font-bold text-green-400 mb-4">Welcome back, {details.UserName}!</h1>
+          <h1 className="text-3xl text-center font-bold text-green-400 mb-4">Welcome back, {details.UserName}!</h1>
           <button
             onClick={() => navigate('/ChessBoard')}
             className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-700 text-black font-bold rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105"
@@ -414,7 +414,7 @@ function HomePage() {
         </div>
 
         <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-  <h2 className="text-2xl font-semibold text-green-400 mb-4">Stats</h2>
+  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Stats</h2>
   {!showStats ? (
     <button
       onClick={() => setShowStats(true)}
@@ -451,20 +451,26 @@ function HomePage() {
   )}
 </div>
 
-        <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-          <h2 className="text-2xl font-semibold text-green-400 mb-4">Your Games</h2>
+        {/* <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
+          <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Your Games</h2>
           <div className="relative">
             <button ref={scrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
               <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
             </button>
-            <div ref={gameScrollContainerRef} className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide">
-              {games.map((game, index) => (
-                <div key={game._id} className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300">
-                  <p>Game played on: {new Date(game.datePlayed).toLocaleDateString()}</p>
-                  <p>Winner: {game.winner}</p>
-                </div>
-              ))}
-            </div>
+            <div 
+  ref={gameScrollContainerRef} 
+  className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide items-center justify-center min-h-[200px]"
+>
+  {games.map((game, index) => (
+    <div 
+      key={game._id} 
+      className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300 text-center"
+    >
+      <p>Game played on: {new Date(game.datePlayed).toLocaleDateString()}</p>
+      <p>Winner: {game.winner}</p>
+    </div>
+  ))}
+</div>
             <button ref={scrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
               <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
             </button>
@@ -472,42 +478,115 @@ function HomePage() {
         </div>
 
         <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-          <h2 className="text-2xl font-semibold text-green-400 mb-4">Featured Videos</h2>
-          <div className="relative">
-            <button ref={videoScrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-              <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
-            </button>
-            <div ref={videoScrollContainerRef} className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide">
-              {videos.map((video, index) => (
-                <Link key={video._id} to={`/Videodetail/${video._id}`} className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300">
-                  {video.title}
-                </Link>
-              ))}
-            </div>
-            <button ref={videoScrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-              <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
+  <h2 className="text-2xl text-center font-semibold text-green-400 mb-4">Featured Videos</h2>
+  <div className="relative">
+    <button ref={videoScrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
+      <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
+    </button>
+    <div 
+      ref={videoScrollContainerRef} 
+      className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide items-center justify-center min-h-[200px]"
+    >
+      {videos.map((video, index) => (
+        <Link 
+          key={video._id} 
+          to={`/Videodetail/${video._id}`} 
+          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+        >
+          {video.title}
+        </Link>
+      ))}
+    </div>
+    <button ref={videoScrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
+      <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
+    </button>
+  </div>
+</div>
 
-        <div className="bg-gray-900 rounded-xl shadow-md p-6 border-l-4 border-green-500">
-          <h2 className="text-2xl font-semibold text-green-400 mb-4">Featured Articles</h2>
-          <div className="relative">
-            <button ref={articleScrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-              <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
-            </button>
-            <div ref={articleScrollContainerRef} className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide">
-              {articles.map((article, index) => (
-                <Link key={article._id} to={`/Articledetail/${article._id}`} className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300">
-                  {article.title}
-                </Link>
-              ))}
-            </div>
-            <button ref={articleScrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-              <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
-            </button>
-          </div>
+<div className="bg-gray-900 rounded-xl shadow-md p-6 border-l-4 border-green-500">
+  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Featured Articles</h2>
+  <div className="relative">
+    <button ref={articleScrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
+      <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
+    </button>
+    <div 
+      ref={articleScrollContainerRef} 
+      className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide items-center justify-center min-h-[200px]"
+    >
+      {articles.map((article, index) => (
+        <Link 
+          key={article._id} 
+          to={`/Articledetail/${article._id}`} 
+          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+        >
+          {article.title}
+        </Link>
+      ))}
+    </div>
+    <button ref={articleScrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
+      <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
+    </button>
+  </div>
+</div> */}
+<div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
+  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Your Games</h2>
+  <div className="relative">
+    <div 
+      ref={gameScrollContainerRef} 
+      className="flex overflow-x-auto space-x-4 py-4 items-center justify-center min-h-[150px]" // Reduced height
+    >
+      {games.map((game, index) => (
+        <div 
+          key={game._id} 
+          className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300 text-center"
+        >
+          <p>Game played on: {new Date(game.datePlayed).toLocaleDateString()}</p>
+          <p>Winner: {game.winner}</p>
         </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
+  <h2 className="text-2xl text-center font-semibold text-green-400 mb-4">Featured Videos</h2>
+  <div className="relative">
+    <div 
+      ref={videoScrollContainerRef} 
+      className="flex overflow-x-auto space-x-4 py-4 items-center justify-center min-h-[150px]" // Reduced height
+    >
+      {videos.map((video, index) => (
+        <Link 
+          key={video._id} 
+          to={`/Videodetail/${video._id}`} 
+          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+        >
+          {video.title}
+        </Link>
+      ))}
+    </div>
+  </div>
+</div>
+
+<div className="bg-gray-900 rounded-xl shadow-md p-6 border-l-4 border-green-500">
+  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Featured Articles</h2>
+  <div className="relative">
+    <div 
+      ref={articleScrollContainerRef} 
+      className="flex overflow-x-auto space-x-4 py-4 items-center justify-center min-h-[150px]" // Reduced height
+    >
+      {articles.map((article, index) => (
+        <Link 
+          key={article._id} 
+          to={`/Articledetail/${article._id}`} 
+          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
+        >
+          {article.title}
+        </Link>
+      ))}
+    </div>
+  </div>
+</div>
       </div>
     </div>
   );

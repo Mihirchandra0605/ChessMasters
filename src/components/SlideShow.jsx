@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const slides = [
-  { image: '/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png', text: 'Master chess strategies' },
-  { image: '/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png', text: 'Play with global opponents' },
-  { image: '/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png', text: 'Track your progress' },
-  { image: '/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png', text: 'Join tournaments' },
+  { image: '/public/vishy.jpg', text: 'Vishwanath Anand', quote:'"In chess, knowledge is a very transient thing. It changes so fast that even a single mouse-slip sometimes changes the evaluation."'},
+  { image: '/public/Hikaru.jpg', text: 'Hikaru Nakamura', quote: '"In chess, you try to do your best, but there are instances where you make mistakes or take risks that you shouldn\'t. Losing games is a good thing because you learn more from losses than wins."'},
+  { image: '/public/carl.jpg', text: 'Magnus Carlsen', quote: '"You need to have that edge, you need to have that confidence, you need to have that absolute belief that you’re – you’re the best and you’ll win every time."'},
+  { image: '/public/Vidit.jpg', text: 'Vidit Gujrathi', quote: '“Chess is war over the board. The object is to crush the opponent’s mind.”'},
 ];
 
 function SlideShow() {
@@ -42,8 +42,8 @@ function SlideShow() {
               <h2 className="text-[#E4EfE9] text-2xl font-bold text-center mb-4">
                 {slides[currentSlide].text}
               </h2>
-              <p className="text-[#B2B2B2] text-base leading-relaxed text-center">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              <p className="text-[white] italic font-bold font-size text-xl leading-relaxed text-center">
+              {slides[currentSlide].quote}
               </p>
             </div>
           </div>
