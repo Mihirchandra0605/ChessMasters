@@ -5,8 +5,9 @@ import UserModel  from "../models/userModel.js";
 import videoModel from "../models/videoModel.js";
 import jwt from "jsonwebtoken";
 import upload from '../middlewares/uploadMiddleware.js';
+import { authMiddleware } from "../middlewares/authMiddlerware.js";
 import { jwtSecretKey } from "../config.js";
-
+import mongoose from "mongoose";
 export const getCoachDetails = async (req, res) => {
   try {
     // Check token from cookies or headers
@@ -75,15 +76,25 @@ export const getCoachById = async (req, res) => {
 
 export const getSubscribedPlayers = async (req, res) => {
   try {
-    const coachId = req.userId;
-    const players = await UserModel.find({ subscribedCoaches: coachId }).select(
-      "UserName Email"
-    );
+    const { coachId } = req.params; // Assuming userId is attached via middleware
 
-    res.status(200).json(players);
+    // Check if the user is a coach
+    const user = await UserModel.findById(coachId);
+    if (!user || user.Role !== "coach") {
+      return res.status(403).json({ error: "Access denied. Not a coach." });
+    }
+
+    // Find the corresponding CoachDetails document
+    const coach = await CoachDetails.findOne({ user: new mongoose.Types.ObjectId(coachId) }).populate("subscribers");
+    if (!coach) {
+      return res.status(404).json({ error: "Coach profile not found." });
+    }
+
+    // Send the subscribers
+    return res.status(200).json({ subscribers: coach.subscribers });
   } catch (error) {
-    console.error("Error fetching subscribed players:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error." });
   }
 };
 

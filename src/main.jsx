@@ -37,7 +37,7 @@ function App() {
         { path: '/CoachProfiles', element: <Coachprofile /> },
         { path: '/CoachInfo/:id', element: <Coachdash /> },
         { path: '/player/:id/profile', element: <Profile /> },
-        { path: '/CoachProfile', element: <CProfile /> },
+        { path: '/coach/:coachId/CoachProfile', element: <CProfile /> },
         { path: '/Index', element: <HomePage /> },
         { path: '/CoachesAvailable', element: <CoachesAvaialble /> },
         { path: '/AddData', element: <AddCoachForm /> },

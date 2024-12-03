@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import axios from 'axios'; // For API requests
 
 
@@ -15,14 +15,8 @@ const sampleData = [
   { name: 'Game 5', elo: 1250 }
 ];
 
-// Static subscribed coaches data
-const subscribedPlayers = [
-  { id: 1, name: 'Player A', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
-  { id: 2, name: 'Player B', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' },
-  { id: 3, name: 'Player C', imageUrl: 'https://www.pngplay.com/wp-content/uploads/1/Female-Scientist-Transparent-Images.png' }
-];
-
 const CProfile = () => {
+  const { coachId } = useParams();
   const [isEditing, setIsEditing] = useState({ name: false, email: false, password: false });
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +24,7 @@ const CProfile = () => {
     password: '********'
   });
   const [loading, setLoading] = useState(true); // For loading state
+  const [subscribedPlayers, setSubscribedPlayers] = useState([]);
 
   // Fetch player details on component mount
   useEffect(() => {
@@ -42,23 +37,37 @@ const CProfile = () => {
             Authorization: `Bearer ${token}`// using tokens for authentication
           }
         });
-        const coach = response.data;
-        console.log('coach:', coach)
+        const player = response.data;
+        console.log('player:', player)
         setFormData({
-          name: coach.UserName,
-          email: coach.Email,
+          name: player.UserName,
+          email: player.Email,
           // level: Coach.CoachLevel,
           password: '********' // isme changes required
         });
         setLoading(false);
+
+        console.log("Coach ID:", coachId);
+
+        const playersResponse = await axios.get(`http://localhost:3000/coach/subscribedPlayers/${coachId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          withCredentials: true,
+        });
+        console.log(playersResponse);
+        setSubscribedPlayers(playersResponse.data.subscribers);
+        console.log(subscribedPlayers);
+        // const data = await playersResponse.json();
+
       } catch (error) {
-        console.error('Error fetching coach details:', error);
+        console.error('Error fetching player details:', error);
         setLoading(false);
       }
     };
 
     fetchCoachDetails();
-  }, []);
+  }, [coachId]);
 
   const handleEdit = (field) => {
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
@@ -160,9 +169,9 @@ const CProfile = () => {
               </button>
               <div ref={coachScrollContainerRef} className="flex space-x-6 overflow-x-auto py-6 px-10 scrollbar-hide">
                 {subscribedPlayers.map((player) => (
-                  <div key={player.id} className="flex-shrink-0 w-56 bg-blue-100 rounded-2xl shadow-lg p-6 space-y-4 transform transition duration-300 hover:scale-105">
-                    <img src={player.imageUrl} alt={player.name} className="w-full h-40 object-cover rounded-xl" />
-                    <h3 className="text-xl font-semibold text-teal-800">{player.name}</h3>
+                  <div key={player._id} className="flex-shrink-0 w-56 bg-blue-100 rounded-2xl shadow-lg p-6 space-y-4 transform transition duration-300 hover:scale-105">
+                    <img src={player.imageUrl} alt={player.UserName} className="w-full h-40 object-cover rounded-xl" />
+                    <h3 className="text-xl font-semibold text-teal-800">{player.UserName}</h3>
                     <button className="w-full bg-red-500 text-white py-2 rounded-full hover:bg-red-600 transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1">
                       Unsubscribe
                     </button>

@@ -20,7 +20,7 @@ const router = Router();
 router.get("/details", getCoachDetails);
 router.get("/coaches", getAllCoaches);
 router.get("/:id", getCoachById);
-router.get("/subscribedPlayers", isCoach, getSubscribedPlayers);
+router.get("/subscribedPlayers/:coachId", isCoach, getSubscribedPlayers);
 router.post("/addArticle", isCoach, addArticle);
 router.post("/addVideo", isCoach, addVideo);
 router.get("/getArticles", isCoach, getArticles);

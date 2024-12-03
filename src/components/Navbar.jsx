@@ -12,6 +12,7 @@ const LogoutButton = () => {
       });
 
       if (response.ok) {
+        localStorage.removeItem("userId");
         navigate('/');
       } else {
         console.error('Error logging out');
@@ -42,6 +43,7 @@ const NavButton = ({ to, children }) => (
 );
 
 const Navbar = () => {
+  const coachId = localStorage.getItem('userId');
   const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
 
   return (
@@ -53,7 +55,7 @@ const Navbar = () => {
           </div>
           <NavButton to="/Index?role=coach">Home</NavButton>
           <NavButton to="/CoachDashboard">Coach Dashboard</NavButton>
-          <NavButton to="/CoachProfile">Profile</NavButton>
+          {coachId && <NavButton to={`/coach/${coachId}/CoachProfile`}>Profile</NavButton>}
           <LogoutButton />
         </div>
       </div>
