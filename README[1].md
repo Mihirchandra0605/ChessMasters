@@ -37,7 +37,7 @@ Follow these instructions to set up and run the project locally on your machine.
 1. **Clone the Repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Mihirchandra0605/ChessMasters.git
    cd ChessMasters
 
    ```
