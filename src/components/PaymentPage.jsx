@@ -312,7 +312,7 @@ const PaymentPage = () => {
         );
         console.log("Subscription successful:", response.data);
         alert("Payment and subscription successful!");
-        navigate(`/coach/${coachId}`, { state: { subscribed: true } });
+        navigate(`Index?role=player`, { state: { subscribed: true } });
       } catch (error) {
         console.error("Error during subscription:", error.response?.data || error.message);
         setPaymentError("An error occurred during payment. Please try again.");
@@ -321,7 +321,7 @@ const PaymentPage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/coaches");
+    navigate("Index?role=player");
   };
 
   return (

@@ -62,17 +62,19 @@ const Coachdash = () => {
           transition={{ duration: 0.6 }}
         >
           <div className="p-10 space-y-10">
-            {['About Me', 'Playing Experience', 'Teaching Experience', 'Teaching Methodology'].map((section, index) => (
+          {['aboutMe', 'playingExperience', 'teachingExperience', 'teachingMethodology'].map((key, index) => (
               <motion.section 
-                key={section} 
+                key={key} 
                 className="space-y-4 text-center"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                <h2 className="text-3xl font-bold text-indigo-800">{section}</h2>
+                <h2 className="text-3xl font-bold text-indigo-800">
+                  {key.replace(/([A-Z])/g, ' $1').trim()} 
+                </h2>
                 <p className="text-xl text-gray-700">
-                  {profileData?.[section.toLowerCase().replace(/\s/g, '')] || "Information not available."}
+                  {profileData?.[key] || "Information not available."}
                 </p>
               </motion.section>
             ))}
