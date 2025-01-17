@@ -20,7 +20,7 @@ function SlideShow() {
   }, []);
 
   return (
-    <div className="h-full w-full bg-gradient-to-bl from-[#29011C] to-[#010332] p-4 flex items-center justify-center">
+    <div className="h-full w-full bg-gradient-to-bl from-[#29011C] to-[#010332] p-2 sm:p-3 md:p-4 flex items-center justify-center">
       <AnimatePresence initial={false}>
         <motion.div
           key={currentSlide}
@@ -28,22 +28,22 @@ function SlideShow() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: '-100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="bg-[#1A1A2E] rounded-xl shadow-2xl overflow-hidden w-full h-full flex flex-col"
+          className="bg-[#1A1A2E] rounded-lg sm:rounded-xl shadow-xl sm:shadow-2xl overflow-hidden w-full h-full flex flex-col"
         >
-          <div className="flex-grow p-6 flex flex-col justify-center">
-            <div className="w-full h-1/2 flex items-center justify-center mb-6">
+          <div className="flex-grow p-3 sm:p-4 md:p-6 flex flex-col justify-center">
+            <div className="w-full h-1/2 flex items-center justify-center mb-3 sm:mb-4 md:mb-6">
               <img
                 src={slides[currentSlide].image}
                 alt={`Slide ${currentSlide + 1}`}
-                className="max-w-full max-h-full object-contain rounded-lg border-4 border-[#E4EfE9] shadow-md"
+                className="max-w-full max-h-full object-contain rounded-md sm:rounded-lg border-2 sm:border-4 border-[#E4EfE9] shadow-md"
               />
             </div>
-            <div className="bg-[#16213E] p-6 rounded-lg flex flex-col justify-center flex-grow shadow-inner">
-              <h2 className="text-[#E4EfE9] text-2xl font-bold text-center mb-4">
+            <div className="bg-[#16213E] p-3 sm:p-4 md:p-6 rounded-md sm:rounded-lg flex flex-col justify-center flex-grow shadow-inner">
+              <h2 className="text-[#E4EfE9] text-lg sm:text-xl md:text-2xl font-bold text-center mb-2 sm:mb-3 md:mb-4">
                 {slides[currentSlide].text}
               </h2>
-              <p className="text-[white] italic font-bold font-size text-xl leading-relaxed text-center">
-              {slides[currentSlide].quote}
+              <p className="text-white italic font-bold text-sm sm:text-base md:text-xl leading-relaxed text-center px-2 sm:px-4">
+                {slides[currentSlide].quote}
               </p>
             </div>
           </div>
@@ -54,3 +54,5 @@ function SlideShow() {
 }
 
 export default SlideShow;
+
+

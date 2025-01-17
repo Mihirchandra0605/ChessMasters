@@ -4,7 +4,7 @@ const { Schema, model } = mongoose;
 
 // This schema references the UserModel
 const CoachDetailsSchema = new Schema({
-  user: { type: Schema.Types.ObjectId, ref: "UserModel", required: true }, 
+  user: { type: Schema.Types.ObjectId, ref: "UserModel", required: true },
   Fide_id: { type: String, unique: true },
   quote: { type: String, default: "" },
   location: { type: String, default: "" },
@@ -15,7 +15,12 @@ const CoachDetailsSchema = new Schema({
   hourlyRate: { type: Number, default: null },
   aboutMe: { type: String, default: "" },
   teachingMethodology: { type: String, default: "" },
-  subscribers: [{ type: Schema.Types.ObjectId, ref: "UserModel" }], 
+  subscribers: [
+    {
+      user: { type: Schema.Types.ObjectId, ref: "UserModel" },
+      subscribedAt: { type: Date, default: Date.now }, // Store subscription date here
+    },
+  ],
 });
 
 export default model("CoachDetails", CoachDetailsSchema);

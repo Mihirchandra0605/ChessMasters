@@ -3,58 +3,75 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-const sampleData = [
-  { name: 'Game 1', elo: 400 },
-  { name: 'Game 2', elo: 820 },
-  { name: 'Game 3', elo: 790 },
-  { name: 'Game 4', elo: 1000 },
-  { name: 'Game 5', elo: 1250 }
-];
+// const sampleData = [
+//   { name: 'Game 1', elo: 400 },
+//   { name: 'Game 2', elo: 820 },
+//   { name: 'Game 3', elo: 790 },
+//   { name: 'Game 4', elo: 1000 },
+//   { name: 'Game 5', elo: 1250 }
+// ];
 
 const Profile = () => {
   const { id } = useParams();
-  const [isEditing, setIsEditing] = useState({ name: false, email: false, password: false });
+  const [isEditing, setIsEditing] = useState({
+    name: false,
+    email: false,
+    password: false
+  });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '********'
   });
+  const [eloData, setEloData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subscribedCoaches, setSubscribedCoaches] = useState([]);
 
   useEffect(() => {
+    let isMounted = true;
+  
     const fetchPlayerDetails = async () => {
       const token = document.cookie.split("=")[1];
       try {
         const response = await axios.get('http://localhost:3000/auth/details', {
           withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
+          headers: { Authorization: `Bearer ${token}` }
         });
-        const player = response.data;
-        setFormData({
-          name: player.UserName,
-          email: player.Email,
-          password: '********'
-        });
-        setLoading(false);
-
-        const coachesResponse = await axios.get(`http://localhost:3000/player/${id}/subscribedCoaches`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          },
-          withCredentials: true,
-        });
-        setSubscribedCoaches(coachesResponse.data);
-        
+        if (isMounted) {
+          const player = response.data;
+          setFormData({
+            name: player.UserName,
+            email: player.Email,
+            password: '********'
+          });
+          setEloData(player.eloHistory || []);
+          setLoading(false);
+  
+          const coachesResponse = await axios.get(
+            `http://localhost:3000/player/${id}/subscribedCoaches`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+              withCredentials: true,
+            }
+          );
+          if (isMounted) setSubscribedCoaches(coachesResponse.data);
+        }
       } catch (error) {
-        console.error('Error fetching player details:', error);
-        setLoading(false);
+        if (isMounted) {
+          console.error('Error fetching player details:', error);
+          setError('Failed to fetch data.');
+          setLoading(false);
+        }
       }
     };
+  
     fetchPlayerDetails();
+  
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
+  
 
   const handleEdit = (field) => {
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
@@ -66,13 +83,11 @@ const Profile = () => {
   };
 
   const coachScrollContainerRef = useRef(null);
-
   const scrollLeft = () => {
     if (coachScrollContainerRef.current) {
       coachScrollContainerRef.current.scrollLeft -= 100;
     }
   };
-
   const scrollRight = () => {
     if (coachScrollContainerRef.current) {
       coachScrollContainerRef.current.scrollLeft += 100;
@@ -80,55 +95,61 @@ const Profile = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">
-      <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-    </div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"> Loading... </div>
+      </div>
+    );
   }
 
   return (
-    <div className="bg-gray-100 min-h-screen p-8">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800">Profile</h1>
-          <Link to="/Index?role=player">
-            <button className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105">
+    <div className="min-h-screen bg-gradient-to-br from-slate-800 to-blue-900 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto bg-gradient-to-r from-slate-900/80 to-slate-800/80 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden backdrop-blur-sm">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-10">
+          {/* Header Section */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400 mb-4 sm:mb-0">Profile</h1>
+            <Link to="/Index?role=player" className="bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base">
               Home
-            </button>
-          </Link>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/3 mb-6 md:mb-0">
-              <div className="rounded-full overflow-hidden w-48 h-48 mx-auto mb-4">
-                <img
-                  src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1820405/profile/profile-512.jpg"
-                  alt={formData.name}
-                  className="w-full h-full object-cover"
+            </Link>
+          </div>
+  
+          {/* Profile Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
+            <div className="space-y-6 sm:space-y-8">
+              <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <img 
+                  src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/1820405/profile/profile-512.jpg" 
+                  alt={formData.name} 
+                  className="w-24 h-24 sm:w-32 sm:h-32 rounded-lg border-4 border-emerald-500/30 shadow-lg"
                 />
+                <div className="text-center sm:text-left">
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-slate-200">{formData.name}</h2>
+                  <p className="text-base sm:text-lg text-emerald-400">Player</p>
+                </div>
               </div>
-            </div>
-            <div className="md:w-2/3 md:pl-8">
+  
+              {/* Form Fields */}
               {['name', 'email', 'password'].map((field) => (
-                <div key={field} className="mb-4">
-                  <label className="block text-gray-700 text-sm font-bold mb-2">
-                    {field.charAt(0).toUpperCase() + field.slice(1)}
+                <div key={field} className="space-y-2">
+                  <label className="block text-sm font-medium text-slate-300 capitalize">
+                    {field}
                   </label>
-                  <div className="flex items-center">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                     {isEditing[field] ? (
                       <input
                         type={field === 'password' ? 'password' : 'text'}
                         name={field}
                         value={formData[field]}
                         onChange={handleChange}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                        className="w-full sm:w-auto flex-grow mt-1 rounded-md border-slate-600 bg-slate-800/50 text-slate-200 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-500/20 px-3 py-2"
                       />
                     ) : (
-                      <span className="text-gray-700">{formData[field]}</span>
+                      <span className="text-base sm:text-lg text-slate-300">{formData[field]}</span>
                     )}
                     <button
                       onClick={() => handleEdit(field)}
-                      className="ml-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+                      className="px-4 py-2 bg-slate-700 text-emerald-400 rounded-lg hover:bg-slate-600 transition duration-300 shadow-md hover:shadow-lg w-full sm:w-auto"
                     >
                       {isEditing[field] ? 'Save' : 'Edit'}
                     </button>
@@ -136,77 +157,83 @@ const Profile = () => {
                 </div>
               ))}
             </div>
+  
+            {/* ELO Chart Section */}
+            <div className="h-64 sm:h-80 md:h-auto bg-slate-800/50 rounded-xl shadow-lg p-4">
+  <ResponsiveContainer width="100%" height="100%">
+    <LineChart data={eloData}>
+      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+      <XAxis dataKey="gameNumber" stroke="#94a3b8" />
+      <YAxis stroke="#94a3b8" />
+      <Tooltip 
+        contentStyle={{ 
+          backgroundColor: '#1e293b', 
+          borderColor: '#475569', 
+          color: '#f8fafc' 
+        }} 
+      />
+      <Legend />
+      <Line 
+        type="linear" // Ensures a straight line between points
+        dataKey="elo" 
+        stroke="#10b981" 
+        strokeWidth={2} 
+        dot={{ fill: '#34d399', strokeWidth: 2 }} 
+        connectNulls={true} // Ensures null or missing values are connected
+      />
+    </LineChart>
+  </ResponsiveContainer>
+</div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">ELO Progress</h2>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={sampleData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="elo" stroke="#4299E1" strokeWidth={2} dot={{ r: 4 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Subscribed Coaches</h2>
-          <div className="relative">
-            <button
-              onClick={scrollLeft}
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
-            >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-
-            <div
-              ref={coachScrollContainerRef}
-              className="flex overflow-x-auto space-x-4 py-4 px-8 scrollbar-hide"
-            >
-              {subscribedCoaches.length > 0 ? (
-  subscribedCoaches.map((coach) => (
-    <div key={coach._id} className="flex-none w-48">
-      <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
-        <img src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"} alt={coach.user.UserName} className="w-full h-32 object-cover rounded-md mb-2" />
-        <h3 className="font-semibold text-gray-800 mb-2 text-center">{coach.user.UserName}</h3>
-        <p className="text-gray-600 text-center">{coach.user.Email}</p>
-        <p className="text-gray-600 text-center">Rating: {coach.rating}</p>
-        <button
-          onClick={() => console.log(`Unsubscribing from ${coach.user.UserName}`)}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
+  
+          {/* Coaches Section */}
+<div className="mt-8 sm:mt-12 md:mt-16">
+  <h2 className="text-2xl sm:text-3xl font-semibold text-slate-200 mb-6">
+    Subscribed Coaches
+  </h2>
+  <div className="relative">
+    <div 
+      ref={coachScrollContainerRef} 
+      className="flex space-x-4 sm:space-x-6 overflow-x-auto py-4 sm:py-6 px-8 sm:px-10
+        scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/40
+        hover:scrollbar-thumb-slate-500"
+    >
+      {subscribedCoaches.map((coach) => (
+        <div 
+          key={coach._id} 
+          className="flex-shrink-0 w-48 sm:w-56 bg-slate-800/50 rounded-xl shadow-lg 
+            p-4 sm:p-6 space-y-3 sm:space-y-4 transform transition duration-300 
+            hover:scale-105 hover:bg-slate-700/50"
         >
-          Unsubscribe
-        </button>
-      </div>
+          <img
+            src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+            alt={coach.user.UserName}
+            className="w-full h-32 sm:h-40 object-cover rounded-lg"
+          />
+          <h3 className="text-base sm:text-xl font-semibold text-center text-slate-200">
+            {coach.user.UserName}
+          </h3>
+          <p className="text-blue-400 text-center ">
+            {coach.user.Email}
+          </p>
+          <p className="text-emerald-400 text-center ">Rating: {coach.rating}</p>
+          <button 
+            className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
+              transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+          >
+            Unsubscribe
+          </button>
+        </div>
+      ))}
     </div>
-  ))
-) : (
-  <p className="text-gray-600">No subscribed coaches</p>
-)}
+  </div>
+</div>
 
-            </div>
-
-            <button
-              onClick={scrollRight}
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white p-2 rounded-full shadow-md z-10"
-            >
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
         </div>
       </div>
     </div>
   );
 };
+  
 
 export default Profile;

@@ -292,6 +292,7 @@ function HomePage() {
   const [isPlayer, setIsPlayer] = useState(searchParams.get('role') === 'player');
 
   const [showStats, setShowStats] = useState(false);
+  
 
   const gameScrollContainerRef = useRef(null);
   const scrollLeftRef = useRef(null);
@@ -396,150 +397,107 @@ function HomePage() {
   }, []);
 
   if (!details || !articles) {
-    return <div className="flex justify-center items-center h-screen bg-black text-green-400">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen bg-black">
+        <div className="text-base sm:text-lg md:text-xl lg:text-2xl text-green-400 animate-pulse">
+          Loading...
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-black text-green-400">
       {isPlayer ? <NavbarPlay /> : <Navbar />}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-          <h1 className="text-3xl text-center font-bold text-green-400 mb-4">Welcome back, {details.UserName}!</h1>
-          <button
-            onClick={() => navigate('/ChessBoard')}
-            className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-700 text-black font-bold rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105"
-          >
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 
+                      mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl text-center font-bold text-green-400 
+                       mb-3 sm:mb-4">
+            Welcome back, {details.UserName}!
+          </h1>
+          <button onClick={() => navigate('/ChessBoard')} 
+                  className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 
+                           to-green-700 text-black font-bold rounded-lg transition-all duration-300 
+                           hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 
+                           focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 
+                           text-sm sm:text-base">
             Play Now!
           </button>
         </div>
 
-        <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Stats</h2>
-  {!showStats ? (
-    <button
-      onClick={() => setShowStats(true)}
-      className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-700 text-black font-bold rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105"
-    >
-      View
-    </button>
-  ) : (
-    <div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center mb-4">
-        <div className="p-3 bg-gray-800 rounded-lg border border-green-500">
-          <p className="font-medium text-green-400">Games Played: 100</p>
-        </div>
-        <div className="p-3 bg-gray-800 rounded-lg border border-green-500">
-          <p className="font-medium text-green-400">Wins: 80</p>
-        </div>
-        <div className="p-3 bg-gray-800 rounded-lg border border-green-500">
-          <p className="font-medium text-green-400">Losses: 20</p>
-        </div>
-        <div className="p-3 bg-gray-800 rounded-lg border border-green-500">
-          <p className="font-medium text-green-400">Rating: 1300</p>
-        </div>
-      </div>
-      <div className="w-64 h-64 mx-auto mb-4">
-        <Pie data={chartData} options={chartOptions} />
-      </div>
-      <button
-        onClick={() => setShowStats(false)}
-        className="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-700 text-black font-bold rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105"
-      >
-        Back
-      </button>
-    </div>
-  )}
-</div>
-
-        {/* <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-          <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Your Games</h2>
-          <div className="relative">
-            <button ref={scrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-              <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
+        {/* Stats Section */}
+        <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md 
+                      p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-center text-green-400 
+                       mb-3 sm:mb-4">
+            Stats
+          </h2>
+          {!showStats ? (
+            <button onClick={() => setShowStats(true)}
+                    className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 
+                             to-green-700 text-black font-bold rounded-lg transition-all duration-300 
+                             hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 
+                             focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 
+                             text-sm sm:text-base">
+              View
             </button>
-            <div 
-  ref={gameScrollContainerRef} 
-  className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide items-center justify-center min-h-[200px]"
->
-  {games.map((game, index) => (
-    <div 
-      key={game._id} 
-      className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300 text-center"
-    >
-      <p>Game played on: {new Date(game.datePlayed).toLocaleDateString()}</p>
-      <p>Winner: {game.winner}</p>
-    </div>
-  ))}
-</div>
-            <button ref={scrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-              <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
-            </button>
-          </div>
+          ) : (
+            <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 
+                           text-center mb-4">
+                {/* Stats Cards */}
+                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+                  <p className="font-medium text-green-400 text-sm sm:text-base">Games Played: 100</p>
+                </div>
+                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+                  <p className="font-medium text-green-400 text-sm sm:text-base">Wins: 80</p>
+                </div>
+
+                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+                  <p className="font-medium text-green-400 text-sm sm:text-base">Losses: 20</p>
+                </div>
+
+                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+                  <p className="font-medium text-green-400 text-sm sm:text-base">Rating: 1300</p>
+                </div>
+
+      </div>
+      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto 
+                           h-48 sm:h-56 md:h-64 mb-4">
+                <Pie data={chartData} options={chartOptions} />
+              </div>
+
+              <button onClick={() => setShowStats(false)}
+                      className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 
+                               to-green-700 text-black font-bold rounded-lg transition-all duration-300 
+                               hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 
+                               focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 
+                               text-sm sm:text-base">
+                Back
+              </button>
+            </div>
+          )}
         </div>
-
-        <div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-  <h2 className="text-2xl text-center font-semibold text-green-400 mb-4">Featured Videos</h2>
+{/* Games Section */}
+        <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md 
+                p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
+  <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center text-green-400 
+                mb-3 sm:mb-4 lg:mb-6">
+    Your Games
+  </h2>
   <div className="relative">
-    <button ref={videoScrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-      <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
-    </button>
-    <div 
-      ref={videoScrollContainerRef} 
-      className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide items-center justify-center min-h-[200px]"
-    >
-      {videos.map((video, index) => (
-        <Link 
-          key={video._id} 
-          to={`/Videodetail/${video._id}`} 
-          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
-        >
-          {video.title}
-        </Link>
-      ))}
-    </div>
-    <button ref={videoScrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-      <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
-    </button>
-  </div>
-</div>
-
-<div className="bg-gray-900 rounded-xl shadow-md p-6 border-l-4 border-green-500">
-  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Featured Articles</h2>
-  <div className="relative">
-    <button ref={articleScrollLeftRef} className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-      <img src="/public/back.png" alt="Scroll Left" className="w-6 h-6" />
-    </button>
-    <div 
-      ref={articleScrollContainerRef} 
-      className="flex overflow-x-auto space-x-4 py-4 scrollbar-hide items-center justify-center min-h-[200px]"
-    >
-      {articles.map((article, index) => (
-        <Link 
-          key={article._id} 
-          to={`/Articledetail/${article._id}`} 
-          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
-        >
-          {article.title}
-        </Link>
-      ))}
-    </div>
-    <button ref={articleScrollRightRef} className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-green-700 rounded-full p-2 shadow-md z-10 hover:bg-green-600">
-      <img src="/public/next.png" alt="Scroll Right" className="w-6 h-6" />
-    </button>
-  </div>
-</div> */}
-<div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Your Games</h2>
-  <div className="relative">
-    <div 
-      ref={gameScrollContainerRef} 
-      className="flex overflow-x-auto space-x-4 py-4 items-center justify-center min-h-[150px]" // Reduced height
-    >
-      {games.map((game, index) => (
-        <div 
-          key={game._id} 
-          className="inline-block bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300 text-center"
-        >
+    <div ref={gameScrollContainerRef} 
+         className="flex overflow-x-auto space-x-3 sm:space-x-4 
+                  items-center px-2 sm:px-4 min-h-[120px] sm:min-h-[150px]
+                  scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">
+      {games.map((game) => (
+        <div key={game._id} 
+             className="flex-shrink-0 inline-block bg-green-500 text-white 
+                      font-medium sm:font-semibold py-2 sm:py-3 px-3 sm:px-4 
+                      rounded-lg hover:bg-green-600 transition-all duration-300 
+                      text-center text-sm sm:text-base transform hover:scale-105">
           <p>Game played on: {new Date(game.datePlayed).toLocaleDateString()}</p>
           <p>Winner: {game.winner}</p>
         </div>
@@ -548,19 +506,27 @@ function HomePage() {
   </div>
 </div>
 
-<div className="bg-gray-900 rounded-xl shadow-md p-6 mb-8 border-l-4 border-green-500">
-  <h2 className="text-2xl text-center font-semibold text-green-400 mb-4">Featured Videos</h2>
+
+{/* Videos Section */}
+<div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md 
+                p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
+  <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center text-green-400 
+                mb-3 sm:mb-4 lg:mb-6">
+    Featured Videos
+  </h2>
   <div className="relative">
-    <div 
-      ref={videoScrollContainerRef} 
-      className="flex overflow-x-auto space-x-4 py-4 items-center justify-center min-h-[150px]" // Reduced height
-    >
-      {videos.map((video, index) => (
-        <Link 
-          key={video._id} 
-          to={`/Videodetail/${video._id}`} 
-          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
-        >
+    <div ref={videoScrollContainerRef} 
+         className="flex overflow-x-auto space-x-3 sm:space-x-4 
+                  items-center px-2 sm:px-4 min-h-[120px] sm:min-h-[150px]
+                  scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">
+      {videos.map((video) => (
+        <Link key={video._id} 
+              to={`/Videodetail/${video._id}`} 
+              className="flex-shrink-0 inline-flex items-center justify-center 
+                       bg-green-500 text-white font-medium sm:font-semibold 
+                       py-2 sm:py-3 px-3 sm:px-4 rounded-lg hover:bg-green-600 
+                       transition-all duration-300 text-sm sm:text-base 
+                       transform hover:scale-105">
           {video.title}
         </Link>
       ))}
@@ -568,25 +534,34 @@ function HomePage() {
   </div>
 </div>
 
-<div className="bg-gray-900 rounded-xl shadow-md p-6 border-l-4 border-green-500">
-  <h2 className="text-2xl font-semibold text-center text-green-400 mb-4">Featured Articles</h2>
+{/* Articles Section */}
+<div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md 
+                p-4 sm:p-6 lg:p-8 border-l-4 border-green-500">
+  <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center text-green-400 
+                mb-3 sm:mb-4 lg:mb-6">
+    Featured Articles
+  </h2>
   <div className="relative">
-    <div 
-      ref={articleScrollContainerRef} 
-      className="flex overflow-x-auto space-x-4 py-4 items-center justify-center min-h-[150px]" // Reduced height
-    >
-      {articles.map((article, index) => (
-        <Link 
-          key={article._id} 
-          to={`/Articledetail/${article._id}`} 
-          className="inline-flex items-center justify-center bg-green-500 text-white font-semibold py-2 px-4 rounded hover:bg-green-600 transition duration-300"
-        >
+    <div ref={articleScrollContainerRef} 
+         className="flex overflow-x-auto space-x-3 sm:space-x-4 
+                  items-center px-2 sm:px-4 min-h-[120px] sm:min-h-[150px]
+                  scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">
+      {articles.map((article) => (
+        <Link key={article._id} 
+              to={`/Articledetail/${article._id}`} 
+              className="flex-shrink-0 inline-flex items-center justify-center 
+                       bg-green-500 text-white font-medium sm:font-semibold 
+                       py-2 sm:py-3 px-3 sm:px-4 rounded-lg hover:bg-green-600 
+                       transition-all duration-300 text-sm sm:text-base 
+                       transform hover:scale-105">
           {article.title}
         </Link>
       ))}
     </div>
   </div>
 </div>
+
+
       </div>
     </div>
   );

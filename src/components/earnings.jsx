@@ -94,7 +94,6 @@
 
 
 
-// EarningsChart.jsx
 import React, { useState } from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
@@ -104,7 +103,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, Title);
 const EarningsChart = () => {
   const [year, setYear] = useState('2023');
 
-  // Hardcoded data for coach earnings based on selected year
+  // Keep existing data arrays
   const data2023 = [500, 700, 600, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600];
   const data2024 = [600, 800, 700, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700];
 
@@ -159,7 +158,7 @@ const EarningsChart = () => {
         position: 'top',
         labels: {
           font: {
-            size: 14,
+            size: window.innerWidth < 640 ? 10 : 14,
           },
           color: '#333',
         },
@@ -168,7 +167,7 @@ const EarningsChart = () => {
         display: true,
         text: `Coach Earnings per Month (${year})`,
         font: {
-          size: 25,
+          size: window.innerWidth < 640 ? 18 : 25,
         },
         color: '#444',
       },
@@ -176,32 +175,55 @@ const EarningsChart = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-100 to-indigo-200 min-h-screen p-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Earnings Dashboard</h1>
-          <div className="mb-6">
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">Select Year:</label>
+    <div className="bg-gradient-to-br from-purple-100 to-indigo-200 min-h-screen 
+                    p-4 sm:p-6 md:p-8 lg:p-10">
+      <div className="max-w-xs sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto 
+                    bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl 
+                    overflow-hidden">
+        <div className="p-4 sm:p-6 md:p-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 
+                       mb-4 sm:mb-6 text-center sm:text-left">
+            Earnings Dashboard
+          </h1>
+          
+          <div className="mb-4 sm:mb-6">
+            <label htmlFor="year" 
+                   className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
+              Select Year:
+            </label>
             <select
               id="year"
               value={year}
               onChange={(e) => setYear(e.target.value)}
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-sm sm:text-base 
+                       border-gray-300 focus:outline-none focus:ring-indigo-500 
+                       focus:border-indigo-500 rounded-md"
             >
               <option value="2023">2023</option>
               <option value="2024">2024</option>
             </select>
           </div>
-          <div className="h-96 mb-8">
+
+          <div className="h-64 sm:h-80 md:h-96 mb-4 sm:mb-6 md:mb-8">
             <Pie data={data} options={options} />
           </div>
-          <div className="bg-gray-50 rounded-xl p-6 shadow-inner">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Earnings Summary</h2>
-            <p className="text-lg text-gray-600 mb-2">
-              Total Earnings for {year}: <span className="font-bold text-indigo-600">${year === '2023' ? totalEarnings2023 : totalEarnings2024}</span>
+
+          <div className="bg-gray-50 rounded-lg sm:rounded-xl p-4 sm:p-6 
+                        shadow-inner space-y-2 sm:space-y-4">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+              Earnings Summary
+            </h2>
+            <p className="text-base sm:text-lg text-gray-600">
+              Total Earnings for {year}: 
+              <span className="font-bold text-indigo-600 ml-2">
+                ${year === '2023' ? totalEarnings2023 : totalEarnings2024}
+              </span>
             </p>
-            <p className="text-lg text-gray-600">
-              Combined Earnings (2023 & 2024): <span className="font-bold text-indigo-600">${totalCombinedEarnings}</span>
+            <p className="text-base sm:text-lg text-gray-600">
+              Combined Earnings (2023 & 2024): 
+              <span className="font-bold text-indigo-600 ml-2">
+                ${totalCombinedEarnings}
+              </span>
             </p>
           </div>
         </div>

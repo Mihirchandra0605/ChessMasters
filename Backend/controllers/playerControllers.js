@@ -39,22 +39,25 @@ export const subscribeToCoach = async (req, res) => {
     const { coachId } = req.body;
     const playerId = req.userId;
 
+    // Find the coach by user ID instead of _id
     const coach = await CoachDetails.findById(coachId);
+    const player = await UserModel.findById(playerId);
     console.log("Found coach:", coach);
 
     if (!coach) {
       return res.status(404).json({ message: "Coach not found" });
     }
 
-    if (coach.subscribers.includes(playerId)) {
+    if (coach.subscribers.some(subscriber => subscriber.user.toString() === playerId)) {
       return res.status(400).json({ message: "You are already subscribed to this coach" });
     }
 
-    coach.subscribers.push(playerId);
+    // Store only the user ID in subscribers
+    coach.subscribers.push({ user: playerId, subscribedAt: new Date() });
     await coach.save();
 
-    const player = await UserModel.findById(playerId);
-    player.subscribedCoaches.push(coachId);
+    // Store coach's document ID in player's subscribedCoaches
+    player.subscribedCoaches.push(coach._id);
     await player.save();
 
     res.status(200).json({ message: "Successfully subscribed to coach", coachId });
@@ -63,7 +66,6 @@ export const subscribeToCoach = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const getSubscribedCoaches = async (req, res) => {
   try {
@@ -105,3 +107,46 @@ export const subscriptionStatus = async (req,res) => {
     res.status(500).json({ message: "Failed to check subscription status." });
   }
 }
+
+export const getUsernameById = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await UserModel.findById(userId, 'UserName');
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.status(200).json({ username: user.UserName });
+  } catch (error) {
+    console.error("Error fetching username:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getPlayerGameStats = async (req, res) => {
+  try {
+    const { playerId } = req.params; // Extract playerId from route parameters
+
+    // Fetch the player by ID and select the relevant fields
+    const player = await UserModel.findById(playerId, 'gamesWon gamesLost elo');
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    // Calculate total games played
+    const totalGamesPlayed = player.gamesWon + player.gamesLost;
+
+    // Return the game stats
+    res.status(200).json({
+      totalGamesPlayed,
+      gamesWon: player.gamesWon,
+      gamesLost: player.gamesLost,
+      elo: player.elo,
+    });
+  } catch (error) {
+    console.error("Error fetching player game stats:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

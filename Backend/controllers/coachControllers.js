@@ -1,10 +1,10 @@
 // import CoachModel from "../models/CoachModel.js";
 import CoachDetails from "../models/CoachModel.js";
 import ArticleModel from "../models/articleModel.js"; // for default export
-import UserModel  from "../models/userModel.js";
+import UserModel from "../models/userModel.js";
 import videoModel from "../models/videoModel.js";
 import jwt from "jsonwebtoken";
-import upload from '../middlewares/uploadMiddleware.js';
+import upload from "../middlewares/uploadMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddlerware.js";
 import { jwtSecretKey } from "../config.js";
 import mongoose from "mongoose";
@@ -22,7 +22,9 @@ export const getCoachDetails = async (req, res) => {
     let decoded;
     try {
       // Ensure the token format is "Bearer <token>"
-      const actualToken = token.startsWith("Bearer ") ? token.split(" ")[1] : token;
+      const actualToken = token.startsWith("Bearer ")
+        ? token.split(" ")[1]
+        : token;
       decoded = jwt.verify(actualToken, process.env.JWT_SECRET_KEY);
       console.log("Decoded Token:", decoded); // Debugging statement
     } catch (err) {
@@ -32,7 +34,9 @@ export const getCoachDetails = async (req, res) => {
 
     console.log("User ID from token:", decoded.userId); // Debugging statement
 
-    const coachDetails = await CoachDetails.findOne({ user: decoded.userId }).select("-password");
+    const coachDetails = await CoachDetails.findOne({
+      user: decoded.userId,
+    }).select("-password");
 
     if (!coachDetails) {
       console.error("No coach found with user ID:", decoded.userId); // Debugging statement
@@ -49,8 +53,11 @@ export const getCoachDetails = async (req, res) => {
 
 export const getAllCoaches = async (req, res) => {
   try {
-    const coaches = await CoachDetails.find().populate("user", "UserName").select("-password");
-    if (!coaches.length) return res.status(404).json({ message: "No coaches found" });
+    const coaches = await CoachDetails.find()
+      .populate("user", "UserName")
+      .select("-password");
+    if (!coaches.length)
+      return res.status(404).json({ message: "No coaches found" });
 
     res.status(200).json(coaches);
   } catch (error) {
@@ -73,10 +80,33 @@ export const getCoachById = async (req, res) => {
   }
 };
 
+// export const getSubscribedPlayers = async (req, res) => {
+//   try {
+//     const { coachId } = req.params; // Assuming userId is attached via middleware
 
+//     // Check if the user is a coach
+//     const user = await UserModel.findById(coachId);
+//     if (!user || user.Role !== "coach") {
+//       return res.status(403).json({ error: "Access denied. Not a coach." });
+//     }
+
+//     // Find the corresponding CoachDetails document
+//     const coach = await CoachDetails.findOne({ user: new mongoose.Types.ObjectId(coachId) }).populate("subscribers");
+//     if (!coach) {
+//       return res.status(404).json({ error: "Coach profile not found." });
+//     }
+
+//     // Send the subscribers
+//     return res.status(200).json({ subscribers: coach.subscribers });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal server error." });
+//   }
+// };
 export const getSubscribedPlayers = async (req, res) => {
   try {
-    const { coachId } = req.params; // Assuming userId is attached via middleware
+    const { coachId } = req.params;
+    console.log("coachId", coachId);
 
     // Check if the user is a coach
     const user = await UserModel.findById(coachId);
@@ -84,8 +114,9 @@ export const getSubscribedPlayers = async (req, res) => {
       return res.status(403).json({ error: "Access denied. Not a coach." });
     }
 
-    // Find the corresponding CoachDetails document
-    const coach = await CoachDetails.findOne({ user: new mongoose.Types.ObjectId(coachId) }).populate("subscribers");
+    // Find the corresponding CoachDetails document and populate subscribers.user
+    const coach = await CoachDetails.findOne({ user: coachId }).populate('subscribers.user');
+    console.log("coach", coach);
     if (!coach) {
       return res.status(404).json({ error: "Coach profile not found." });
     }
@@ -99,7 +130,7 @@ export const getSubscribedPlayers = async (req, res) => {
 };
 
 export const addArticle = [
-  upload.single('file'),  // Middleware for handling a single file upload
+  upload.single("file"), // Middleware for handling a single file upload
   async (req, res) => {
     try {
       const { title, content } = req.body;
@@ -109,7 +140,7 @@ export const addArticle = [
         coach: coachId,
         title,
         content,
-        filePath: req.file.path,  // Save the uploaded file path
+        filePath: req.file.path, // Save the uploaded file path
       });
 
       await article.save();
@@ -118,15 +149,15 @@ export const addArticle = [
       console.error("Error adding article:", error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 ];
 
 export const addVideo = [
-  upload.single('file'),
+  upload.single("file"),
   async (req, res) => {
     try {
-      const { title, content } = req.body; 
-      const coachId = req.userId; 
+      const { title, content } = req.body;
+      const coachId = req.userId;
 
       if (!req.file) {
         return res.status(400).json({ message: "No file uploaded" });
@@ -137,17 +168,17 @@ export const addVideo = [
         coach: coachId,
         title,
         content,
-        filePath: req.file.path, 
+        filePath: req.file.path,
       });
 
-      await video.save(); 
+      await video.save();
 
       res.status(201).json({ message: "Video added successfully", video });
     } catch (error) {
       console.error("Error adding video:", error);
       res.status(500).json({ message: "Internal server error" });
     }
-  }
+  },
 ];
 
 export const completeProfile = async (req, res) => {
@@ -156,9 +187,9 @@ export const completeProfile = async (req, res) => {
 
   try {
     const updatedUser = await CoachDetails.findOneAndUpdate(
-      { user: profileId },  // Match on user field instead of _id
+      { user: profileId }, // Match on user field instead of _id
       updatedValues,
-      { new: true }  // Return the updated document
+      { new: true } // Return the updated document
     );
 
     if (updatedUser) {
@@ -184,17 +215,16 @@ export const getArticles = async (req, res) => {
 
 export const getArticleById = async (req, res) => {
   try {
-    const article = await ArticleModel.findById(req.params.id);  // Find article by ID
+    const article = await ArticleModel.findById(req.params.id); // Find article by ID
     if (!article) {
       return res.status(404).json({ message: "Article not found" });
     }
-    res.status(200).json(article);  // Return the article details
+    res.status(200).json(article); // Return the article details
   } catch (error) {
     console.error("Error fetching article:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const getVideos = async (req, res) => {
   try {
@@ -209,14 +239,13 @@ export const getVideos = async (req, res) => {
   }
 };
 
-
 export const getVideoById = async (req, res) => {
   try {
     const video = await videoModel.findById(req.params.id);
-    if(!video){
+    if (!video) {
       return res.status(404).json({ message: "Video not found" });
     }
-    res.status(200).json(video)
+    res.status(200).json(video);
   } catch (error) {
     console.error("Error fetching video:", error);
     res.status(500).json({ message: "Internal server error" });

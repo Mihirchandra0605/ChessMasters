@@ -120,23 +120,24 @@ const SubscriptionChart = () => {
         position: 'top',
         labels: {
           font: {
-            size: 14,
+            size: window.innerWidth < 640 ? 12 : 14,
             weight: 'bold',
           },
           color: '#4a5568',
+          padding: window.innerWidth < 640 ? 10 : 20,
         },
       },
       title: {
         display: true,
         text: `Coach Subscriptions Analysis (${selectedYear})`,
         font: {
-          size: 20,
+          size: window.innerWidth < 640 ? 16 : 20,
           weight: 'bold',
         },
         color: '#2d3748',
         padding: {
-          top: 10,
-          bottom: 30
+          top: window.innerWidth < 640 ? 5 : 10,
+          bottom: window.innerWidth < 640 ? 15 : 30
         }
       },
     },
@@ -147,6 +148,9 @@ const SubscriptionChart = () => {
         },
         ticks: {
           color: '#4a5568',
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12,
+          },
         }
       },
       y: {
@@ -155,30 +159,58 @@ const SubscriptionChart = () => {
         },
         ticks: {
           color: '#4a5568',
+          font: {
+            size: window.innerWidth < 640 ? 10 : 12,
+          },
         }
       },
     },
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-100 to-indigo-200 min-h-screen p-8">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">Subscription Analysis</h1>
-          <div className="mb-6">
-            <label htmlFor="year" className="block text-sm font-medium text-gray-700 mb-2">Select Year:</label>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-indigo-200 p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg lg:shadow-xl overflow-hidden">
+        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-3 sm:mb-4 md:mb-6">
+            Subscription Analysis
+          </h1>
+          
+          <div className="mb-3 sm:mb-4 md:mb-6">
+            <label 
+              htmlFor="year" 
+              className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2"
+            >
+              Select Year:
+            </label>
             <select
               id="year"
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-2 sm:pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 text-sm sm:text-base 
+                border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 
+                focus:border-indigo-500 rounded-md transition-all duration-200
+                bg-white shadow-sm"
             >
               <option value="2023">2023</option>
               <option value="2024">2024</option>
             </select>
           </div>
-          <div className="h-96 mb-8">
-            <Bar data={data} options={options} />
+
+          <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 mb-4 sm:mb-6 md:mb-8">
+            <Bar 
+              data={data} 
+              options={options}
+              className="w-full h-full"
+            />
+          </div>
+
+          <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3 text-xs sm:text-sm text-gray-600">
+            <p className="hidden sm:block">
+              * Hover over the bars to see detailed information
+            </p>
+            <p className="sm:hidden">
+              * Tap on the bars to see detailed information
+            </p>
           </div>
         </div>
       </div>

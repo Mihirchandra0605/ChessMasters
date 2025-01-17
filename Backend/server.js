@@ -2,14 +2,20 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import http from 'http'; // Import http to create the server
-import { Server } from 'socket.io'; // Import Server from socket.io
-import { Chess } from 'chess.js'; // Import Chess.js
+import http from 'http';
+import { Server } from 'socket.io';
+import { Chess } from 'chess.js';
+import axios from 'axios';
+
+// Import routes
 import authRoutes from "./routes/authRoutes.js";
 import playerRoutes from './routes/playerRoutes.js';
 import coachRoutes from './routes/coachRoutes.js';
 import gameRoutes from './routes/gameRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+
+// Import models
+import UserModel from "./models/userModel.js";
 
 const app = express();
 const PORT = 3000;
@@ -18,8 +24,8 @@ const PORT = 3000;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow only this origin
-  credentials: true, // Allow cookies to be sent
+  origin: 'http://localhost:5173',
+  credentials: true,
 }));
 
 // Routes
@@ -29,22 +35,40 @@ app.use("/coach", coachRoutes);
 app.use("/game", gameRoutes);
 app.use("/admin", adminRoutes);
 
+// Game stats update endpoint
 app.post("/updateGameStats", async (req, res) => {
   try {
-    const { userId, result } = req.body; // `result` can be "win" or "loss"
+    const { userId, result } = req.body;
 
     if (!userId || !["win", "loss"].includes(result)) {
       return res.status(400).json({ error: "Invalid data provided" });
     }
 
-    const update = result === "win" ? { $inc: { gamesWon: 1 } } : { $inc: { gamesLost: 1 } };
-    const user = await UserModel.findByIdAndUpdate(userId, update, { new: true });
-
+    // Fetch the user's current data
+    const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
 
-    res.status(200).json({ message: "Game stats updated successfully", user });
+    // Calculate ELO change and determine the next game number
+    const eloChange = result === "win" ? 100 : -100;
+    const nextGameNumber = (user.eloHistory?.length || 0) + 1;
+
+    // Prepare the update object
+    const update = result === "win"
+      ? {
+          $inc: { gamesWon: 1, elo: eloChange },
+          $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + eloChange } },
+        }
+      : {
+          $inc: { gamesLost: 1, elo: eloChange },
+          $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + eloChange } },
+        };
+
+    // Apply the update
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, update, { new: true });
+
+    res.status(200).json({ message: "Game stats updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Error updating game stats:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -58,127 +82,158 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173', // Adjust to your client URL
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
 
 // Socket.IO logic
-let games = {}; // Structure: { roomId: { players: [socketId1, socketId2], game: ChessInstance } }
+let games = {}; // Structure: { roomId: { players: [{socketId, userId, color, username}], game: ChessInstance, isGameOver: false } }
 
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
   // Handle player joining a game
-  socket.on('joinGame', () => {
-    // Find a room with only one player
-    let room = Object.keys(games).find((key) => games[key].players.length === 1);
+  socket.on('joinGame', async (userId) => {
+    try {
+      // Find user details
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        socket.emit('error', 'User not found');
+        return;
+      }
 
-    // If no available room, create a new one
-    if (!room) {
-      room = `room-${socket.id}`;
-      games[room] = { players: [], game: new Chess() };
+      // Find a room with only one player
+      let room = Object.keys(games).find((key) => 
+        games[key].players.length === 1 && 
+        games[key].players[0].userId !== userId
+      );
+
+      // If no available room, create a new one
+      if (!room) {
+        room = `room-${userId}-${Date.now()}`;
+        games[room] = { 
+          players: [], 
+          game: new Chess(),
+          isGameOver: false 
+        };
+      }
+
+      // Join the room
+      socket.join(room);
+
+      // Determine color assignment
+      const color = games[room].players.length === 0 ? 'w' : 'b';
+
+      // Add player to the room
+      games[room].players.push({ 
+        socketId: socket.id, 
+        userId, 
+        color,
+        username: user.UserName
+      });
+
+      // Emit room and color to the client
+      socket.emit('roomAssigned', room);
+      socket.emit('assignColor', color);
+
+      // Start the game when two players have joined
+      if (games[room].players.length === 2) {
+        const playerDetails = games[room].players.map(p => ({
+          userId: p.userId,
+          color: p.color,
+          username: p.username
+        }));
+
+        io.to(room).emit('startGame', {
+          fen: games[room].game.fen(),
+          players: playerDetails
+        });
+      }
+
+      // Handle moves
+      socket.on('move', ({ move, room }) => {
+        const gameRoom = games[room];
+        if (!gameRoom || gameRoom.isGameOver) return;
+
+        const result = gameRoom.game.move(move);
+        if (result) {
+          io.to(room).emit('move', { 
+            move: result, 
+            san: result.san 
+          });
+
+          // Check for game over
+          if (gameRoom.game.in_checkmate()) {
+            gameRoom.isGameOver = true;
+            const winnerColor = gameRoom.game.turn() === 'w' ? 'Black' : 'White';
+            const winnerPlayer = gameRoom.players.find(p => p.color !== gameRoom.game.turn());
+            const loserPlayer = gameRoom.players.find(p => p.color === gameRoom.game.turn());
+            
+            io.to(room).emit('gameOver', { 
+              winner: winnerColor,
+              winnerId: winnerPlayer.userId
+            });
+
+            // Update game stats for winner and loser
+            axios.post('http://localhost:3000/updateGameStats', {
+              userId: winnerPlayer.userId,
+              result: 'win'
+            }).catch(console.error);
+
+            axios.post('http://localhost:3000/updateGameStats', {
+              userId: loserPlayer.userId,
+              result: 'loss'
+            }).catch(console.error);
+          }
+        }
+      });
+
+      // Handle disconnection
+      socket.on('disconnect', () => {
+        if (room && games[room]) {
+          const disconnectedPlayerIndex = games[room].players.findIndex(
+            p => p.socketId === socket.id
+          );
+
+          if (disconnectedPlayerIndex !== -1) {
+            const remainingPlayer = games[room].players.find(
+              (_, index) => index !== disconnectedPlayerIndex
+            );
+
+            // Remove disconnected player
+            games[room].players.splice(disconnectedPlayerIndex, 1);
+
+            if (remainingPlayer && !games[room].isGameOver) {
+              // Declare remaining player as winner only if game isn't over
+              games[room].isGameOver = true; // Mark game as over
+              const winnerColor = remainingPlayer.color === 'w' ? 'White' : 'Black';
+              
+              io.to(room).emit('playerDisconnected', { 
+                winner: winnerColor,
+                winnerId: remainingPlayer.userId
+              });
+
+              // Update game stats for remaining player as winner
+              axios.post('http://localhost:3000/updateGameStats', {
+                userId: remainingPlayer.userId,
+                result: 'win'
+              }).catch(console.error);
+            }
+
+            // Remove the room if no players left
+            if (games[room].players.length === 0) {
+              delete games[room];
+            }
+          }
+        }
+      });
+
+    } catch (error) {
+      console.error('Game joining error:', error);
+      socket.emit('error', 'Failed to join game');
     }
-
-    // Join the room
-    socket.join(room);
-    games[room].players.push(socket.id);
-
-    // Assign colors
-    let assignedColor;
-    if (games[room].players.length === 1) {
-      assignedColor = 'w'; // First player is White
-    } else if (games[room].players.length === 2) {
-      assignedColor = 'b'; // Second player is Black
-    }
-
-    // Emit assigned color and room to the client
-    socket.emit('assignColor', assignedColor);
-    socket.emit('roomAssigned', room);
-
-    // Start the game when two players have joined
-    if (games[room].players.length === 2) {
-      io.to(room).emit('startGame', games[room].game.fen());
-    }
-
-    // Handle moves from clients
-    socket.on('move', ({ move, room }) => {
-      const gameInstance = games[room]?.game;
-      if (!gameInstance) return;
-
-      const result = gameInstance.move(move);
-      if (result) {
-        // Broadcast the move to both players
-        io.to(room).emit('move', { move: result, san: result.san });
-
-        // Check for game over
-        if (gameInstance.in_checkmate()) {
-          const winnerColor = gameInstance.turn() === 'w' ? 'Black' : 'White';
-          io.to(room).emit('gameOver', { winner: winnerColor });
-        }
-      }
-    });
-
-    // Handle player refresh
-    socket.on('playerRefresh', ({ room, fen }) => {
-      const gameInstance = games[room]?.game;
-      if (gameInstance) {
-        gameInstance.load(fen);
-        const opponentId = games[room].players.find((id) => id !== socket.id);
-        if (opponentId) {
-          io.to(opponentId).emit('opponentRefreshed', fen);
-        }
-      }
-    });
-
-    // Handle game over manually (if needed)
-    socket.on('gameOver', ({ winner, room }) => {
-      io.to(room).emit('gameOver', { winner });
-      // Optionally, reset the game
-      if (games[room]) {
-        games[room].game = new Chess(); // Reset game
-      }
-    });
-
-    // Handle player disconnection
-    socket.on('disconnect', () => {
-      console.log(`Player disconnected: ${socket.id}`);
-      let room = null;
-    
-      // Find the room the socket was in
-      for (const [roomId, roomData] of Object.entries(games)) {
-        if (roomData.players.includes(socket.id)) {
-          room = roomId;
-          break;
-        }
-      }
-    
-      if (room) {
-        // Remove the player from the room
-        games[room].players = games[room].players.filter(id => id !== socket.id);
-    
-        if (games[room].players.length === 0) {
-          // If no players left, delete the room
-          delete games[room];
-        } else {
-          // If one player left, declare the remaining player as winner
-          const remainingPlayerId = games[room].players[0];
-          const gameInstance = games[room].game;
-          const winnerColor = gameInstance.turn() === 'w' ? 'Black' : 'White';
-    
-          // Emit the winner to the remaining player
-          io.to(room).emit('playerDisconnected', { winner: winnerColor });
-    
-          // Log the winner in the console
-          console.log(`Player disconnected. Winner: ${winnerColor}`);
-    
-          // Reset the game for the remaining player
-          games[room].game = new Chess();
-        }
-      }
-    });
-    
   });
 });
 

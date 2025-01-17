@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { jwtSecretKey } from "../config.js";
 import CoachDetails from "../models/CoachModel.js";
-import AdminModel from "../models/adminModel.js";
 
 function generateToken(userId, role) {
   return jwt.sign({ userId, role }, jwtSecretKey, { expiresIn: "1h" });
@@ -15,9 +14,13 @@ export const registerUser = async (req, res) => {
 
     const { UserName, Email, Password, Role, Fide_id } = req.body;
 
+    console.log("Role:", Role);
     const userExists = await UserModel.findOne({ Email });
+    console.log("User exists:", userExists);
     if (userExists) {
       return res.status(400).json({ message: "Email already registered" });
+    } else {
+      console.log("User does not exist");
     }
 
     const hashedPassword = await bcrypt.hash(Password, 10);

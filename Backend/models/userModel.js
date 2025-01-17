@@ -12,6 +12,14 @@ const UserModelSchema = new Schema({
   subscribedCoaches: [{ type: Schema.Types.ObjectId, ref: "CoachDetails" }],
   gamesWon: { type: Number, default: 0 },
   gamesLost: { type: Number, default: 0 },
+  elo: { type: Number, default: 1200 }, // Added ELO field
+  eloHistory: [
+    {
+      gameNumber: { type: Number, required: true },
+      elo: { type: Number, required: true },
+    },
+  ], // Added ELO history field
+  createdAt: { type: Date, default: Date.now },
 });
 
 UserModelSchema.pre("save", async function (next) {

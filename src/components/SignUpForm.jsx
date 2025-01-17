@@ -214,7 +214,7 @@ function AlertMessage({ message, duration = 3000 }) {
     <motion.div
       initial={{ x: '100%' }}
       animate={controls}
-      className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg"
+      className="fixed top-4 right-4 bg-green-500 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg shadow-lg text-sm sm:text-base z-50"
     >
       <div className="flex items-center">
         <span>{message}</span>
@@ -297,6 +297,8 @@ function SignupForm({ onSignupSuccess }) {
       });
   };
 
+  const inputClasses = "w-full p-2 sm:p-2.5 md:p-3 text-sm sm:text-base bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300";
+
   return (
     <>
       {showAlert && <AlertMessage message="Signup successful!" />}
@@ -304,43 +306,41 @@ function SignupForm({ onSignupSuccess }) {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-[#16213E] shadow-lg rounded-xl p-6 w-full"
+        className="bg-[#16213E] shadow-lg rounded-xl p-4 sm:p-5 md:p-6 w-full max-w-md mx-auto"
       >
-        <div className="flex justify-center items-center space-x-4 mb-4">
+        <div className="flex justify-center items-center space-x-2 sm:space-x-4 mb-3 sm:mb-4 md:mb-6">
           <motion.img
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-6 h-6"
+            className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8"
             src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
             alt="rook"
           />
-          <h1 className="text-xl font-bold text-[#E4EfE9]">Sign Up</h1>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#E4EfE9]">Sign Up</h1>
           <motion.img
             animate={{ rotate: -360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-6 h-6"
+            className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8"
             src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
             alt="rook"
           />
         </div>
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4">
           <input
             type="text"
             placeholder="Username"
-            className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+            className={inputClasses}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             required
           />
           <select
-            className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+            className={inputClasses}
             value={role}
             onChange={(e) => setRole(e.target.value)}
             required
           >
-            <option value="" disabled hidden>
-              UserType
-            </option>
+            <option value="" disabled hidden>UserType</option>
             <option value="player">Player</option>
             <option value="coach">Coach</option>
           </select>
@@ -348,7 +348,7 @@ function SignupForm({ onSignupSuccess }) {
             <input
               type="text"
               placeholder="FIDE ID"
-              className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+              className={inputClasses}
               value={fideId}
               onChange={(e) => setFideId(e.target.value)}
               required
@@ -356,14 +356,12 @@ function SignupForm({ onSignupSuccess }) {
           )}
           {role === "player" && (
             <select
-              className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+              className={inputClasses}
               value={level}
               onChange={(e) => setLevel(e.target.value)}
               required
             >
-              <option value="" disabled hidden>
-                Level
-              </option>
+              <option value="" disabled hidden>Level</option>
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
               <option value="advanced">Advanced</option>
@@ -372,7 +370,7 @@ function SignupForm({ onSignupSuccess }) {
           <input
             type="email"
             placeholder="Email"
-            className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+            className={inputClasses}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -380,7 +378,7 @@ function SignupForm({ onSignupSuccess }) {
           <input
             type="password"
             placeholder="Password"
-            className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+            className={inputClasses}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -388,14 +386,14 @@ function SignupForm({ onSignupSuccess }) {
           <input
             type="password"
             placeholder="Confirm Password"
-            className="w-full p-2 bg-[#1A1A2E] text-[#E4EfE9] border border-[#29011C] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FBB03B] transition-all duration-300"
+            className={inputClasses}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
           <motion.button
             type="submit"
-            className="w-full px-4 py-2 bg-[#FBB03B] text-[#010332] font-semibold rounded-lg hover:bg-[#FCEE21] transition-all duration-300"
+            className="w-full px-3 sm:px-4 py-2 sm:py-2.5 md:py-3 text-sm sm:text-base bg-[#FBB03B] text-[#010332] font-semibold rounded-lg hover:bg-[#FCEE21] transition-all duration-300 mt-2 sm:mt-3"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -408,3 +406,4 @@ function SignupForm({ onSignupSuccess }) {
 }
 
 export default SignupForm;
+

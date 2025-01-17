@@ -457,9 +457,32 @@ function ChessBoard() {
   const [color, setColor] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [room, setRoom] = useState(null);
+  const [boardWidth, setBoardWidth] = useState(650);
+  const [players, setPlayers] = useState({
+    white: { username: "Opponent", userId: null },
+    black: { username: "Opponent", userId: null },
+  });
 
   const socket = useRef(null);
+  const containerRef = useRef(null);
 
+  // Resize board logic
+  useEffect(() => {
+    const updateBoardWidth = () => {
+      if (containerRef.current) {
+        const containerWidth = containerRef.current.offsetWidth;
+        const newWidth = Math.min(650, containerWidth - 32);
+        setBoardWidth(newWidth);
+      }
+    };
+
+    window.addEventListener("resize", updateBoardWidth);
+    updateBoardWidth();
+
+    return () => window.removeEventListener("resize", updateBoardWidth);
+  }, []);
+
+  // Safe game mutation function
   function safeGameMutate(modify) {
     setGame((g) => {
       const update = new Chess(g.fen());
@@ -468,12 +491,14 @@ function ChessBoard() {
     });
   }
 
+  // Socket connection and game setup
   useEffect(() => {
     socket.current = io("http://localhost:3000", {
       withCredentials: true,
     });
 
-    socket.current.emit("joinGame");
+    const userId = localStorage.getItem("userId");
+    socket.current.emit("joinGame", userId);
 
     socket.current.on("assignColor", (assignedColor) => {
       setColor(assignedColor);
@@ -483,9 +508,24 @@ function ChessBoard() {
       setRoom(assignedRoom);
     });
 
-    socket.current.on("startGame", (fen) => {
+    socket.current.on("startGame", ({ fen, players }) => {
       setIsConnected(true);
       setGame(new Chess(fen));
+
+      // Set player usernames
+      const whitePlayers = players.find((p) => p.color === "w");
+      const blackPlayers = players.find((p) => p.color === "b");
+
+      setPlayers({
+        white: {
+          username: whitePlayers.username,
+          userId: whitePlayers.userId,
+        },
+        black: {
+          username: blackPlayers.username,
+          userId: blackPlayers.userId,
+        },
+      });
     });
 
     socket.current.on("move", ({ move, san }) => {
@@ -496,9 +536,11 @@ function ChessBoard() {
     });
 
     socket.current.on("gameOver", ({ winner }) => {
-      setWinner(winner);
-      setGameOver(true);
-      setIsConnected(false);
+      handleGameOver(winner);
+    });
+
+    socket.current.on("playerDisconnected", ({ winner }) => {
+      handleGameOver(winner);
     });
 
     return () => {
@@ -506,6 +548,37 @@ function ChessBoard() {
     };
   }, []);
 
+  // Handle game over logic
+  function handleGameOver(winnerColor) {
+    const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+    const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+    const playerWhite = players.white.userId;
+    const playerBlack = players.black.userId;
+
+    const gameResult = {
+      playerWhite,
+      playerBlack,
+      moves: {
+        whiteMoves,
+        blackMoves,
+      },
+      winner: winnerColor,
+      additionalAttributes: {
+        duration: Math.floor(performance.now() / 1000),
+      },
+    };
+
+    axios
+      .post("http://localhost:3000/game/saveGameResult", gameResult)
+      .then(() => console.log("Game result saved successfully"))
+      .catch((err) => console.error("Error saving game result:", err));
+
+    setWinner(winnerColor);
+    setGameOver(true);
+    setIsConnected(false);
+  }
+
+  // Move handling functions
   function onDrop(sourceSquare, targetSquare) {
     makeMove(sourceSquare, targetSquare);
   }
@@ -551,39 +624,12 @@ function ChessBoard() {
 
     if (game.in_checkmate()) {
       const winnerColor = game.turn() === "w" ? "Black" : "White";
-
-      const playerWhite = color === "w" ? localStorage.getItem("userId") : localStorage.getItem("userId");
-      const playerBlack = color === "b" ? localStorage.getItem("userId") : localStorage.getItem("userId");
-
-      const gameResult = {
-        playerWhite,
-        playerBlack,
-        moves: {
-          whiteMoves: history.filter((_, i) => i % 2 === 0),
-          blackMoves: history.filter((_, i) => i % 2 !== 0),
-        },
-        winner: winnerColor,
-        additionalAttributes: {
-          duration: Math.floor(performance.now() / 1000),
-        },
-      };
-      
-      console.log("Game Over!");
-      console.log("Player White:", playerWhite);
-      console.log("Player Black:", playerBlack);
-
-      axios
-        .post("http://localhost:3000/game/saveGameResult", gameResult)
-        .then((res) => console.log("Game stats updated successfully", res.data))
-        .catch((err) => console.error("Error updating game stats:", err));
-
-      setWinner(winnerColor);
-      setGameOver(true);
-
+      handleGameOver(winnerColor);
       socket.current.emit("gameOver", { winner: winnerColor, room });
     }
   }
 
+  // Custom square styling
   const customSquareStyles = {};
   if (selectedSquare) {
     customSquareStyles[selectedSquare] = {
@@ -596,6 +642,7 @@ function ChessBoard() {
     });
   }
 
+  // Restart game on Enter key
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Enter" && gameOver) {
@@ -604,7 +651,7 @@ function ChessBoard() {
         setWinner(null);
         setGameOver(false);
         setIsConnected(false);
-        socket.current.emit("joinGame");
+        socket.current.emit("joinGame", localStorage.getItem("userId"));
       }
     }
 
@@ -612,10 +659,11 @@ function ChessBoard() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameOver]);
 
+  // Loading state
   if (!color || (!isConnected && !gameOver)) {
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <div className="text-2xl font-bold text-gray-700 animate-pulse">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+        <div className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700 animate-pulse">
           Waiting for an opponent...
         </div>
       </div>
@@ -623,37 +671,52 @@ function ChessBoard() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-4">
-      <div className="w-full max-w-2xl bg-white rounded-lg shadow-2xl overflow-hidden transition-all duration-300 ease-in-out">
-        <div className="text-center py-2 text-xl font-bold text-gray-700">
-          Opponent
+    <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-2 sm:p-4 gap-4 lg:gap-8">
+      <div
+        ref={containerRef}
+        className="w-full lg:w-auto bg-white rounded-lg shadow-xl overflow-hidden transition-all duration-300 ease-in-out"
+      >
+        <div className="text-center py-2 text-base sm:text-lg md:text-xl font-bold text-gray-700">
+          {color === "w" ? players.black.username : players.white.username}
         </div>
-        <Chessboard
-          position={game.fen()}
-          onPieceDrop={onDrop}
-          onSquareClick={onSquareClick}
-          customSquareStyles={customSquareStyles}
-          boardOrientation={color === "b" ? "black" : "white"}
-          boardWidth={650}
-        />
-        <div className="text-center py-2 text-xl font-bold text-gray-700">
-          You
-        </div>
-        {gameOver && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white">
-            <div className="text-center space-y-4 animate-fade-in-down">
-              <p className="text-4xl font-bold">Game Over</p>
-              <p className="text-2xl">Winner: {winner}</p>
-              <p className="text-xl">Press Enter to restart</p>
+        <div className="relative">
+          <Chessboard
+            position={game.fen()}
+            onPieceDrop={onDrop}
+            onSquareClick={onSquareClick}
+            customSquareStyles={customSquareStyles}
+            boardOrientation={color === "b" ? "black" : "white"}
+            boardWidth={boardWidth}
+          />
+          {gameOver && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white">
+              <div className="text-center space-y-2 sm:space-y-4 p-4 animate-fade-in-down">
+                <p className="text-2xl sm:text-3xl md:text-4xl font-bold">
+                  Game Over
+                </p>
+                <p className="text-xl sm:text-2xl">Winner: {winner}</p>
+                <p className="text-base sm:text-lg md:text-xl">
+                  Press Enter to restart
+                </p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+        <div className="text-center py-2 text-base sm:text-lg md:text-xl font-bold text-gray-700">
+          {color === "w" ? players.white.username : players.black.username}
+        </div>
       </div>
-      <div className="mt-8 md:mt-0 md:ml-8 w-full max-w-md">
-        <MoveHistory history={history} />
+
+      <div className="w-full lg:w-80 xl:w-96">
+        <div className="bg-white rounded-lg shadow-xl p-4 h-full max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <MoveHistory history={history} />
+        </div>
       </div>
     </div>
   );
 }
 
 export default ChessBoard;
+
+
+
