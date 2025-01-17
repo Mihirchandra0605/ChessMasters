@@ -258,16 +258,16 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const chartData = {
-  labels: ['Wins', 'Losses'],
-  datasets: [
-    {
-      data: [80, 20],
-      backgroundColor: ['#10B981', '#EF4444'],
-      hoverBackgroundColor: ['#059669', '#DC2626'],
-    },
-  ],
-};
+// const chartData = {
+//   labels: ['Wins', 'Losses'],
+//   datasets: [
+//     {
+//       data: [80, 20],
+//       backgroundColor: ['#10B981', '#EF4444'],
+//       hoverBackgroundColor: ['#059669', '#DC2626'],
+//     },
+//   ],
+// };
 
 const chartOptions = {
   responsive: true,
@@ -282,6 +282,7 @@ const chartOptions = {
   },
 };
 
+
 function HomePage() {
   const navigate = useNavigate();
   const [details, setDetails] = useState(null);
@@ -292,7 +293,12 @@ function HomePage() {
   const [isPlayer, setIsPlayer] = useState(searchParams.get('role') === 'player');
 
   const [showStats, setShowStats] = useState(false);
-  
+  const [stats, setStats] = useState({
+    totalGamesPlayed: 0,
+    gamesWon: 0,
+    gamesLost: 0,
+    elo: 0,
+  });
 
   const gameScrollContainerRef = useRef(null);
   const scrollLeftRef = useRef(null);
@@ -396,6 +402,32 @@ function HomePage() {
       });
   }, []);
 
+  const fetchStats = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/player/${details._id}/game-stats`, { withCredentials: true });
+      setStats(response.data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (showStats) {
+      fetchStats();
+    }
+  }, [showStats]);
+
+  const chartData = {
+    labels: ['Wins', 'Losses'],
+    datasets: [
+      {
+        data: [stats.gamesWon, stats.gamesLost],
+        backgroundColor: ['#10B981', '#EF4444'],
+        hoverBackgroundColor: ['#059669', '#DC2626'],
+      },
+    ],
+  };
+
   if (!details || !articles) {
     return (
       <div className="flex justify-center items-center h-screen bg-black">
@@ -428,58 +460,41 @@ function HomePage() {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md 
-                      p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-center text-green-400 
-                       mb-3 sm:mb-4">
-            Stats
-          </h2>
-          {!showStats ? (
-            <button onClick={() => setShowStats(true)}
-                    className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 
-                             to-green-700 text-black font-bold rounded-lg transition-all duration-300 
-                             hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 
-                             focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 
-                             text-sm sm:text-base">
-              View
-            </button>
-          ) : (
-            <div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 
-                           text-center mb-4">
-                {/* Stats Cards */}
-                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
-                  <p className="font-medium text-green-400 text-sm sm:text-base">Games Played: 100</p>
-                </div>
-                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
-                  <p className="font-medium text-green-400 text-sm sm:text-base">Wins: 80</p>
-                </div>
-
-                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
-                  <p className="font-medium text-green-400 text-sm sm:text-base">Losses: 20</p>
-                </div>
-
-                <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
-                  <p className="font-medium text-green-400 text-sm sm:text-base">Rating: 1300</p>
-                </div>
-
-      </div>
-      <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto 
-                           h-48 sm:h-56 md:h-64 mb-4">
-                <Pie data={chartData} options={chartOptions} />
-              </div>
-
-              <button onClick={() => setShowStats(false)}
-                      className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 
-                               to-green-700 text-black font-bold rounded-lg transition-all duration-300 
-                               hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 
-                               focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 
-                               text-sm sm:text-base">
-                Back
-              </button>
+        <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
+      <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-center text-green-400 mb-3 sm:mb-4">
+        Stats
+      </h2>
+      {!showStats ? (
+        <button onClick={() => setShowStats(true)}
+                className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 to-green-700 text-black font-bold rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 text-sm sm:text-base">
+          View
+        </button>
+      ) : (
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-center mb-4">
+            <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+              <p className="font-medium text-green-400 text-sm sm:text-base">Games Played: {stats.totalGamesPlayed}</p>
             </div>
-          )}
+            <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+              <p className="font-medium text-green-400 text-sm sm:text-base">Wins: {stats.gamesWon}</p>
+            </div>
+            <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+              <p className="font-medium text-green-400 text-sm sm:text-base">Losses: {stats.gamesLost}</p>
+            </div>
+            <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+              <p className="font-medium text-green-400 text-sm sm:text-base">Rating: {stats.elo}</p>
+            </div>
+          </div>
+          <div className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg mx-auto h-48 sm:h-56 md:h-64 mb-4">
+            <Pie data={chartData} options={{ maintainAspectRatio: false }} />
+          </div>
+          <button onClick={() => setShowStats(false)}
+                  className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-gradient-to-r from-green-500 to-green-700 text-black font-bold rounded-lg transition-all duration-300 hover:from-green-600 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transform hover:scale-105 text-sm sm:text-base">
+            Back
+          </button>
         </div>
+      )}
+    </div>
 {/* Games Section */}
         <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md 
                 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
