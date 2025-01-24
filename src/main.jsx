@@ -1,4 +1,5 @@
 import { StrictMode, useState } from "react";
+import axios from 'axios'; // Add this import
 import { createRoot } from "react-dom/client";
 import "./main.css";
 import { Provider } from "react-redux";
@@ -22,6 +23,36 @@ import ChessBoard from "./components/Chessboard.jsx";
 import PricingPlans from "./components/PricingPlans.jsx"
 import PaymentPage from "./components/PaymentPage.jsx";
 import VideoDetail from "./components/VideoDetails.jsx";
+axios.defaults.withCredentials = true; // Add this line
+
+axios.interceptors.request.use(
+    (config) => {
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('authorization='))
+        ?.split('=')[1];
+      
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    },
+    (error) => {
+      return Promise.reject(error);
+    }
+  );
+  
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('userId');
+        window.location.href = '/login';
+      }
+      return Promise.reject(error);
+    }
+  );
+
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);

@@ -23,7 +23,8 @@ const router = Router();
 router.get("/details", getCoachDetails);
 router.get("/coaches", getAllCoaches);
 router.get("/:id", getCoachById);
-router.get("/subscribedPlayers/:coachId", isCoach, getSubscribedPlayers);
+// Example usage in routes
+router.get("/subscribedPlayers/:coachId", authMiddleware, isCoach, getSubscribedPlayers);
 router.post("/addArticle", isCoach, addArticle);
 router.post("/addVideo", isCoach, addVideo);
 router.put("/completeProfile", authMiddleware, isCoach, completeProfile);
