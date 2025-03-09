@@ -1,445 +1,3 @@
-// import React, { useState, useEffect, useRef } from "react";
-// import { Chessboard } from "react-chessboard";
-// import { Chess } from "chess.js";
-// import MoveHistory from "./MoveHistory";
-// import io from "socket.io-client";
-// import axios from "axios";
-// import "../styles/Chessboard.css";
-
-// function ChessBoard() {
-//   const [game, setGame] = useState(new Chess());
-//   const [history, setHistory] = useState([]);
-//   const [winner, setWinner] = useState(null);
-//   const [gameOver, setGameOver] = useState(false);
-//   const [selectedSquare, setSelectedSquare] = useState(null);
-//   const [legalMoves, setLegalMoves] = useState([]);
-//   const [color, setColor] = useState(null);
-//   const [isConnected, setIsConnected] = useState(false);
-//   const [room, setRoom] = useState(null);
-
-//   const socket = useRef(null);
-
-//   // Function to safely modify game state
-//   function safeGameMutate(modify) {
-//     setGame((g) => {
-//       const update = new Chess(g.fen());
-//       modify(update);
-//       return update;
-//     });
-//   }
-
-//   useEffect(() => {
-//     // Initialize Socket.IO connection
-//     socket.current = io("http://localhost:3000", {
-//       withCredentials: true,
-//     });
-
-//     // Join a game room
-//     socket.current.emit("joinGame");
-
-//     // Receive assigned color
-//     socket.current.on("assignColor", (assignedColor) => {
-//       setColor(assignedColor);
-//     });
-
-//     // Receive assigned room
-//     socket.current.on("roomAssigned", (assignedRoom) => {
-//       setRoom(assignedRoom);
-//     });
-
-//     // Receive start game signal with initial FEN
-//     socket.current.on("startGame", (fen) => {
-//       setIsConnected(true);
-//       setGame(new Chess(fen));
-//     });
-
-//     // Receive moves from opponent
-//     socket.current.on("move", ({ move, san }) => {
-//       safeGameMutate((gameInstance) => {
-//         gameInstance.move(move);
-//       });
-//       setHistory((prevHistory) => [...prevHistory, san]);
-//     });
-
-//     // Handle game over
-//     socket.current.on("gameOver", ({ winner }) => {
-//       setWinner(winner);
-//       setGameOver(true);
-//       setIsConnected(false);
-//     });
-
-//     return () => {
-//       socket.current.disconnect();
-//     };
-//   }, []);
-
-//   // Handle piece drop
-//   function onDrop(sourceSquare, targetSquare) {
-//     makeMove(sourceSquare, targetSquare);
-//   }
-
-//   // Handle square click for selecting and moving pieces
-//   function onSquareClick(square) {
-//     if (selectedSquare === square) {
-//       setSelectedSquare(null);
-//       setLegalMoves([]);
-//       return;
-//     }
-
-//     const piece = game.get(square);
-//     if (piece && piece.color === game.turn() && piece.color === color) {
-//       setSelectedSquare(square);
-//       const moves = game.moves({ square, verbose: true });
-//       const newLegalMoves = moves.map((move) => move.to);
-//       setLegalMoves(newLegalMoves);
-//     } else if (selectedSquare && legalMoves.includes(square)) {
-//       makeMove(selectedSquare, square);
-//       setSelectedSquare(null);
-//       setLegalMoves([]);
-//     } else {
-//       setSelectedSquare(null);
-//       setLegalMoves([]);
-//     }
-//   }
-
-//   // Make a move and emit it to the server
-//   function makeMove(sourceSquare, targetSquare) {
-//     if (game.turn() !== color) return; // Only allow moving if it's this player's turn
-//     if (gameOver) return;
-
-//     const move = {
-//       from: sourceSquare,
-//       to: targetSquare,
-//       promotion: "q", // Always promote to queen
-//     };
-
-//     const result = game.move(move);
-//     if (result === null) return; // Illegal move
-
-//     socket.current.emit("move", { move, room });
-//     setHistory((prevHistory) => [...prevHistory, result.san]);
-
-//     if (game.in_checkmate()) {
-//       const winnerColor = game.turn() === "w" ? "Black" : "White";
-  
-//       // Retrieve user IDs from local storage
-//       const playerWhite = color === "w" ? localStorage.getItem("userId") : localStorage.getItem("userId");
-//       const playerBlack = color === "b" ? localStorage.getItem("userId") : localStorage.getItem("userId");
-  
-//       // Prepare payload for backend
-//       const gameResult = {
-//         playerWhite,
-//         playerBlack,
-//         moves: {
-//           whiteMoves: history.filter((_, i) => i % 2 === 0), // Even indices for white moves
-//           blackMoves: history.filter((_, i) => i % 2 !== 0), // Odd indices for black moves
-//         },
-//         winner: winnerColor,
-//         additionalAttributes: {
-//           duration: Math.floor(performance.now() / 1000), // Example duration
-//         },
-//       };
-      
-//         // Log the IDs before making the API request
-//         console.log("Game Over!");
-//         console.log("Player White:", playerWhite);
-//         console.log("Player Black:", playerBlack);
-
-//       // Send game result to backend
-//       axios
-//         .post("http://localhost:3000/game/saveGameResult", gameResult)
-//         .then((res) => console.log("Game stats updated successfully", res.data))
-//         .catch((err) => console.error("Error updating game stats:", err));
-  
-//       setWinner(winnerColor);
-//       setGameOver(true);
-  
-//       socket.current.emit("gameOver", { winner: winnerColor, room });
-//     }
-//   }
-
-//   // Custom square styles for highlighting selected squares and legal moves
-//   const customSquareStyles = {};
-//   if (selectedSquare) {
-//     customSquareStyles[selectedSquare] = {
-//       backgroundColor: "rgba(255, 255, 0, 0.4)",
-//     };
-//     legalMoves.forEach((sq) => {
-//       customSquareStyles[sq] = {
-//         backgroundColor: "rgba(0, 255, 0, 0.4)",
-//       };
-//     });
-//   }
-
-//   // Handle game restart on "Enter" key press
-//   useEffect(() => {
-//     function handleKeyDown(event) {
-//       if (event.key === "Enter" && gameOver) {
-//         setGame(new Chess());
-//         setHistory([]);
-//         setWinner(null);
-//         setGameOver(false);
-//         setIsConnected(false);
-//         socket.current.emit("joinGame");
-//       }
-//     }
-
-//     window.addEventListener("keydown", handleKeyDown);
-//     return () => window.removeEventListener("keydown", handleKeyDown);
-//   }, [gameOver]);
-
-//   // Display loading screen while waiting for opponent
-//   if (!color || (!isConnected && !gameOver)) {
-//     return <div className="loading">Waiting for an opponent...</div>;
-//   }
-
-//   return (
-//     <div className="chess-container">
-//       <div className="chessboard-container">
-//         <Chessboard
-//           position={game.fen()}
-//           onPieceDrop={onDrop}
-//           onSquareClick={onSquareClick}
-//           customSquareStyles={customSquareStyles}
-//           boardOrientation={color === "b" ? "black" : "white"}
-//           boardWidth={750}
-//         />
-//         {gameOver && (
-//           <div className="game-over">
-//             <p>Game Over</p>
-//             <p>Winner: {winner}</p>
-//             <p>Press Enter to restart</p>
-//           </div>
-//         )}
-//       </div>
-//       <MoveHistory history={history} />
-//     </div>
-//   );
-// }
-
-// export default ChessBoard;
-
-
-
-
-
-
-
-// import React, { useState, useEffect, useRef } from "react";
-// import { Chessboard } from "react-chessboard";
-// import { Chess } from "chess.js";
-// import MoveHistory from "./MoveHistory";
-// import io from "socket.io-client";
-// import axios from "axios";
-// // import "../styles/Chessboard.css";
-
-// function ChessBoard() {
-//   const [game, setGame] = useState(new Chess());
-//   const [history, setHistory] = useState([]);
-//   const [winner, setWinner] = useState(null);
-//   const [gameOver, setGameOver] = useState(false);
-//   const [selectedSquare, setSelectedSquare] = useState(null);
-//   const [legalMoves, setLegalMoves] = useState([]);
-//   const [color, setColor] = useState(null);
-//   const [isConnected, setIsConnected] = useState(false);
-//   const [room, setRoom] = useState(null);
-
-//   const socket = useRef(null);
-
-//   function safeGameMutate(modify) {
-//     setGame((g) => {
-//       const update = new Chess(g.fen());
-//       modify(update);
-//       return update;
-//     });
-//   }
-
-//   useEffect(() => {
-//     socket.current = io("http://localhost:3000", {
-//       withCredentials: true,
-//     });
-
-//     socket.current.emit("joinGame");
-
-//     socket.current.on("assignColor", (assignedColor) => {
-//       setColor(assignedColor);
-//     });
-
-//     socket.current.on("roomAssigned", (assignedRoom) => {
-//       setRoom(assignedRoom);
-//     });
-
-//     socket.current.on("startGame", (fen) => {
-//       setIsConnected(true);
-//       setGame(new Chess(fen));
-//     });
-
-//     socket.current.on("move", ({ move, san }) => {
-//       safeGameMutate((gameInstance) => {
-//         gameInstance.move(move);
-//       });
-//       setHistory((prevHistory) => [...prevHistory, san]);
-//     });
-
-//     socket.current.on("gameOver", ({ winner }) => {
-//       setWinner(winner);
-//       setGameOver(true);
-//       setIsConnected(false);
-//     });
-
-//     return () => {
-//       socket.current.disconnect();
-//     };
-//   }, []);
-
-//   function onDrop(sourceSquare, targetSquare) {
-//     makeMove(sourceSquare, targetSquare);
-//   }
-
-//   function onSquareClick(square) {
-//     if (selectedSquare === square) {
-//       setSelectedSquare(null);
-//       setLegalMoves([]);
-//       return;
-//     }
-
-//     const piece = game.get(square);
-//     if (piece && piece.color === game.turn() && piece.color === color) {
-//       setSelectedSquare(square);
-//       const moves = game.moves({ square, verbose: true });
-//       const newLegalMoves = moves.map((move) => move.to);
-//       setLegalMoves(newLegalMoves);
-//     } else if (selectedSquare && legalMoves.includes(square)) {
-//       makeMove(selectedSquare, square);
-//       setSelectedSquare(null);
-//       setLegalMoves([]);
-//     } else {
-//       setSelectedSquare(null);
-//       setLegalMoves([]);
-//     }
-//   }
-
-//   function makeMove(sourceSquare, targetSquare) {
-//     if (game.turn() !== color) return;
-//     if (gameOver) return;
-
-//     const move = {
-//       from: sourceSquare,
-//       to: targetSquare,
-//       promotion: "q",
-//     };
-
-//     const result = game.move(move);
-//     if (result === null) return;
-
-//     socket.current.emit("move", { move, room });
-//     setHistory((prevHistory) => [...prevHistory, result.san]);
-
-//     if (game.in_checkmate()) {
-//       const winnerColor = game.turn() === "w" ? "Black" : "White";
-
-//       const playerWhite = color === "w" ? localStorage.getItem("userId") : localStorage.getItem("userId");
-//       const playerBlack = color === "b" ? localStorage.getItem("userId") : localStorage.getItem("userId");
-
-//       const gameResult = {
-//         playerWhite,
-//         playerBlack,
-//         moves: {
-//           whiteMoves: history.filter((_, i) => i % 2 === 0),
-//           blackMoves: history.filter((_, i) => i % 2 !== 0),
-//         },
-//         winner: winnerColor,
-//         additionalAttributes: {
-//           duration: Math.floor(performance.now() / 1000),
-//         },
-//       };
-      
-//       console.log("Game Over!");
-//       console.log("Player White:", playerWhite);
-//       console.log("Player Black:", playerBlack);
-
-//       axios
-//         .post("http://localhost:3000/game/saveGameResult", gameResult)
-//         .then((res) => console.log("Game stats updated successfully", res.data))
-//         .catch((err) => console.error("Error updating game stats:", err));
-
-//       setWinner(winnerColor);
-//       setGameOver(true);
-
-//       socket.current.emit("gameOver", { winner: winnerColor, room });
-//     }
-//   }
-
-//   const customSquareStyles = {};
-//   if (selectedSquare) {
-//     customSquareStyles[selectedSquare] = {
-//       backgroundColor: "rgba(255, 255, 0, 0.4)",
-//     };
-//     legalMoves.forEach((sq) => {
-//       customSquareStyles[sq] = {
-//         backgroundColor: "rgba(0, 255, 0, 0.4)",
-//       };
-//     });
-//   }
-
-//   useEffect(() => {
-//     function handleKeyDown(event) {
-//       if (event.key === "Enter" && gameOver) {
-//         setGame(new Chess());
-//         setHistory([]);
-//         setWinner(null);
-//         setGameOver(false);
-//         setIsConnected(false);
-//         socket.current.emit("joinGame");
-//       }
-//     }
-
-//     window.addEventListener("keydown", handleKeyDown);
-//     return () => window.removeEventListener("keydown", handleKeyDown);
-//   }, [gameOver]);
-
-//   if (!color || (!isConnected && !gameOver)) {
-//     return (
-//       <div className="flex items-center justify-center h-screen bg-gray-100">
-//         <div className="text-2xl font-bold text-gray-700 animate-pulse">
-//           Waiting for an opponent...
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-4">
-//       <div className="w-full max-w-3xl bg-white rounded-lg shadow-2xl overflow-hidden transition-all duration-300 ease-in-out">
-//         <Chessboard
-//           position={game.fen()}
-//           onPieceDrop={onDrop}
-//           onSquareClick={onSquareClick}
-//           customSquareStyles={customSquareStyles}
-//           boardOrientation={color === "b" ? "black" : "white"}
-//           boardWidth={750}
-//         />
-//         {gameOver && (
-//           <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white">
-//             <div className="text-center space-y-4 animate-fade-in-down">
-//               <p className="text-4xl font-bold">Game Over</p>
-//               <p className="text-2xl">Winner: {winner}</p>
-//               <p className="text-xl">Press Enter to restart</p>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//       <div className="mt-8 md:mt-0 md:ml-8 w-full max-w-md">
-//         <MoveHistory history={history} />
-//       </div>
-//     </div>
-//   );
-// }
-
-// export default ChessBoard;
-
-
-
 import React, { useState, useEffect, useRef } from "react";
 import { Chessboard } from "react-chessboard";
 import { Chess } from "chess.js";
@@ -459,10 +17,13 @@ function ChessBoard() {
   const [room, setRoom] = useState(null);
   const [boardWidth, setBoardWidth] = useState(650);
   const [players, setPlayers] = useState({
-    white: { username: "Opponent", userId: null },
-    black: { username: "Opponent", userId: null },
+    white: { username: "Opponent", userId: null, elo: 1200 },
+    black: { username: "Opponent", userId: null, elo: 1200 },
   });
-
+  const [showResignConfirm, setShowResignConfirm] = useState(false);
+  const [showDrawConfirm, setShowDrawConfirm] = useState(false);
+  const [drawRequested, setDrawRequested] = useState(false);
+  const [drawRequestFrom, setDrawRequestFrom] = useState(null);
   const socket = useRef(null);
   const containerRef = useRef(null);
 
@@ -512,7 +73,7 @@ function ChessBoard() {
       setIsConnected(true);
       setGame(new Chess(fen));
 
-      // Set player usernames
+      // Set player usernames and ELO
       const whitePlayers = players.find((p) => p.color === "w");
       const blackPlayers = players.find((p) => p.color === "b");
 
@@ -520,10 +81,12 @@ function ChessBoard() {
         white: {
           username: whitePlayers.username,
           userId: whitePlayers.userId,
+          elo: whitePlayers.elo || 1200,
         },
         black: {
           username: blackPlayers.username,
           userId: blackPlayers.userId,
+          elo: blackPlayers.elo || 1200,
         },
       });
     });
@@ -535,12 +98,32 @@ function ChessBoard() {
       setHistory((prevHistory) => [...prevHistory, san]);
     });
 
+    socket.current.on("playerResigned", ({ winner }) => {
+      handleGameOver(winner);
+    });
+
     socket.current.on("gameOver", ({ winner }) => {
       handleGameOver(winner);
     });
 
     socket.current.on("playerDisconnected", ({ winner }) => {
       handleGameOver(winner);
+    });
+
+    // Handle draw request
+    socket.current.on("drawRequested", ({ from }) => {
+      setDrawRequestFrom(from);
+      setShowDrawConfirm(true);
+    });
+
+    // Handle draw accepted
+    socket.current.on("drawAccepted", () => {
+      handleGameOver("Draw");
+    });
+
+    // Handle draw declined
+    socket.current.on("drawDeclined", () => {
+      setDrawRequested(false);
     });
 
     return () => {
@@ -576,6 +159,51 @@ function ChessBoard() {
     setWinner(winnerColor);
     setGameOver(true);
     setIsConnected(false);
+  }
+
+  function handleResign() {
+    if (gameOver) return;
+    
+    const winnerColor = color === "w" ? "Black" : "White";
+    socket.current.emit("playerResigned", { winner: winnerColor, room });
+    handleGameOver(winnerColor);
+  }
+
+  function handleDrawRequest() {
+    if (gameOver || drawRequested) return;
+    
+    setDrawRequested(true);
+    socket.current.emit("drawRequest", { 
+      room,
+      from: {
+        color,
+        userId: color === "w" ? players.white.userId : players.black.userId,
+        elo: color === "w" ? players.white.elo : players.black.elo
+      }
+    });
+  }
+
+  function handleDrawResponse(accept) {
+    setShowDrawConfirm(false);
+    
+    if (accept) {
+      socket.current.emit("drawResponse", { 
+        room, 
+        accepted: true,
+        requesterElo: drawRequestFrom.elo,
+        responderElo: color === "w" ? players.white.elo : players.black.elo,
+        requesterColor: drawRequestFrom.color,
+        responderColor: color
+      });
+      handleGameOver("Draw");
+    } else {
+      socket.current.emit("drawResponse", { 
+        room, 
+        accepted: false 
+      });
+    }
+    
+    setDrawRequestFrom(null);
   }
 
   // Move handling functions
@@ -662,54 +290,145 @@ function ChessBoard() {
   // Loading state
   if (!color || (!isConnected && !gameOver)) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-        <div className="text-lg sm:text-xl md:text-2xl font-bold text-gray-700 animate-pulse">
-          Waiting for an opponent...
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 p-4">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl p-8 text-center">
+          <div className="animate-spin mb-6 mx-auto w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+          <div className="text-xl md:text-2xl font-bold text-indigo-800">
+            Waiting for an opponent...
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 p-2 sm:p-4 gap-4 lg:gap-8">
-      <div
-        ref={containerRef}
-        className="w-full lg:w-auto bg-white rounded-lg shadow-xl overflow-hidden transition-all duration-300 ease-in-out"
-      >
-        <div className="text-center py-2 text-base sm:text-lg md:text-xl font-bold text-gray-700">
-          {color === "w" ? players.black.username : players.white.username}
-        </div>
-        <div className="relative">
-          <Chessboard
-            position={game.fen()}
-            onPieceDrop={onDrop}
-            onSquareClick={onSquareClick}
-            customSquareStyles={customSquareStyles}
-            boardOrientation={color === "b" ? "black" : "white"}
-            boardWidth={boardWidth}
-          />
-          {gameOver && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 text-white">
-              <div className="text-center space-y-2 sm:space-y-4 p-4 animate-fade-in-down">
-                <p className="text-2xl sm:text-3xl md:text-4xl font-bold">
-                  Game Over
-                </p>
-                <p className="text-xl sm:text-2xl">Winner: {winner}</p>
-                <p className="text-base sm:text-lg md:text-xl">
-                  Press Enter to restart
-                </p>
-              </div>
+    <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 p-3 sm:p-6 gap-6 lg:gap-8">
+      <div className="w-full lg:w-auto flex flex-col items-center">
+        <div 
+          ref={containerRef}
+          className="w-full lg:w-auto bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden transition-all duration-300 ease-in-out"
+        >
+          <div className="flex justify-between items-center px-4 py-3 bg-indigo-600 text-white">
+            <div className="text-base sm:text-lg font-medium">
+              {color === "w" ? players.black.username : players.white.username}
+              <span className="ml-2 text-sm bg-indigo-800 px-2 py-0.5 rounded-full">
+                ELO: {color === "w" ? players.black.elo : players.white.elo}
+              </span>
             </div>
-          )}
-        </div>
-        <div className="text-center py-2 text-base sm:text-lg md:text-xl font-bold text-gray-700">
-          {color === "w" ? players.white.username : players.black.username}
+          </div>
+          
+          <div className="relative">
+            <Chessboard
+              position={game.fen()}
+              onPieceDrop={onDrop}
+              onSquareClick={onSquareClick}
+              customSquareStyles={customSquareStyles}
+              boardOrientation={color === "b" ? "black" : "white"}
+              boardWidth={boardWidth}
+            />
+            {gameOver && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm text-white">
+                <div className="text-center space-y-3 p-6 bg-indigo-900/80 rounded-xl backdrop-blur-sm animate-fade-in-down max-w-xs mx-auto">
+                  <p className="text-2xl sm:text-3xl font-bold">
+                    Game Over
+                  </p>
+                  <p className="text-xl">Result: {winner}</p>
+                  <button
+                    onClick={() => {
+                      setGame(new Chess());
+                      setHistory([]);
+                      setWinner(null);
+                      setGameOver(false);
+                      setIsConnected(false);
+                      socket.current.emit("joinGame", localStorage.getItem("userId"));
+                    }}
+                    className="mt-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors text-white font-medium"
+                  >
+                    Play Again
+                  </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Resignation confirmation modal */}
+            {showResignConfirm && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+                <div className="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl">
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">Confirm Resignation</h3>
+                  <p className="text-gray-600 mb-6">Are you sure you want to resign? This will count as a loss.</p>
+                  <div className="flex justify-end space-x-3">
+                    <button 
+                      onClick={() => setShowResignConfirm(false)}
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      onClick={() => {
+                        setShowResignConfirm(false);
+                        handleResign();
+                      }}
+                      className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors"
+                    >
+                      Resign
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Draw confirmation modal */}
+            {showDrawConfirm && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+                <div className="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl">
+                  <h3 className="text-xl font-bold text-gray-800 mb-3">Draw Offer</h3>
+                  <p className="text-gray-600 mb-6">Your opponent has offered a draw. Do you accept?</p>
+                  <div className="flex justify-end space-x-3">
+                    <button 
+                      onClick={() => handleDrawResponse(false)}
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors"
+                    >
+                      Decline
+                    </button>
+                    <button 
+                      onClick={() => handleDrawResponse(true)}
+                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors"
+                    >
+                      Accept
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Draw requested indicator */}
+            {drawRequested && !showDrawConfirm && !gameOver && (
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+                Draw offered - waiting for response
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between items-center px-4 py-3 bg-indigo-600 text-white">
+            <div className="text-base sm:text-lg font-medium">
+              {color === "w" ? players.white.username : players.black.username} (You)
+              <span className="ml-2 text-sm bg-indigo-800 px-2 py-0.5 rounded-full">
+                ELO: {color === "w" ? players.white.elo : players.black.elo}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="w-full lg:w-80 xl:w-96">
-        <div className="bg-white rounded-lg shadow-xl p-4 h-full max-h-[calc(100vh-2rem)] overflow-y-auto">
-          <MoveHistory history={history} />
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl p-5 h-full max-h-[calc(100vh-3rem)] overflow-y-auto">
+          <h2 className="text-xl font-bold text-indigo-800 mb-4 border-b border-indigo-200 pb-2">Move History</h2>
+          <MoveHistory 
+            history={history} 
+            onResign={() => setShowResignConfirm(true)}
+            onDrawRequest={handleDrawRequest}
+            gameOver={gameOver} 
+          />
         </div>
       </div>
     </div>
@@ -717,6 +436,3 @@ function ChessBoard() {
 }
 
 export default ChessBoard;
-
-
-

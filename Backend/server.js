@@ -44,9 +44,9 @@ app.use("/admin", adminRoutes);
 // Game stats update endpoint
 app.post("/updateGameStats", async (req, res) => {
   try {
-    const { userId, result } = req.body;
+    const { userId, result, eloChange } = req.body;
 
-    if (!userId || !["win", "loss"].includes(result)) {
+    if (!userId || !["win", "loss", "draw"].includes(result)) {
       return res.status(400).json({ error: "Invalid data provided" });
     }
 
@@ -57,19 +57,37 @@ app.post("/updateGameStats", async (req, res) => {
     }
 
     // Calculate ELO change and determine the next game number
-    const eloChange = result === "win" ? 100 : -100;
+    let actualEloChange;
+    
+    if (result === "draw") {
+      // For draws, use the provided eloChange
+      actualEloChange = eloChange || 0;
+    } else {
+      // For wins and losses, use the standard calculation
+      actualEloChange = result === "win" ? 100 : -100;
+    }
+    
     const nextGameNumber = (user.eloHistory?.length || 0) + 1;
 
     // Prepare the update object
-    const update = result === "win"
-      ? {
-          $inc: { gamesWon: 1, elo: eloChange },
-          $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + eloChange } },
-        }
-      : {
-          $inc: { gamesLost: 1, elo: eloChange },
-          $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + eloChange } },
-        };
+    let update;
+    
+    if (result === "win") {
+      update = {
+        $inc: { gamesWon: 1, elo: actualEloChange },
+        $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + actualEloChange } },
+      };
+    } else if (result === "loss") {
+      update = {
+        $inc: { gamesLost: 1, elo: actualEloChange },
+        $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + actualEloChange } },
+      };
+    } else { // draw
+      update = {
+        $inc: { elo: actualEloChange },
+        $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + actualEloChange } },
+      };
+    }
 
     // Apply the update
     const updatedUser = await UserModel.findByIdAndUpdate(userId, update, { new: true });
@@ -95,7 +113,7 @@ const io = new Server(server, {
 });
 
 // Socket.IO logic
-let games = {}; // Structure: { roomId: { players: [{socketId, userId, color, username}], game: ChessInstance, isGameOver: false } }
+let games = {}; // Structure: { roomId: { players: [{socketId, userId, color, username, elo}], game: ChessInstance, isGameOver: false } }
 
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
@@ -132,12 +150,13 @@ io.on('connection', (socket) => {
       // Determine color assignment
       const color = games[room].players.length === 0 ? 'w' : 'b';
 
-      // Add player to the room
+      // Add player to the room with ELO
       games[room].players.push({ 
         socketId: socket.id, 
         userId, 
         color,
-        username: user.UserName
+        username: user.UserName,
+        elo: user.elo || 1200
       });
 
       // Emit room and color to the client
@@ -149,7 +168,8 @@ io.on('connection', (socket) => {
         const playerDetails = games[room].players.map(p => ({
           userId: p.userId,
           color: p.color,
-          username: p.username
+          username: p.username,
+          elo: p.elo
         }));
 
         io.to(room).emit('startGame', {
@@ -192,6 +212,98 @@ io.on('connection', (socket) => {
               userId: loserPlayer.userId,
               result: 'loss'
             }).catch(console.error);
+          }
+        }
+      });
+
+      // Handle player resignation
+      socket.on('playerResigned', ({ winner, room }) => {
+        const gameRoom = games[room];
+        if (!gameRoom || gameRoom.isGameOver) return;
+        
+        gameRoom.isGameOver = true;
+        
+        // Find winner and loser based on the winner color
+        const winnerColor = winner === 'White' ? 'w' : 'b';
+        const winnerPlayer = gameRoom.players.find(p => p.color === winnerColor);
+        const loserPlayer = gameRoom.players.find(p => p.color !== winnerColor);
+        
+        io.to(room).emit('playerResigned', { 
+          winner,
+          winnerId: winnerPlayer.userId
+        });
+
+        // Update game stats for winner and loser
+        axios.post('http://localhost:3000/updateGameStats', {
+          userId: winnerPlayer.userId,
+          result: 'win'
+        }).catch(console.error);
+
+        axios.post('http://localhost:3000/updateGameStats', {
+          userId: loserPlayer.userId,
+          result: 'loss'
+        }).catch(console.error);
+      });
+
+      // Handle draw request
+      socket.on('drawRequest', ({ room, from }) => {
+        const gameRoom = games[room];
+        if (!gameRoom || gameRoom.isGameOver) return;
+        
+        // Find the opponent socket
+        const opponent = gameRoom.players.find(p => p.color !== from.color);
+        if (opponent) {
+          // Send draw request to opponent
+          io.to(opponent.socketId).emit('drawRequested', { from });
+        }
+      });
+
+      // Handle draw response
+      socket.on('drawResponse', ({ room, accepted, requesterElo, responderElo, requesterColor, responderColor }) => {
+        const gameRoom = games[room];
+        if (!gameRoom || gameRoom.isGameOver) return;
+        
+        if (accepted) {
+          gameRoom.isGameOver = true;
+          
+          // Find both players
+          const requester = gameRoom.players.find(p => p.color === requesterColor);
+          const responder = gameRoom.players.find(p => p.color === responderColor);
+          
+          // Calculate ELO changes based on ratings
+          let requesterEloChange, responderEloChange;
+          
+          if (requesterElo <= responderElo) {
+            // Lower or equal rated player asked for draw
+            requesterEloChange = -25;
+            responderEloChange = 25;
+          } else {
+            // Higher rated player asked for draw
+            requesterEloChange = -50;
+            responderEloChange = 50;
+          }
+          
+          // Notify both players
+          io.to(room).emit('drawAccepted');
+          
+          // Update ELO for both players
+          axios.post('http://localhost:3000/updateGameStats', {
+            userId: requester.userId,
+            result: 'draw',
+            eloChange: requesterEloChange
+          }).catch(console.error);
+          
+          axios.post('http://localhost:3000/updateGameStats', {
+            userId: responder.userId,
+            result: 'draw',
+            eloChange: responderEloChange
+          }).catch(console.error);
+        } else {
+          // Find the requester socket
+          const requester = gameRoom.players.find(p => p.color === requesterColor);
+          if (requester) {
+            // Notify requester that draw was declined
+            io.to(requester.socketId).emit('drawDeclined');
           }
         }
       });
