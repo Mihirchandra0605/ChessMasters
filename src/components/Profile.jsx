@@ -13,6 +13,7 @@ import axios from 'axios';
 
 const Profile = () => {
   const { id } = useParams();
+  console.log('id', id);
   const [isEditing, setIsEditing] = useState({
     name: false,
     email: false,

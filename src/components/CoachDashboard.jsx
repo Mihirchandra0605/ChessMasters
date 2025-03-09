@@ -14,31 +14,45 @@ const CoachDashboard = () => {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [loading, setLoading] = useState(true);
   const [subscribedPlayers, setSubscribedPlayers] = useState([]);
+  const [revenue, setRevenue] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       const token = document.cookie.split("=")[1];
       try {
+        // Fetch all articles and videos first
         const [articlesResponse, videosResponse, playersResponse] = await Promise.all([
-          fetch('http://localhost:3000/admin/articles', {
-            method: 'GET',
-            credentials: 'include',
+          axios.get('http://localhost:3000/admin/articles', {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
           }),
-          fetch('http://localhost:3000/admin/videos', {
-            method: 'GET',
-            credentials: 'include',
+          axios.get('http://localhost:3000/admin/videos', {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
           }),
           axios.get(`http://localhost:3000/coach/subscribedPlayers/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           })
         ]);
+        
         console.log('playersResponse', playersResponse);
-        const articlesData = await articlesResponse.json();
-        const videosData = await videosResponse.json();
-        setArticles(articlesData || []);
-        setVideos(videosData || []);
+        
+        // Filter articles and videos by coach ID
+        const coachArticles = articlesResponse.data.filter(article => article.coach === coachId);
+        const coachVideos = videosResponse.data.filter(video => video.coach === coachId);
+        
+        setArticles(coachArticles || []);
+        setVideos(coachVideos || []);
         setSubscribedPlayers(playersResponse.data.subscribers);
+        
+        // Comment out revenue until you have the endpoint
+        // const revenueResponse = await axios.get(`http://localhost:3000/coach/revenue/${coachId}`, {
+        //   headers: { Authorization: `Bearer ${token}` },
+        //   withCredentials: true,
+        // });
+        // setRevenue(revenueResponse.data.revenue || 0);
+        
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -55,6 +69,7 @@ const CoachDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 text-blue-800">
+      {/* Header section */}
       <motion.header
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -68,6 +83,9 @@ const CoachDashboard = () => {
                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
             <h1 className="text-xl sm:text-2xl font-bold text-white">Coach Dashboard</h1>
           </div>
+          <div className="text-white bg-green-500 px-4 py-2 rounded-lg shadow-lg font-semibold text-sm sm:text-base">
+            💰 Revenue: ₹{revenue.toLocaleString()}
+          </div>
           <button
             onClick={() => setIsNavOpen(!isNavOpen)}
             className="md:hidden text-white hover:text-blue-200 transition duration-300"
@@ -80,74 +98,75 @@ const CoachDashboard = () => {
       </motion.header>
 
       <div className="flex flex-col md:flex-row">
-      <motion.nav
-  initial={{ opacity: 0, x: -50 }}
-  animate={{ opacity: 1, x: 0 }}
-  transition={{ duration: 0.5, delay: 0.2 }}
-  className={`bg-gradient-to-b from-gray-800 to-gray-900 text-white 
-              w-full md:w-64 p-6 space-y-4 sm:space-y-5 
-              ${isNavOpen ? 'block' : 'hidden'} md:block flex-shrink-0`}
->
-  <div className="flex flex-col space-y-4 sm:space-y-5">
-    <Link to="/Upload" className="block">
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-full bg-gradient-to-r from-orange-500 to-red-500 
-                   hover:from-orange-600 hover:to-red-600 
-                   text-white font-bold py-3 px-6 rounded-lg 
-                   transition duration-300 ease-in-out shadow-md 
-                   hover:shadow-lg text-sm sm:text-base"
-      >
-        Add
-      </motion.button>
-    </Link>
+        {/* Navigation sidebar */}
+        <motion.nav
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className={`bg-gradient-to-b from-gray-800 to-gray-900 text-white 
+                      w-full md:w-64 p-6 space-y-4 sm:space-y-5 
+                      ${isNavOpen ? 'block' : 'hidden'} md:block flex-shrink-0`}
+        >
+          <div className="flex flex-col space-y-4 sm:space-y-5">
+            <Link to="/Upload" className="block">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-gradient-to-r from-orange-500 to-red-500 
+                           hover:from-orange-600 hover:to-red-600 
+                           text-white font-bold py-3 px-6 rounded-lg 
+                           transition duration-300 ease-in-out shadow-md 
+                           hover:shadow-lg text-sm sm:text-base"
+              >
+                Add
+              </motion.button>
+            </Link>
 
-    <Link to="/Index" className="block">
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-full bg-gradient-to-r from-green-500 to-teal-500 
-                   hover:from-green-600 hover:to-teal-600 
-                   text-white font-bold py-3 px-6 rounded-lg 
-                   transition duration-300 ease-in-out shadow-md 
-                   hover:shadow-lg text-sm sm:text-base"
-      >
-        Home
-      </motion.button>
-    </Link>
+            <Link to="/Index" className="block">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-gradient-to-r from-green-500 to-teal-500 
+                           hover:from-green-600 hover:to-teal-600 
+                           text-white font-bold py-3 px-6 rounded-lg 
+                           transition duration-300 ease-in-out shadow-md 
+                           hover:shadow-lg text-sm sm:text-base"
+              >
+                Home
+              </motion.button>
+            </Link>
 
-    <Link to="/AddData" className="block">
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 
-                   hover:from-purple-600 hover:to-pink-600 
-                   text-white font-bold py-3 px-6 rounded-lg 
-                   transition duration-300 ease-in-out shadow-md 
-                   hover:shadow-lg text-sm sm:text-base"
-      >
-        Complete Profile
-      </motion.button>
-    </Link>
+            <Link to="/AddData" className="block">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 
+                           hover:from-purple-600 hover:to-pink-600 
+                           text-white font-bold py-3 px-6 rounded-lg 
+                           transition duration-300 ease-in-out shadow-md 
+                           hover:shadow-lg text-sm sm:text-base"
+              >
+                Complete Profile
+              </motion.button>
+            </Link>
 
-    <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      onClick={toggleAnalytics}
-      className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 
-                 hover:from-blue-600 hover:to-indigo-600 
-                 text-white font-bold py-3 px-6 rounded-lg 
-                 transition duration-300 ease-in-out shadow-md 
-                 hover:shadow-lg text-sm sm:text-base"
-    >
-      Analytics
-    </motion.button>
-  </div>
-</motion.nav>
-
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={toggleAnalytics}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 
+                         hover:from-blue-600 hover:to-indigo-600 
+                         text-white font-bold py-3 px-6 rounded-lg 
+                         transition duration-300 ease-in-out shadow-md 
+                         hover:shadow-lg text-sm sm:text-base"
+            >
+              Analytics
+            </motion.button>
+          </div>
+        </motion.nav>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          {/* Analytics section */}
           {showAnalytics && (
             <>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
@@ -168,18 +187,12 @@ const CoachDashboard = () => {
                   <Viewchart />
                 </motion.div>
               </div>
-              <motion.div
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="bg-white rounded-lg shadow-xl p-4 mb-6"
-              >
-                <EarningsChart />
-              </motion.div>
             </>
           )}
 
+          {/* Dashboard content */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Subscribed Students section */}
             <motion.section
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -205,6 +218,7 @@ const CoachDashboard = () => {
               )}
             </motion.section>
 
+            {/* My Videos section */}
             <motion.section
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -212,10 +226,12 @@ const CoachDashboard = () => {
               className="bg-white bg-opacity-80 p-4 sm:p-6 rounded-lg shadow-xl"
             >
               <h2 className="text-lg sm:text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2 text-blue-700">
-                Videos
+                My Videos
               </h2>
               <ul className="space-y-2">
-                {videos.length > 0 ? (
+                {loading ? (
+                  <p>Loading...</p>
+                ) : videos.length > 0 ? (
                   videos.map((video) => (
                     <li key={video._id} 
                         className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">
@@ -231,6 +247,7 @@ const CoachDashboard = () => {
               </ul>
             </motion.section>
 
+            {/* My Articles section */}
             <motion.section
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -238,10 +255,12 @@ const CoachDashboard = () => {
               className="bg-white bg-opacity-80 p-4 sm:p-6 rounded-lg shadow-xl"
             >
               <h2 className="text-lg sm:text-xl font-semibold mb-4 border-b-2 border-purple-500 pb-2 text-purple-700">
-                Articles
+                My Articles
               </h2>
               <ul className="space-y-2">
-                {articles.length > 0 ? (
+                {loading ? (
+                  <p>Loading...</p>
+                ) : articles.length > 0 ? (
                   articles.map((article) => (
                     <li key={article._id} 
                         className="hover:bg-gray-100 p-2 rounded transition duration-300 ease-in-out">

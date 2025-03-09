@@ -1,5 +1,7 @@
 import UserModel  from "../models/userModel.js"; 
 import CoachDetails from "../models/CoachModel.js";
+import Article from "../models/articleModel.js";
+import Video from "../models/videoModel.js";
 
 export const getPlayerDetails = async (req, res) => {
   try {
@@ -57,7 +59,7 @@ export const subscribeToCoach = async (req, res) => {
     await coach.save();
 
     // Store coach's document ID in player's subscribedCoaches
-    player.subscribedCoaches.push(coach._id);
+    player.subscribedCoaches.push(coach.user);
     await player.save();
 
     res.status(200).json({ message: "Successfully subscribed to coach", coachId });
@@ -147,6 +149,70 @@ export const getPlayerGameStats = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching player game stats:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getSubscribedCoachArticles = async (req, res) => {
+  try {
+    const playerId = req.userId || req.params.playerId; // Get player ID from token or params
+
+    // Find the player and get their subscribed coaches
+    const player = await UserModel.findById(playerId);
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    // Find all articles where the coach is in the player's subscribedCoaches array
+    const articles = await Article.find({
+      coach: { $in: player.subscribedCoaches }
+    })
+    .sort({ createdAt: -1 }) // Sort by newest first
+    .populate({
+      path: 'coach',
+      select: 'user', // Get the coach's user reference
+      populate: {
+        path: 'user',
+        select: 'UserName' // Get the coach's username
+      }
+    });
+
+    res.status(200).json(articles);
+  } catch (error) {
+    console.error("Error fetching subscribed coach articles:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getSubscribedCoachVideos = async (req, res) => {
+  try {
+    const playerId = req.userId || req.params.playerId; // Get player ID from token or params
+
+    // Find the player and get their subscribed coaches
+    const player = await UserModel.findById(playerId);
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    // Find all videos where the coach is in the player's subscribedCoaches array
+    const videos = await Video.find({
+      coach: { $in: player.subscribedCoaches }
+    })
+    .sort({ createdAt: -1 }) // Sort by newest first
+    .populate({
+      path: 'coach',
+      select: 'user', // Get the coach's user reference
+      populate: {
+        path: 'user',
+        select: 'UserName' // Get the coach's username
+      }
+    });
+
+    res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error fetching subscribed coach videos:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

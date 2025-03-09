@@ -6,6 +6,7 @@ export const isPlayer = async (req, res, next) => {
   try {
     // Check for token in cookies or headers
     const token = req.cookies.authorization || req.headers.authorization?.split(" ")[1];
+    // console.log('token', token);
 
     if (!token) {
       return res.status(403).json({ message: "No token provided." });
@@ -14,7 +15,8 @@ export const isPlayer = async (req, res, next) => {
     // Verify the token
     const decoded = jwt.verify(token, jwtSecretKey);
     const user = await UserModel.findById(decoded.userId);
-
+    // console.log('user', user);
+    // console.log('user.Role', user.Role);
     if (!user || user.Role !== "player") {
       return res.status(403).json({ message: "Unauthorized access." });
     }
