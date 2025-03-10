@@ -90,10 +90,10 @@ export const getMyGames = async (req, res) => {
 
     const userId = new mongoose.Types.ObjectId(req.user.id); // Convert to ObjectId
 
-    // Fetch games where the user is either playerWhite or playerBlack (no role filtering)
+    // Fetch games where the user is either playerWhite or playerBlack with populated player data
     const games = await Game.find({
       $or: [{ playerWhite: userId }, { playerBlack: userId }]
-    });
+    }).populate('playerWhite playerBlack', 'UserName'); // Populate player usernames
 
     console.log("✅ Games fetched successfully:", games);
     res.status(200).json({ games });

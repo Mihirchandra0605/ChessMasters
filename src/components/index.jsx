@@ -262,16 +262,33 @@ function HomePage() {
          className="flex overflow-x-auto space-x-3 sm:space-x-4 
                   items-center px-2 sm:px-4 min-h-[120px] sm:min-h-[150px]
                   scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">
-      {games.map((game) => (
-        <div key={game._id} 
-             className="flex-shrink-0 inline-block bg-green-500 text-white 
-                      font-medium sm:font-semibold py-2 sm:py-3 px-3 sm:px-4 
-                      rounded-lg hover:bg-green-600 transition-all duration-300 
-                      text-center text-sm sm:text-base transform hover:scale-105">
-          <p>Game played on: {new Date(game.datePlayed).toLocaleDateString()}</p>
-          <p>Winner: {game.winner}</p>
-        </div>
-      ))}
+      {games.map((game) => {
+        // Determine if current user won, lost, or drew
+        const isUserWhite = game.playerWhite?._id === details._id;
+        const isUserBlack = game.playerBlack?._id === details._id;
+        const userWon = (isUserWhite && game.winner === "White") || (isUserBlack && game.winner === "Black");
+        const userLost = (isUserWhite && game.winner === "Black") || (isUserBlack && game.winner === "White");
+        const isDraw = game.winner === "Draw";
+        
+        // Set background color based on result
+        const bgColor = userWon ? "bg-green-600" : userLost ? "bg-red-600" : "bg-gray-600";
+        const hoverBgColor = userWon ? "hover:bg-green-700" : userLost ? "hover:bg-red-700" : "hover:bg-gray-700";
+        
+        // Set result text
+        const resultText = userWon ? "You won" : userLost ? "You lost" : "Draw";
+        
+        return (
+          <div key={game._id} 
+               className={`flex-shrink-0 inline-block ${bgColor} text-white 
+                        font-medium sm:font-semibold py-2 sm:py-3 px-3 sm:px-4 
+                        rounded-lg ${hoverBgColor} transition-all duration-300 
+                        text-center text-sm sm:text-base transform hover:scale-105`}>
+            <p className="font-bold">{game.playerWhite?.UserName} vs {game.playerBlack?.UserName}</p>
+            <p className="font-bold">{resultText}</p>
+            <p className="text-xs sm:text-sm">{new Date(game.datePlayed).toLocaleDateString()}</p>
+          </div>
+        );
+      })}
     </div>
   </div>
 </div>
