@@ -59,7 +59,49 @@ function ChessBoard() {
     });
 
     const userId = localStorage.getItem("userId");
-    socket.current.emit("joinGame", userId);
+    
+    // First check if this is a reconnection
+    socket.current.emit("checkReconnection", { userId });
+    
+    socket.current.on("reconnected", ({ room, color, fen, players }) => {
+      setRoom(room);
+      setColor(color);
+      setIsConnected(true);
+      setGame(new Chess(fen));
+      
+      // Set player usernames and ELO
+      const whitePlayers = players.find((p) => p.color === "w");
+      const blackPlayers = players.find((p) => p.color === "b");
+
+      setPlayers({
+        white: {
+          username: whitePlayers.username,
+          userId: whitePlayers.userId,
+          elo: whitePlayers.elo || 1200,
+        },
+        black: {
+          username: blackPlayers.username,
+          userId: blackPlayers.userId,
+          elo: blackPlayers.elo || 1200,
+        },
+      });
+    });
+    
+    socket.current.on("notReconnected", () => {
+      // If not a reconnection, proceed with normal join
+      socket.current.emit("joinGame", userId);
+    });
+
+    // Add beforeunload event to warn user before refreshing
+    const handleBeforeUnload = (e) => {
+      if (isConnected && !gameOver) {
+        e.preventDefault();
+        e.returnValue = "Refreshing will count as resignation. Are you sure?";
+        return e.returnValue;
+      }
+    };
+    
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
     socket.current.on("assignColor", (assignedColor) => {
       setColor(assignedColor);
@@ -124,9 +166,20 @@ function ChessBoard() {
     // Handle draw declined
     socket.current.on("drawDeclined", () => {
       setDrawRequested(false);
+      // Show a notification that the draw was declined
+      const notification = document.createElement('div');
+      notification.className = 'fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
+      notification.textContent = 'Draw offer declined';
+      document.body.appendChild(notification);
+      
+      // Remove notification after 3 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
     });
 
     return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
       socket.current.disconnect();
     };
   }, []);
@@ -199,7 +252,9 @@ function ChessBoard() {
     } else {
       socket.current.emit("drawResponse", { 
         room, 
-        accepted: false 
+        accepted: false,
+        requesterColor: drawRequestFrom.color,
+        responderColor: color
       });
     }
     
@@ -327,25 +382,52 @@ function ChessBoard() {
               boardWidth={boardWidth}
             />
             {gameOver && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm text-white">
-                <div className="text-center space-y-3 p-6 bg-indigo-900/80 rounded-xl backdrop-blur-sm animate-fade-in-down max-w-xs mx-auto">
-                  <p className="text-2xl sm:text-3xl font-bold">
+              <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm text-white z-50">
+                <div className="text-center space-y-4 p-8 bg-gradient-to-br from-indigo-900 to-purple-900 rounded-xl backdrop-blur-sm animate-fade-in-down max-w-sm mx-auto shadow-2xl border border-indigo-500/30">
+                  <div className="text-3xl sm:text-4xl font-bold text-white mb-2">
                     Game Over
-                  </p>
-                  <p className="text-xl">Result: {winner}</p>
-                  <button
-                    onClick={() => {
-                      setGame(new Chess());
-                      setHistory([]);
-                      setWinner(null);
-                      setGameOver(false);
-                      setIsConnected(false);
-                      socket.current.emit("joinGame", localStorage.getItem("userId"));
-                    }}
-                    className="mt-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-colors text-white font-medium"
-                  >
-                    Play Again
-                  </button>
+                  </div>
+                  <div className="text-xl text-indigo-200 font-medium">
+                    {winner === "Draw" ? "Result: You Drew" : 
+                      (winner === (color === "w" ? "White" : "Black") ? 
+                        "Result: You Won" : 
+                        "Result: You Lost")}
+                  </div>
+                  <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        setGame(new Chess());
+                        setHistory([]);
+                        setWinner(null);
+                        setGameOver(false);
+                        setIsConnected(false);
+                        socket.current.emit("joinGame", localStorage.getItem("userId"));
+                      }}
+                      className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all text-white font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                      </svg>
+                      Play Again
+                    </button>
+                    <a
+                      href={(() => {
+                        const role = localStorage.getItem("role");
+                        switch(role) {
+                          case "player":
+                            return "/Index?role=player";
+                          case "coach":
+                            return "/Index";
+                        }
+                      })()}
+                      className="px-5 py-2.5 bg-purple-500 hover:bg-purple-600 rounded-lg transition-all text-white font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                      </svg>
+                      Back to Home
+                    </a>
+                  </div>
                 </div>
               </div>
             )}
@@ -353,13 +435,18 @@ function ChessBoard() {
             {/* Resignation confirmation modal */}
             {showResignConfirm && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-                <div className="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl">
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">Confirm Resignation</h3>
+                <div className="bg-gradient-to-br from-white to-indigo-50 rounded-xl p-6 max-w-xs w-full shadow-2xl border border-indigo-100 animate-fade-in">
+                  <div className="flex items-center mb-4 text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <h3 className="text-xl font-bold text-gray-800">Confirm Resignation</h3>
+                  </div>
                   <p className="text-gray-600 mb-6">Are you sure you want to resign? This will count as a loss.</p>
                   <div className="flex justify-end space-x-3">
                     <button 
                       onClick={() => setShowResignConfirm(false)}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors"
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors shadow-sm hover:shadow"
                     >
                       Cancel
                     </button>
@@ -368,7 +455,7 @@ function ChessBoard() {
                         setShowResignConfirm(false);
                         handleResign();
                       }}
-                      className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors"
+                      className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors shadow-sm hover:shadow"
                     >
                       Resign
                     </button>
@@ -380,19 +467,24 @@ function ChessBoard() {
             {/* Draw confirmation modal */}
             {showDrawConfirm && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
-                <div className="bg-white rounded-xl p-6 max-w-xs w-full shadow-2xl">
-                  <h3 className="text-xl font-bold text-gray-800 mb-3">Draw Offer</h3>
+                <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl p-6 max-w-xs w-full shadow-2xl border border-blue-100 animate-fade-in">
+                  <div className="flex items-center mb-4 text-blue-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 className="text-xl font-bold text-gray-800">Draw Offer</h3>
+                  </div>
                   <p className="text-gray-600 mb-6">Your opponent has offered a draw. Do you accept?</p>
                   <div className="flex justify-end space-x-3">
                     <button 
                       onClick={() => handleDrawResponse(false)}
-                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors"
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors shadow-sm hover:shadow"
                     >
                       Decline
                     </button>
                     <button 
                       onClick={() => handleDrawResponse(true)}
-                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors"
+                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 rounded-lg text-white transition-colors shadow-sm hover:shadow"
                     >
                       Accept
                     </button>
@@ -403,7 +495,10 @@ function ChessBoard() {
             
             {/* Draw requested indicator */}
             {drawRequested && !showDrawConfirm && !gameOver && (
-              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-3 py-1 rounded-full text-sm">
+              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-full text-sm shadow-lg animate-pulse z-40 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
                 Draw offered - waiting for response
               </div>
             )}
@@ -419,6 +514,19 @@ function ChessBoard() {
           </div>
         </div>
       </div>
+
+      {/* Loading state overlay */}
+      {(!color || (!isConnected && !gameOver)) && (
+        <div className="fixed inset-0 flex items-center justify-center bg-indigo-900/80 backdrop-blur-sm z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-8 text-center max-w-md mx-auto animate-fade-in">
+            <div className="animate-spin mb-6 mx-auto w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+            <div className="text-2xl md:text-3xl font-bold text-indigo-800 mb-2">
+              Finding an opponent...
+            </div>
+            <p className="text-gray-600">Please wait while we match you with another player</p>
+          </div>
+        </div>
+      )}
 
       <div className="w-full lg:w-80 xl:w-96">
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl p-5 h-full max-h-[calc(100vh-3rem)] overflow-y-auto">

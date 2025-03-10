@@ -131,20 +131,21 @@ export const getPlayerGameStats = async (req, res) => {
     const { playerId } = req.params; // Extract playerId from route parameters
 
     // Fetch the player by ID and select the relevant fields
-    const player = await UserModel.findById(playerId, 'gamesWon gamesLost elo');
+    const player = await UserModel.findById(playerId, 'gamesWon gamesLost gamesDraw elo');
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
 
     // Calculate total games played
-    const totalGamesPlayed = player.gamesWon + player.gamesLost;
+    const totalGamesPlayed = player.gamesWon + player.gamesLost + (player.gamesDraw || 0);
 
     // Return the game stats
     res.status(200).json({
       totalGamesPlayed,
       gamesWon: player.gamesWon,
       gamesLost: player.gamesLost,
+      gamesDraw: player.gamesDraw || 0,
       elo: player.elo,
     });
   } catch (error) {

@@ -83,7 +83,7 @@ app.post("/updateGameStats", async (req, res) => {
       };
     } else { // draw
       update = {
-        $inc: { elo: actualEloChange },
+        $inc: { gamesDraw: 1, elo: actualEloChange },
         $push: { eloHistory: { gameNumber: nextGameNumber, elo: user.elo + actualEloChange } },
       };
     }
@@ -117,9 +117,56 @@ let games = {}; // Structure: { roomId: { players: [{socketId, userId, color, us
 io.on('connection', (socket) => {
   console.log(`Player connected: ${socket.id}`);
 
+  // Track if this is a reconnection attempt
+  let isReconnection = false;
+  let reconnectedRoom = null;
+  let reconnectedPlayer = null;
+
+  // Check if this is a reconnection attempt
+  socket.on('checkReconnection', ({ userId }) => {
+    // Look for an existing game with this user
+    for (const roomId in games) {
+      const playerIndex = games[roomId].players.findIndex(p => p.userId === userId);
+      if (playerIndex !== -1 && !games[roomId].isGameOver) {
+        isReconnection = true;
+        reconnectedRoom = roomId;
+        reconnectedPlayer = games[roomId].players[playerIndex];
+        
+        // Update the socket ID for the reconnected player
+        games[roomId].players[playerIndex].socketId = socket.id;
+        
+        // Rejoin the room
+        socket.join(roomId);
+        
+        // Send current game state
+        socket.emit('reconnected', {
+          room: roomId,
+          color: reconnectedPlayer.color,
+          fen: games[roomId].game.fen(),
+          players: games[roomId].players.map(p => ({
+            userId: p.userId,
+            color: p.color,
+            username: p.username,
+            elo: p.elo
+          }))
+        });
+        
+        return;
+      }
+    }
+    
+    // If not a reconnection, proceed with normal join
+    socket.emit('notReconnected');
+  });
+
   // Handle player joining a game
   socket.on('joinGame', async (userId) => {
     try {
+      // If this is a reconnection, don't create a new game
+      if (isReconnection) {
+        return;
+      }
+      
       // Find user details
       const user = await UserModel.findById(userId);
       if (!user) {
@@ -307,29 +354,32 @@ io.on('connection', (socket) => {
         }
       });
 
-      // Handle disconnection
+      // Handle disconnection (including page refresh)
       socket.on('disconnect', () => {
-        if (room && games[room]) {
-          const disconnectedPlayerIndex = games[room].players.findIndex(
+        // Find all rooms this socket is in
+        for (const roomId in games) {
+          const gameRoom = games[roomId];
+          if (!gameRoom) continue;
+          
+          const disconnectedPlayerIndex = gameRoom.players.findIndex(
             p => p.socketId === socket.id
           );
 
-          if (disconnectedPlayerIndex !== -1) {
-            const remainingPlayer = games[room].players.find(
+          if (disconnectedPlayerIndex !== -1 && !gameRoom.isGameOver) {
+            const disconnectedPlayer = gameRoom.players[disconnectedPlayerIndex];
+            const remainingPlayer = gameRoom.players.find(
               (_, index) => index !== disconnectedPlayerIndex
             );
 
-            // Remove disconnected player
-            games[room].players.splice(disconnectedPlayerIndex, 1);
-
-            if (remainingPlayer && !games[room].isGameOver) {
-              // Declare remaining player as winner only if game isn't over
-              games[room].isGameOver = true; // Mark game as over
+            if (remainingPlayer) {
+              // Declare remaining player as winner
+              gameRoom.isGameOver = true; // Mark game as over
               const winnerColor = remainingPlayer.color === 'w' ? 'White' : 'Black';
               
-              io.to(room).emit('playerDisconnected', { 
+              io.to(roomId).emit('playerDisconnected', { 
                 winner: winnerColor,
-                winnerId: remainingPlayer.userId
+                winnerId: remainingPlayer.userId,
+                message: 'Opponent disconnected or refreshed the page'
               });
 
               // Update game stats for remaining player as winner
@@ -337,11 +387,22 @@ io.on('connection', (socket) => {
                 userId: remainingPlayer.userId,
                 result: 'win'
               }).catch(console.error);
+              
+              // Update game stats for disconnected player as loser
+              axios.post('http://localhost:3000/updateGameStats', {
+                userId: disconnectedPlayer.userId,
+                result: 'loss'
+              }).catch(console.error);
             }
 
-            // Remove the room if no players left
-            if (games[room].players.length === 0) {
-              delete games[room];
+            // Remove the room if it's now empty or the game is over
+            if (gameRoom.players.length <= 1 || gameRoom.isGameOver) {
+              // Keep the room for a short time to allow for potential reconnection
+              setTimeout(() => {
+                if (games[roomId] && (games[roomId].players.length === 0 || games[roomId].isGameOver)) {
+                  delete games[roomId];
+                }
+              }, 5000);
             }
           }
         }

@@ -35,6 +35,7 @@ function HomePage() {
     totalGamesPlayed: 0,
     gamesWon: 0,
     gamesLost: 0,
+    gamesDraw: 0,
     elo: 0,
   });
 
@@ -173,12 +174,12 @@ function HomePage() {
   }, [showStats]);
 
   const chartData = {
-    labels: ['Wins', 'Losses'],
+    labels: ['Wins', 'Losses', 'Draws'],
     datasets: [
       {
-        data: [stats.gamesWon, stats.gamesLost],
-        backgroundColor: ['#10B981', '#EF4444'],
-        hoverBackgroundColor: ['#059669', '#DC2626'],
+        data: [stats.gamesWon, stats.gamesLost, stats.gamesDraw],
+        backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
+        hoverBackgroundColor: ['#059669', '#DC2626', '#D97706'],
       },
     ],
   };
@@ -226,7 +227,7 @@ function HomePage() {
         </button>
       ) : (
         <div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-center mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 text-center mb-4">
             <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
               <p className="font-medium text-green-400 text-sm sm:text-base">Games Played: {stats.totalGamesPlayed}</p>
             </div>
@@ -235,6 +236,9 @@ function HomePage() {
             </div>
             <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
               <p className="font-medium text-green-400 text-sm sm:text-base">Losses: {stats.gamesLost}</p>
+            </div>
+            <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
+              <p className="font-medium text-green-400 text-sm sm:text-base">Draws: {stats.gamesDraw}</p>
             </div>
             <div className="p-2 sm:p-3 bg-gray-800 rounded-lg border border-green-500">
               <p className="font-medium text-green-400 text-sm sm:text-base">Rating: {stats.elo}</p>

@@ -12,6 +12,7 @@ const UserModelSchema = new Schema({
   subscribedCoaches: [{ type: Schema.Types.ObjectId, ref: "CoachDetails" }],
   gamesWon: { type: Number, default: 0 },
   gamesLost: { type: Number, default: 0 },
+  gamesDraw: { type: Number, default: 0 },
   elo: { type: Number, default: 1200 }, // Added ELO field
   eloHistory: [
     {
