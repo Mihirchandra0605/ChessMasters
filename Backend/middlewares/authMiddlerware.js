@@ -3,12 +3,12 @@ import { jwtSecretKey } from "../config.js";
 
 export const authMiddleware = (req, res, next) => {
   try {
-    // Check for token in different places
+    console.log("🔹 Checking authentication...");
+
     const authHeader = req.headers.authorization;
     const cookieToken = req.cookies.authorization;
     let token;
 
-    // Extract token from Authorization header or cookie
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
     } else if (cookieToken) {
@@ -16,30 +16,33 @@ export const authMiddleware = (req, res, next) => {
     }
 
     if (!token) {
+      console.error("❌ No token found.");
       return res.status(401).json({ message: "No token provided. Access denied." });
     }
 
-    // Verify the token
+    console.log("🔹 Token found:", token);
+
     const decoded = jwt.verify(token, jwtSecretKey);
+    console.log("✅ Token decoded:", decoded);
 
-    // Attach user information to the request object
-    req.userId = decoded.userId;
-    req.role = decoded.role; // Changed from userType to role to match token payload
+    // ✅ Attach user object properly
+    req.user = { id: decoded.userId, role: decoded.role };
 
-    // Add user type check if needed
-    if (!decoded.role) {
-      return res.status(403).json({ message: "Invalid token: No role specified." });
+    if (!req.user.id) {
+      console.error("❌ Error: User ID missing in token.");
+      return res.status(403).json({ message: "Invalid token: No user ID found." });
     }
 
     next();
   } catch (error) {
-    console.error("Token verification error:", error);
+    console.error("🔥 Token verification error:", error);
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({ message: "Token expired. Please login again." });
     }
     res.status(403).json({ message: "Invalid token. Access denied." });
   }
 };
+
 
 // Optional: Role-specific middleware
 export const isCoach = (req, res, next) => {

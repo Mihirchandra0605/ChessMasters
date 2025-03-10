@@ -1,4 +1,5 @@
 import Game  from "../models/gameModel.js"; 
+import mongoose from "mongoose";
 
 // export const saveGameResult = async (req, res) => {
 //   try {
@@ -82,3 +83,24 @@ export const getAllGames = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getMyGames = async (req, res) => {
+  try {
+    console.log("🔹 Received request to fetch user games");
+
+    const userId = new mongoose.Types.ObjectId(req.user.id); // Convert to ObjectId
+
+    // Fetch games where the user is either playerWhite or playerBlack (no role filtering)
+    const games = await Game.find({
+      $or: [{ playerWhite: userId }, { playerBlack: userId }]
+    });
+
+    console.log("✅ Games fetched successfully:", games);
+    res.status(200).json({ games });
+  } catch (error) {
+    console.error("🔥 Error fetching user's games:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
+  }
+};
+
+

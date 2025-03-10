@@ -101,20 +101,22 @@ function HomePage() {
 
   useEffect(() => {
     axios
-    .get("http://localhost:3000/game/allgames", { withCredentials: true })
-    .then((resp) => {
-      setGames(Array.isArray(resp.data) ? resp.data : resp.data.games || []);
-    })
-    .catch((err) => {
-      console.error("Error fetching Games:", err);
-      setGames([]);
-    });
-
-    axios
       .get("http://localhost:3000/auth/details", { withCredentials: true })
       .then((resp) => {
         setDetails(resp.data);
-        if (resp.data.Role === 'player') {
+  
+        if (resp.data.Role === "player" || resp.data.Role === "coach"){
+          axios
+            .get("http://localhost:3000/game/mygames", { withCredentials: true })
+            .then((resp) => {
+              setGames(Array.isArray(resp.data.games) ? resp.data.games : []);
+            })
+            .catch((err) => {
+              console.error("Error fetching user games:", err);
+              setGames([]);
+            });
+          }
+          if (resp.data.Role === "player"){
           axios
             .get("http://localhost:3000/player/subscribed-articles", { withCredentials: true })
             .then((resp) => {
@@ -125,7 +127,7 @@ function HomePage() {
               console.error("Error fetching articles:", err);
               setArticles([]);
             });
-          
+  
           axios
             .get("http://localhost:3000/player/subscribed-videos", { withCredentials: true })
             .then((resp) => {
@@ -136,8 +138,7 @@ function HomePage() {
               console.error("Error fetching videos:", err);
               setVideos([]);
             });
-        } 
-        else {
+        } else {
           setArticles([]);
           setVideos([]);
           axios
@@ -155,7 +156,7 @@ function HomePage() {
         console.error("Error fetching details:", err);
       });
   }, []);
-
+  
   const fetchStats = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/player/${details._id}/game-stats`, { withCredentials: true });
