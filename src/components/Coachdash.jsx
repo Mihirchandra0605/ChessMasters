@@ -12,12 +12,43 @@ const Coachdash = () => {
   const [user , setuser]= useState("")
   const [error, setError] = useState(null);
 
+  // useEffect(() => {
+  //   const fetchCoachDetails = async () => {
+  //     try {
+  //       const response = await axios.get(`http://localhost:3000/coach/${id}`);
+  //       setProfileData(response.data);      
+  //       setsubscribedcoaches(response.data.subscribers);
+
+  //     } catch (err) {
+  //       setError("Error fetching coach details");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   const fetchDtails = async()=>{
+  //     try {
+  //       const response = await axios.get(`http://localhost:3000/auth/details`, { withCredentials: true });
+  //       setuser(response.data._id)        
+  //     } catch (err) {
+  //       console.log(err);
+  //       setError("Error fetching coach details");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+  //   fetchDtails()
+  //   fetchCoachDetails();
+  // }, [id]);
   useEffect(() => {
     const fetchCoachDetails = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/coach/${id}`);
+        
+        // Extract only the user IDs from the subscribers array
+        const subscribersList = response.data.subscribers.map(subscriber => subscriber.user);
+        
         setProfileData(response.data);      
-        setsubscribedcoaches(response.data.subscribers);
+        setsubscribedcoaches(subscribersList);
 
       } catch (err) {
         setError("Error fetching coach details");
@@ -25,20 +56,23 @@ const Coachdash = () => {
         setLoading(false);
       }
     };
-    const fetchDtails = async()=>{
+
+    const fetchDtails = async () => {
       try {
         const response = await axios.get(`http://localhost:3000/auth/details`, { withCredentials: true });
-        setuser(response.data._id)        
+        setuser(response.data._id);        
       } catch (err) {
         console.log(err);
         setError("Error fetching coach details");
       } finally {
         setLoading(false);
       }
-    }
-    fetchDtails()
+    };
+
+    fetchDtails();
     fetchCoachDetails();
   }, [id]);
+
 
   if (loading) return (
     <div className="flex justify-center items-center h-screen bg-gradient-to-br from-indigo-500 to-purple-600">
