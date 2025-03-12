@@ -1,19 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
+
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
 
-// const sampleData = [
-//   { name: 'Game 1', elo: 400 },
-//   { name: 'Game 2', elo: 820 },
-//   { name: 'Game 3', elo: 790 },
-//   { name: 'Game 4', elo: 1000 },
-//   { name: 'Game 5', elo: 1250 }
-// ];
-
 const Profile = () => {
   const { id } = useParams();
-  console.log('id', id);
   const [isEditing, setIsEditing] = useState({
     name: false,
     email: false,
@@ -30,7 +22,7 @@ const Profile = () => {
 
   useEffect(() => {
     let isMounted = true;
-  
+
     const fetchPlayerDetails = async () => {
       const token = document.cookie.split("=")[1];
       try {
@@ -47,7 +39,7 @@ const Profile = () => {
           });
           setEloData(player.eloHistory || []);
           setLoading(false);
-  
+
           const coachesResponse = await axios.get(
             `http://localhost:3000/player/${id}/subscribedCoaches`,
             {
@@ -60,19 +52,17 @@ const Profile = () => {
       } catch (error) {
         if (isMounted) {
           console.error('Error fetching player details:', error);
-          setError('Failed to fetch data.');
           setLoading(false);
         }
       }
     };
-  
+
     fetchPlayerDetails();
-  
+
     return () => {
       isMounted = false;
     };
   }, [id]);
-  
 
   const handleEdit = (field) => {
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
@@ -84,16 +74,7 @@ const Profile = () => {
   };
 
   const coachScrollContainerRef = useRef(null);
-  const scrollLeft = () => {
-    if (coachScrollContainerRef.current) {
-      coachScrollContainerRef.current.scrollLeft -= 100;
-    }
-  };
-  const scrollRight = () => {
-    if (coachScrollContainerRef.current) {
-      coachScrollContainerRef.current.scrollLeft += 100;
-    }
-  };
+
 
   if (loading) {
     return (
@@ -114,7 +95,7 @@ const Profile = () => {
               Home
             </Link>
           </div>
-  
+
           {/* Profile Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             <div className="space-y-6 sm:space-y-8">
@@ -129,7 +110,7 @@ const Profile = () => {
                   <p className="text-base sm:text-lg text-emerald-400">Player</p>
                 </div>
               </div>
-  
+
               {/* Form Fields */}
               {['name', 'email', 'password'].map((field) => (
                 <div key={field} className="space-y-2">
@@ -158,83 +139,84 @@ const Profile = () => {
                 </div>
               ))}
             </div>
-  
+
             {/* ELO Chart Section */}
             <div className="h-64 sm:h-80 md:h-auto bg-slate-800/50 rounded-xl shadow-lg p-4">
-  <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={eloData}>
-      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-      <XAxis dataKey="gameNumber" stroke="#94a3b8" />
-      <YAxis stroke="#94a3b8" />
-      <Tooltip 
-        contentStyle={{ 
-          backgroundColor: '#1e293b', 
-          borderColor: '#475569', 
-          color: '#f8fafc' 
-        }} 
-      />
-      <Legend />
-      <Line 
-        type="linear" // Ensures a straight line between points
-        dataKey="elo" 
-        stroke="#10b981" 
-        strokeWidth={2} 
-        dot={{ fill: '#34d399', strokeWidth: 2 }} 
-        connectNulls={true} // Ensures null or missing values are connected
-      />
-    </LineChart>
-  </ResponsiveContainer>
-</div>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={eloData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="gameNumber" stroke="#94a3b8" />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#1e293b', 
+                      borderColor: '#475569', 
+                      color: '#f8fafc' 
+                    }} 
+                  />
+                  <Legend />
+                  <Line 
+                    type="linear" // Ensures a straight line between points
+                    dataKey="elo" 
+                    stroke="#10b981" 
+                    strokeWidth={2} 
+                    dot={{ fill: '#34d399', strokeWidth: 2 }} 
+                    connectNulls={true} // Ensures null or missing values are connected
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-  
+
           {/* Coaches Section */}
-<div className="mt-8 sm:mt-12 md:mt-16">
-  <h2 className="text-2xl sm:text-3xl font-semibold text-slate-200 mb-6">
-    Subscribed Coaches
-  </h2>
-  <div className="relative">
-    <div 
-      ref={coachScrollContainerRef} 
-      className="flex space-x-4 sm:space-x-6 overflow-x-auto py-4 sm:py-6 px-8 sm:px-10
-        scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/40
-        hover:scrollbar-thumb-slate-500"
-    >
-      {subscribedCoaches.map((coach) => (
-        <div 
-          key={coach._id} 
-          className="flex-shrink-0 w-48 sm:w-56 bg-slate-800/50 rounded-xl shadow-lg 
-            p-4 sm:p-6 space-y-3 sm:space-y-4 transform transition duration-300 
-            hover:scale-105 hover:bg-slate-700/50"
-        >
-          <img
-            src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
-            alt={coach.user.UserName}
-            className="w-full h-32 sm:h-40 object-cover rounded-lg"
-          />
-          <h3 className="text-base sm:text-xl font-semibold text-center text-slate-200">
-            {coach.user.UserName}
-          </h3>
-          <p className="text-blue-400 text-center ">
-            {coach.user.Email}
-          </p>
-          <p className="text-emerald-400 text-center ">Rating: {coach.rating}</p>
-          <button 
-            className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
-              transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
-          >
-            Unsubscribe
-          </button>
-        </div>
-      ))}
-    </div>
-  </div>
-</div>
+          <div className="mt-8 sm:mt-12 md:mt-16">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-200 mb-6">
+              Subscribed Coaches
+            </h2>
+            <div className="relative">
+              <div 
+                ref={coachScrollContainerRef} 
+                className="flex space-x-4 sm:space-x-6 overflow-x-auto py-4 sm:py-6 px-8 sm:px-10
+                  scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/40
+                  hover:scrollbar-thumb-slate-500"
+              >
+                {subscribedCoaches.length > 0 ? subscribedCoaches.map((coach) => (
+                  <div 
+                    key={coach._id} 
+                    className="flex-shrink-0 w-48 sm:w-56 bg-slate-800/50 rounded-xl shadow-lg 
+                      p-4 sm:p-6 space-y-3 sm:space-y-4 transform transition duration-300 
+                      hover:scale-105 hover:bg-slate-700/50"
+                  >
+                    <img
+                      src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+                      alt={coach.user.UserName}
+                      className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                    />
+                    <h3 className="text-base sm:text-xl font-semibold text-center text-slate-200">
+                      {coach.user.UserName}
+                    </h3>
+                    <p className="text-blue-400 text-center ">
+                      {coach.user.Email}
+                    </p>
+                    <p className="text-emerald-400 text-center ">Rating: {coach.rating}</p>
+                    <button 
+                      className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
+                        transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                    >
+                      Unsubscribe
+                    </button>
+                  </div>
+                )) : (
+                  <p className="text-slate-300">No subscribed coaches found.</p>
+                )}
+              </div>
+            </div>
+          </div>
 
         </div>
       </div>
     </div>
   );
 };
-  
 
 export default Profile;

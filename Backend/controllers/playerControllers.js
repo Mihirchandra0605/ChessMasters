@@ -82,6 +82,8 @@ export const getSubscribedCoaches = async (req, res) => {
       },
       select: 'user Fide_id quote location languages rating hourlyRate' // Select additional fields in subscribedCoaches
     }); 
+    console.log("Fetched player:", player); // Debugging: Log the player object
+
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
@@ -90,7 +92,8 @@ export const getSubscribedCoaches = async (req, res) => {
     // Return the populated subscribedCoaches
     res.status(200).json(player.subscribedCoaches);
   } catch (error) {
-    console.error("Error fetching subscribed coaches:", error);
+    console.error("Error fetching subscribed coaches for player ID:", playerId, error);
+
     res.status(500).json({ message: "Internal server error" });
   }
 };
