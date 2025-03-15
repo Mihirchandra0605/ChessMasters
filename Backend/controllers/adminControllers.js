@@ -9,8 +9,10 @@ import AdminModel from '../models/AdminModel.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { jwtSecretKey } from '../config.js';
+import { console } from 'inspector';
 
 export const deletePlayer = async (req, res) => {
+    console.log(req.params)
     try {
         const { playerId } = req.params;
         await UserModel.findByIdAndDelete(playerId);
@@ -21,9 +23,11 @@ export const deletePlayer = async (req, res) => {
 };
 
 export const deleteCoach = async (req, res) => {
+    console.log(req)
     try {
         const { coachId } = req.params;
-        await CoachModel.findByIdAndDelete(coachId);
+        console.log(coachId)
+        await UserModel.findByIdAndDelete(coachId);
         await CoachDetails.findOneAndDelete({ user: coachId });
         res.status(200).json({ message: "Coach deleted successfully" });
     } catch (error) {

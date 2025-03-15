@@ -18,7 +18,7 @@ import { isAdmin } from '../middlewares/isAdmin.js';
 const router = express.Router();
 router.post('/login', adminLogin);
 
-router.delete('/users/:playerId', deletePlayer);
+router.delete('/players/:playerId', deletePlayer);
 router.delete('/coaches/:coachId', deleteCoach);
 router.delete('/articles/:articleId', deleteArticle);
 router.delete('/videos/:videoId', deleteVideo);

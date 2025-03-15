@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BsPeopleFill, BsFillBarChartLineFill, BsFillFileEarmarkTextFill, BsCashStack } from 'react-icons/bs';
+import { BsPeopleFill,BsCurrencyDollar, BsFilePlus,BsFillBarChartLineFill, BsFillFileEarmarkTextFill, BsCashStack } from 'react-icons/bs';
 import AdminNav from './adminnav.jsx';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { AddForm } from './AddForm.jsx';
+
 import {
   LineChart,
   Line,
@@ -14,6 +17,7 @@ import {
 } from 'recharts';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [coaches, setCoaches] = useState([]);
   const [articles, setArticles] = useState([]);
@@ -28,6 +32,44 @@ const Dashboard = () => {
   });
   const [expandedStat, setExpandedStat] = useState(null);
   const [graphData, setGraphData] = useState([]);
+  const [ ShowAlert, setShowAlert] = useState(false)
+  const [isFormVisible, setIsFormVisible] = useState(false);
+
+  const handleAddClick = (e) => {
+    e.preventDefault();
+    setIsFormVisible(true);
+  };
+
+  const handleFormSubmit = (formData) => {
+    // Handle form submission logic here
+    console.log('Form Submitted:', formData);
+    fetch("http://localhost:3000/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        setShowAlert(true);
+        setTimeout(() => {
+          setShowAlert(false);
+          onSignupSuccess();
+        }, 3000);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("An error occurred during signup. Please try again.");
+      });
+    navigate("/AdminDashboard"); // Adjust the route as needed
+  };
 
   const calculateTotalSubscriptions = (data) => {
     console.log(data); // Logs the input data for debugging
@@ -87,6 +129,7 @@ const Dashboard = () => {
       console.error(`Error deleting ${type}:`, error);
     }
   };
+
 
   const handleSearch = (field) => (e) => {
     e.preventDefault();
@@ -296,6 +339,12 @@ const Dashboard = () => {
       </div>
       {!expandedStat ? (
         <>
+        {isFormVisible && (
+        <AddForm
+          onClose={() => setIsFormVisible(false)}
+          onSubmit={handleFormSubmit}
+        />
+      )}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             <StatCard
               title="Users"
@@ -322,6 +371,19 @@ const Dashboard = () => {
               title="Subscriptions"
               count={subscriptions}
               icon={BsCashStack}
+              gradient="bg-gradient-to-br from-amber-500 via-orange-600 to-red-600"
+              onClick={() => handleStatClick('Subscriptions')}
+            />
+             <StatCard
+              title="Add"
+              icon={BsFilePlus}
+              gradient="bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700"
+              onClick={handleAddClick}
+            />
+            <StatCard
+              title="Revenue"
+              count={(subscriptions*9.9)/2}
+              icon={BsCurrencyDollar}
               gradient="bg-gradient-to-br from-amber-500 via-orange-600 to-red-600"
               onClick={() => handleStatClick('Subscriptions')}
             />
@@ -357,7 +419,7 @@ const Dashboard = () => {
               data={coaches}
               searchTerm={searchTerms.coaches}
               onSearch={handleSearch('coaches')}
-              onDelete={(id) => handleDelete(id, 'coach')}
+              onDelete={(id) => handleDelete(id, 'coache')}
               gradient="bg-gradient-to-br from-emerald-50/90 to-teal-50/90"
               itemKey="UserName"
             />

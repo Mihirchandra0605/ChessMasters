@@ -325,6 +325,7 @@ function SignupForm({ onSignupSuccess }) {
             alt="rook"
           />
         </div>
+        
         <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4">
           <input
             type="text"
