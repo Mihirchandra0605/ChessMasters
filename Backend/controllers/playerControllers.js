@@ -238,4 +238,4 @@ export const getSubscribedCoachVideos = async (req, res) => {
     console.error("Error fetching subscribed coach videos:", error);
     res.status(500).json({ message: "Internal server error" });
   }
-};
+}; 
