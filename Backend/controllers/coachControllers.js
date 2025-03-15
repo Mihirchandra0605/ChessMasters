@@ -251,3 +251,24 @@ export const getVideoById = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getCoachRevenue = async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    console.log("coachId", coachId);
+    
+    // Find the coach details - look up by user field, not by the document ID
+    const coach = await CoachDetails.findOne({ user: coachId });
+    console.log("coach", coach);
+    
+    if (!coach) {
+      return res.status(404).json({ message: "Coach not found" });
+    }
+    
+    // Return the revenue
+    res.status(200).json({ revenue: coach.revenue || 0 });
+  } catch (error) {
+    console.error("Error fetching coach revenue:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

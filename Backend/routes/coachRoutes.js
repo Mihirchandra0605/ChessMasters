@@ -11,6 +11,7 @@ import {
   getArticleById,
   getVideos,
   getVideoById,
+  getCoachRevenue,
 } from "../controllers/coachControllers.js";
 import { isCoach } from "../middlewares/isCoach.js"; 
 import { authMiddleware } from "../middlewares/authMiddlerware.js";
@@ -32,6 +33,7 @@ router.get("/articles", isCoach, getArticles);
 router.get("/Articledetail/:id", getArticleById);
 router.get("/videos", getVideos);
 router.get("/Videodetail/:id", getVideoById);
+router.get("/revenue/:coachId", authMiddleware, isCoach, getCoachRevenue);
 
 
 export default router;

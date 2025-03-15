@@ -40,6 +40,7 @@ export const subscribeToCoach = async (req, res) => {
 
     const { coachId } = req.body;
     const playerId = req.userId;
+    const SUBSCRIPTION_REVENUE = 5.04; // Revenue per subscription in dollars
 
     // Find the coach by user ID instead of _id
     const coach = await CoachDetails.findById(coachId);
@@ -56,6 +57,10 @@ export const subscribeToCoach = async (req, res) => {
 
     // Store only the user ID in subscribers
     coach.subscribers.push({ user: playerId, subscribedAt: new Date() });
+    
+    // Update the coach's revenue - add $5.04 for each new subscription
+    coach.revenue = (coach.revenue || 0) + SUBSCRIPTION_REVENUE;
+    
     await coach.save();
 
     // Store coach's document ID in player's subscribedCoaches

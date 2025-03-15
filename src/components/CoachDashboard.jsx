@@ -21,7 +21,7 @@ const CoachDashboard = () => {
       const token = document.cookie.split("=")[1];
       try {
         // Fetch all articles and videos first
-        const [articlesResponse, videosResponse, playersResponse] = await Promise.all([
+        const [articlesResponse, videosResponse, playersResponse, revenueResponse] = await Promise.all([
           axios.get('http://localhost:3000/admin/articles', {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
@@ -31,6 +31,10 @@ const CoachDashboard = () => {
             withCredentials: true,
           }),
           axios.get(`http://localhost:3000/coach/subscribedPlayers/${coachId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
+          }),
+          axios.get(`http://localhost:3000/coach/revenue/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           })
@@ -45,13 +49,7 @@ const CoachDashboard = () => {
         setArticles(coachArticles || []);
         setVideos(coachVideos || []);
         setSubscribedPlayers(playersResponse.data.subscribers);
-        
-        // Comment out revenue until you have the endpoint
-        // const revenueResponse = await axios.get(`http://localhost:3000/coach/revenue/${coachId}`, {
-        //   headers: { Authorization: `Bearer ${token}` },
-        //   withCredentials: true,
-        // });
-        // setRevenue(revenueResponse.data.revenue || 0);
+        setRevenue(revenueResponse.data.revenue || 0);
         
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -84,7 +82,7 @@ const CoachDashboard = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-white">Coach Dashboard</h1>
           </div>
           <div className="text-white bg-green-500 px-4 py-2 rounded-lg shadow-lg font-semibold text-sm sm:text-base">
-            💰 Revenue: ₹{revenue.toLocaleString()}
+            💰 Revenue: ${revenue.toLocaleString()}
           </div>
           <button
             onClick={() => setIsNavOpen(!isNavOpen)}

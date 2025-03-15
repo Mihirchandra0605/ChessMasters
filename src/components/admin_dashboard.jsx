@@ -382,7 +382,7 @@ const Dashboard = () => {
             />
             <StatCard
               title="Revenue"
-              count={(subscriptions*9.9)/2}
+              count={Math.floor(((subscriptions * 9.9) / 2) * 1000) / 1000}
               icon={BsCurrencyDollar}
               gradient="bg-gradient-to-br from-amber-500 via-orange-600 to-red-600"
               onClick={() => handleStatClick('Subscriptions')}

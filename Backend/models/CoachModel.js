@@ -15,6 +15,7 @@ const CoachDetailsSchema = new Schema({
   hourlyRate: { type: Number, default: null },
   aboutMe: { type: String, default: "" },
   teachingMethodology: { type: String, default: "" },
+  revenue: { type: Number, default: 0 },
   subscribers: [
     {
       user: { type: Schema.Types.ObjectId, ref: "UserModel" },
