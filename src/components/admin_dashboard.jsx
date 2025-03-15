@@ -24,6 +24,7 @@ const Dashboard = () => {
   const [videos, setVideos] = useState([]);
   const [subscriptions, setsubscriptions] = useState(0);
   const [gamesCount, setGamesCount] = useState(0);
+  const [games, setGames] = useState([]);
   const [searchTerms, setSearchTerms] = useState({
     articles: '',
     videos: '',
@@ -102,10 +103,12 @@ const Dashboard = () => {
       const games = Array.isArray(response.data.games) ? response.data.games : [];
       console.log("Games data:", games);
       setGamesCount(games.length);
+      setGames(games);
       // Calculate count from array length
     } catch (error) {
       console.error("Error fetching games:", error);
       setGamesCount(0); // Default to 0 in case of an error
+      setGames([]); // Set empty array in case of error
     }
   };
 
@@ -152,7 +155,7 @@ const Dashboard = () => {
     <div
       className={`${gradient} rounded-xl shadow-xl p-4 md:p-6 h-[150px] 
         hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 
-        hover:scale-105 relative overflow-hidden backdrop-blur-sm cursor-pointer
+        hover:scale-105 relative overflow-hidden backdrop-blur-sm ${onClick ? 'cursor-pointer' : ''}
         before:content-[''] before:absolute before:top-0 before:left-0 
         before:w-full before:h-full before:bg-white/10 before:opacity-0 
         hover:before:opacity-100 before:transition-opacity`}
@@ -249,35 +252,68 @@ const Dashboard = () => {
     switch (stat) {
       case 'Users':
         const allUsers = [...players, ...coaches];
+        // Simply set today's count to the total number of users
+        const today = new Date().toISOString().split('T')[0];
+        if (dateMap[today]) {
+          dateMap[today].count = allUsers.length;
+        }
+        
+        // Original code that tries to group by createdAt date
+        // This part can be kept as a fallback but may not work if createdAt is missing
         allUsers.forEach(user => {
-          // Validate createdAt
-          if (!user.createdAt) {
-            console.warn("Missing createdAt for user:", user);
-            return; // Skip this iteration
-          }
-
-          const createdAtDate = new Date(user.createdAt);
-          if (isNaN(createdAtDate.getTime())) {
-            console.warn("Invalid date value for user:", user.createdAt);
-            return; // Skip this iteration
-          }
-
-          const createdAt = createdAtDate.toISOString().split('T')[0];
-          if (dateMap[createdAt]) {
-            dateMap[createdAt].count += 1;
+          if (user.createdAt) {
+            try {
+              const createdAtDate = new Date(user.createdAt);
+              if (!isNaN(createdAtDate.getTime())) {
+                const createdAt = createdAtDate.toISOString().split('T')[0];
+                if (dateMap[createdAt] && createdAt !== today) {
+                  dateMap[createdAt].count += 1;
+                }
+              }
+            } catch (error) {
+              console.warn("Error processing date for user:", user._id);
+            }
           }
         });
         break;
 
       case 'Games Played':
-        const allGames = Array.isArray(games) ? games : [];
-        console.log('allGames', allGames);
-        allGames.forEach(game => {
-          const datePlayed = new Date(game.datePlayed).toISOString().split('T')[0];
-          if (dateMap[datePlayed]) {
-            dateMap[datePlayed].count += 1;
+        if (!games || games.length === 0) {
+          const todayDate = new Date().toISOString().split('T')[0];
+          if (dateMap[todayDate]) {
+            dateMap[todayDate].count = gamesCount;
           }
-        });
+        } else {
+          games.forEach(game => {
+            if (game.datePlayed) {
+              try {
+                const gameDate = new Date(game.datePlayed).toISOString().split('T')[0];
+                if (dateMap[gameDate]) {
+                  dateMap[gameDate].count += 1;
+                }
+              } catch (error) {
+                console.warn("Invalid date for game:", game);
+              }
+            } else if (game.createdAt) {
+              try {
+                const gameDate = new Date(game.createdAt).toISOString().split('T')[0];
+                if (dateMap[gameDate]) {
+                  dateMap[gameDate].count += 1;
+                }
+              } catch (error) {
+                console.warn("Invalid date for game:", game);
+              }
+            }
+          });
+          
+          const hasDataPoints = Object.values(dateMap).some(item => item.count > 0);
+          if (!hasDataPoints) {
+            const todayDate = new Date().toISOString().split('T')[0];
+            if (dateMap[todayDate]) {
+              dateMap[todayDate].count = gamesCount;
+            }
+          }
+        }
         break;
       case 'Content':
         const allContent = [...articles, ...videos];
@@ -385,7 +421,6 @@ const Dashboard = () => {
               count={Math.floor(((subscriptions * 9.9) / 2) * 1000) / 1000}
               icon={BsCurrencyDollar}
               gradient="bg-gradient-to-br from-amber-500 via-orange-600 to-red-600"
-              onClick={() => handleStatClick('Subscriptions')}
             />
           </div>
           <div className="mt-8 md:mt-12 space-y-8">
