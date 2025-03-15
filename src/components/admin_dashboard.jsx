@@ -35,6 +35,12 @@ const Dashboard = () => {
   const [graphData, setGraphData] = useState([]);
   const [ ShowAlert, setShowAlert] = useState(false)
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [inputValues, setInputValues] = useState({
+    articles: '',
+    videos: '',
+    players: '',
+    coaches: ''
+  });
 
   const handleAddClick = (e) => {
     e.preventDefault();
@@ -133,11 +139,13 @@ const Dashboard = () => {
     }
   };
 
-
   const handleSearch = (field) => (e) => {
-    e.preventDefault();
     const value = e.target.value;
-    setSearchTerms(prev => ({ ...prev, [field]: value }));
+    setInputValues(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSearchSubmit = (field) => () => {
+    setSearchTerms(prev => ({ ...prev, [field]: inputValues[field] }));
   };
 
   const filterData = (data, searchTerm, key = 'title') => {
@@ -171,59 +179,173 @@ const Dashboard = () => {
     </div>
   );
 
-  const ContentSection = ({ title, data, searchTerm, onSearch, onDelete, gradient, itemKey = 'title' }) => {
-    const inputRef = React.useRef(null);
-
-    const renderContent = (item) => {
-      if (title === 'Players' || title === 'Coaches') {
-        const username = item.user?.UserName || item.UserName || 'N/A';
-        const rating = item.rating || 'N/A';
-        return `${username} - ${rating}`;
+  const ContentSection = ({ title, data, onDelete, gradient, itemKey = 'title' }) => {
+    const [localSearchTerm, setLocalSearchTerm] = useState('');
+    const [filteredItems, setFilteredItems] = useState(data);
+    
+    // Update filtered items when data or searchTerm changes
+    useEffect(() => {
+      if (!Array.isArray(data)) {
+        setFilteredItems([]);
+        return;
       }
-      return item[itemKey];
+      
+      if (!localSearchTerm) {
+        setFilteredItems(data);
+        return;
+      }
+      
+      const filtered = data.filter(item => {
+        if (itemKey === 'UserName') {
+          const username = item.user?.UserName || item.UserName || 'N/A';
+          return username.toLowerCase().includes(localSearchTerm.toLowerCase());
+        }
+        return String(item[itemKey] || '').toLowerCase().includes(localSearchTerm.toLowerCase());
+      });
+      
+      setFilteredItems(filtered);
+    }, [data, localSearchTerm, itemKey]);
+    
+    const handleLocalSearch = (e) => {
+      setLocalSearchTerm(e.target.value);
     };
+    
+    // Get badge color based on rating/ELO
+    const getBadgeColor = (value) => {
+      if (!value || isNaN(Number(value))) return 'bg-gray-200 text-gray-700';
+      
+      const numValue = Number(value);
+      if (numValue >= 2000) return 'bg-purple-600 text-white';
+      if (numValue >= 1800) return 'bg-blue-600 text-white';
+      if (numValue >= 1600) return 'bg-green-600 text-white';
+      if (numValue >= 1400) return 'bg-yellow-500 text-gray-900';
+      if (numValue >= 1200) return 'bg-orange-500 text-white';
+      return 'bg-red-500 text-white';
+    };
+
+    // Log data for debugging
+    useEffect(() => {
+      if (title === 'Coaches') {
+        console.log('Coach data:', data);
+      }
+    }, [data, title]);
 
     return (
       <div className={`${gradient} backdrop-blur-md rounded-xl shadow-xl p-6 md:p-8 
         border border-white/20 min-h-[300px] hover:shadow-2xl 
         transition-all duration-500 transform hover:scale-[1.01]`}>
-        <h3 className="text-xl md:text-2xl font-bold mb-6 
-          bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text 
-          text-transparent tracking-wide">{title}</h3>
-        <input
-          ref={inputRef}
-          type="text"
-          placeholder={`Search ${title}...`}
-          value={searchTerm}
-          onChange={onSearch}
-          autoComplete="off"
-          className="w-full p-4 border rounded-xl mb-6 focus:ring-4 
-            focus:outline-none bg-white/60 backdrop-blur-md shadow-inner
-            transition-all duration-300 hover:bg-white/80 
-            placeholder-gray-500 text-gray-700"
-        />
-        <ul className="space-y-4">
-          {filterData(data, searchTerm, itemKey).map(item => (
-            <li key={item._id}
-              className="flex flex-col md:flex-row justify-between items-start 
-                md:items-center p-5 bg-white/50 hover:bg-white/70 rounded-xl 
-                border border-white/40 transition-all duration-300 
-                hover:shadow-lg group">
-              <span className="text-sm md:text-base text-gray-800 mb-2 md:mb-0 
-                font-medium group-hover:text-gray-900">
-                {renderContent(item)}
-              </span>
-              <button
-                onClick={() => onDelete(item._id)}
-                className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white 
-                  rounded-lg transition-all duration-300 text-sm md:text-base
-                  shadow-md hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl md:text-2xl font-bold 
+            bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text 
+            text-transparent tracking-wide">{title}</h3>
+            
+          {/* Display legend for Players and Coaches */}
+          {(title === 'Players' || title === 'Coaches') && (
+            <div className="text-xs md:text-sm text-gray-600 bg-white/70 px-3 py-1.5 rounded-full shadow-sm">
+              {title === 'Players' ? 'Username - ELO Rating' : 'Username - Coach Rating & ELO'}
+            </div>
+          )}
+        </div>
+        
+        {/* Search input */}
+        <div className="relative mb-6">
+          <input
+            type="text"
+            placeholder={`Search ${title}...`}
+            value={localSearchTerm}
+            onChange={handleLocalSearch}
+            className="w-full p-4 border rounded-xl focus:ring-4 
+              focus:outline-none bg-white/60 backdrop-blur-md shadow-inner
+              transition-all duration-300 hover:bg-white/80 
+              placeholder-gray-500 text-gray-700"
+          />
+          {localSearchTerm && (
+            <button
+              onClick={() => setLocalSearchTerm('')}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+        
+        {/* Display count of filtered items */}
+        <p className="text-sm text-gray-600 mb-4">
+          Showing {filteredItems.length} of {data.length} {title.toLowerCase()}
+        </p>
+        
+        {/* List of items */}
+        <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+          {filteredItems.length > 0 ? (
+            filteredItems.map(item => {
+              // Determine what to render based on item type
+              let username, rating, elo;
+              
+              if (title === 'Players') {
+                username = item.user?.UserName || item.UserName || 'N/A';
+                elo = item.elo || 'N/A'; // Use elo for players
+              } else if (title === 'Coaches') {
+                username = item.user?.UserName || item.UserName || 'N/A';
+                rating = item.rating || 'N/A';
+                
+                // For coaches, we need to check multiple possible locations for ELO
+                // This is because coach ELO might be in different places depending on the API
+                elo = item.elo || (item.user && item.user.elo) || '1100'; // Default to 1100 if not found
+              }
+              
+              return (
+                <div key={item._id}
+                  className="flex flex-col md:flex-row justify-between items-start 
+                    md:items-center p-5 bg-white/50 hover:bg-white/70 rounded-xl 
+                    border border-white/40 transition-all duration-300 
+                    hover:shadow-lg group backdrop-blur-sm"
+                >
+                  {title === 'Players' ? (
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4">
+                      <span className="text-base md:text-lg font-semibold text-gray-800">
+                        {username}
+                      </span>
+                      <div className={`${getBadgeColor(elo)} px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm`}>
+                        ELO: {elo}
+                      </div>
+                    </div>
+                  ) : title === 'Coaches' ? (
+                    <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 flex-wrap">
+                      <span className="text-base md:text-lg font-semibold text-gray-800">
+                        {username}
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        <div className={`${getBadgeColor(rating)} px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm`}>
+                          Rating: {rating}
+                        </div>
+                        <div className={`${getBadgeColor(elo)} px-3 py-1 rounded-full text-xs md:text-sm font-medium shadow-sm`}>
+                          ELO: {elo}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-sm md:text-base text-gray-800 font-medium truncate max-w-full md:max-w-[70%]">
+                      {item[itemKey]}
+                    </span>
+                  )}
+                  
+                  <button
+                    onClick={() => onDelete(item._id)}
+                    className="mt-3 md:mt-0 px-5 py-2 bg-red-500 hover:bg-red-600 text-white 
+                      rounded-lg transition-all duration-300 text-sm md:text-base
+                      shadow-md hover:shadow-xl transform hover:-translate-y-0.5"
+                  >
+                    Delete
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-gray-500 bg-white/30 rounded-xl backdrop-blur-sm">
+              No {title.toLowerCase()} found matching your search.
+            </div>
+          )}
+        </div>
       </div>
     );
   };
@@ -427,24 +549,18 @@ const Dashboard = () => {
             <ContentSection
               title="Articles"
               data={articles}
-              searchTerm={searchTerms.articles}
-              onSearch={handleSearch('articles')}
               onDelete={(id) => handleDelete(id, 'article')}
               gradient="bg-gradient-to-br from-fuchsia-50/90 to-pink-50/90"
             />
             <ContentSection
               title="Videos"
               data={videos}
-              searchTerm={searchTerms.videos}
-              onSearch={handleSearch('videos')}
               onDelete={(id) => handleDelete(id, 'video')}
               gradient="bg-gradient-to-br from-violet-50/90 to-purple-50/90"
             />
             <ContentSection
               title="Players"
               data={players}
-              searchTerm={searchTerms.players}
-              onSearch={handleSearch('players')}
               onDelete={(id) => handleDelete(id, 'player')}
               gradient="bg-gradient-to-br from-blue-50/90 to-indigo-50/90"
               itemKey="UserName"
@@ -452,8 +568,6 @@ const Dashboard = () => {
             <ContentSection
               title="Coaches"
               data={coaches}
-              searchTerm={searchTerms.coaches}
-              onSearch={handleSearch('coaches')}
               onDelete={(id) => handleDelete(id, 'coache')}
               gradient="bg-gradient-to-br from-emerald-50/90 to-teal-50/90"
               itemKey="UserName"
