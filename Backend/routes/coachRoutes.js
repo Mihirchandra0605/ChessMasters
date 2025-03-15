@@ -24,19 +24,21 @@ import { getvideos } from "../controllers/adminControllers.js";
 
 const router = Router();
 
+// Specific routes first
 router.get("/coaches", getAllCoaches);
-router.get("/:id", getCoachById);
+router.get("/details", authMiddleware, getCoachDetails);
 router.get("/videos", authMiddleware, getCoachVideos);
 router.get("/articles", authMiddleware, getCoachArticles);
 router.get("/content/:coachId", getCoachContent);
 router.get("/subscribedPlayers/:coachId", authMiddleware, isCoach, getSubscribedPlayers);
-router.post("/addArticle", isCoach, addArticle);
-router.post("/addVideo", isCoach, addVideo);
-router.put("/completeProfile", isCoach, completeProfile);
-router.get("/articles", isCoach, getArticles);
+router.post("/addArticle", authMiddleware, isCoach, addArticle);
+router.post("/addVideo", authMiddleware, isCoach, addVideo);
+router.put("/completeProfile", authMiddleware, isCoach, completeProfile);
 router.get("/Articledetail/:id", getArticleById);
-router.get("/videos", getVideos);
 router.get("/Videodetail/:id", getVideoById);
 router.get("/revenue/:coachId", authMiddleware, isCoach, getCoachRevenue);
+
+// Generic ID route last
+router.get("/:id", getCoachById);
 
 export default router;

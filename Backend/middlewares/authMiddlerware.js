@@ -12,7 +12,8 @@ export const authMiddleware = (req, res, next) => {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
     } else if (cookieToken) {
-      token = cookieToken;
+      // Check if the cookie token has a semicolon at the end and remove it
+      token = cookieToken.endsWith(';') ? cookieToken.slice(0, -1) : cookieToken;
     }
 
     if (!token) {
@@ -22,11 +23,20 @@ export const authMiddleware = (req, res, next) => {
 
     console.log("🔹 Token found:", token);
 
+    // Handle the case where token might be in cookie format
+    if (token.includes('=')) {
+      const parts = token.split('=');
+      if (parts.length > 1) {
+        token = parts[1];
+      }
+    }
+
     const decoded = jwt.verify(token, jwtSecretKey);
     console.log("✅ Token decoded:", decoded);
 
     // ✅ Attach user object properly
     req.user = { id: decoded.userId, role: decoded.role };
+    req.userId = decoded.userId; // Also set userId for backward compatibility
 
     if (!req.user.id) {
       console.error("❌ Error: User ID missing in token.");
@@ -43,24 +53,23 @@ export const authMiddleware = (req, res, next) => {
   }
 };
 
-
 // Optional: Role-specific middleware
 export const isCoach = (req, res, next) => {
-  if (req.role !== 'coach') {
+  if (req.user && req.user.role !== 'coach') {
     return res.status(403).json({ message: "Access denied. Coach role required." });
   }
   next();
 };
 
 export const isPlayer = (req, res, next) => {
-  if (req.role !== 'player') {
+  if (req.user && req.user.role !== 'player') {
     return res.status(403).json({ message: "Access denied. Player role required." });
   }
   next();
 };
 
 export const isAdmin = (req, res, next) => {
-  if (req.role !== 'admin') {
+  if (req.user && req.user.role !== 'admin') {
     return res.status(403).json({ message: "Access denied. Admin role required." });
   }
   next();
