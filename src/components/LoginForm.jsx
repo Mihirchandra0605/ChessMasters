@@ -61,6 +61,7 @@ function LoginForm({ onLoginSuccess }) {
       if (ok) {
         onLoginSuccess();
         const role = data.userType || data.role;
+        localStorage.setItem("role", role);
         const playerId = localStorage.getItem('userId');
         const coachId = localStorage.getItem('userId');
         if (role === "admin") {

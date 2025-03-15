@@ -3,6 +3,7 @@ import {
   getPlayerDetails,
   getPlayerDetailsById,
   subscribeToCoach,
+  unsubscribeFromCoach,
   getSubscribedCoaches,
   subscriptionStatus,
   getUsernameById,
@@ -19,6 +20,7 @@ router.get("/details", isPlayer, getPlayerDetails);
 router.get("/subscribed-articles", isPlayer, getSubscribedCoachArticles); // Move this route up
 router.get("/subscribed-videos", isPlayer, getSubscribedCoachVideos); // Add route for subscribed videos
 router.post("/subscribe", isPlayer, subscribeToCoach);
+router.post("/unsubscribe", isPlayer, unsubscribeFromCoach); // Add unsubscribe route
 router.get("/username/:userId", getUsernameById);
 
 // Then place parameterized routes

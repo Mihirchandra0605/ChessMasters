@@ -4,8 +4,10 @@ import { Chess } from "chess.js";
 import MoveHistory from "./MoveHistory";
 import io from "socket.io-client";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function ChessBoard() {
+  const navigate = useNavigate();
   const [game, setGame] = useState(new Chess());
   const [history, setHistory] = useState([]);
   const [winner, setWinner] = useState(null);
@@ -325,16 +327,25 @@ function ChessBoard() {
     });
   }
 
+  // Restart game function to reuse in both button click and keyboard handler
+  const restartGame = () => {
+    setGame(new Chess());
+    setHistory([]);
+    setWinner(null);
+    setGameOver(false);
+    setIsConnected(false);
+    setDrawRequested(false);
+    setDrawRequestFrom(null);
+    setSelectedSquare(null);
+    setLegalMoves([]);
+    socket.current.emit("joinGame", localStorage.getItem("userId"));
+  };
+
   // Restart game on Enter key
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.key === "Enter" && gameOver) {
-        setGame(new Chess());
-        setHistory([]);
-        setWinner(null);
-        setGameOver(false);
-        setIsConnected(false);
-        socket.current.emit("joinGame", localStorage.getItem("userId"));
+        restartGame();
       }
     }
 
@@ -395,14 +406,7 @@ function ChessBoard() {
                   </div>
                   <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
                     <button
-                      onClick={() => {
-                        setGame(new Chess());
-                        setHistory([]);
-                        setWinner(null);
-                        setGameOver(false);
-                        setIsConnected(false);
-                        socket.current.emit("joinGame", localStorage.getItem("userId"));
-                      }}
+                      onClick={restartGame}
                       className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 rounded-lg transition-all text-white font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -410,23 +414,30 @@ function ChessBoard() {
                       </svg>
                       Play Again
                     </button>
-                    <a
-                      href={(() => {
+                    <button
+                      onClick={() => {
                         const role = localStorage.getItem("role");
-                        switch(role) {
-                          case "player":
-                            return "/Index?role=player";
-                          case "coach":
-                            return "/Index";
+                        console.log("User role from localStorage:", role);
+                        
+                        // Default to player route if role is missing or not recognized
+                        if (!role || (role !== "coach" && role !== "admin")) {
+                          console.log("Navigating to /Index?role=player (default)");
+                          navigate("/Index?role=player");
+                        } else if (role === "player") {
+                          console.log("Navigating to /Index?role=player");
+                          navigate("/Index?role=player");
+                        } else {
+                          console.log(`Navigating to /Index, role was ${role}`);
+                          navigate("/Index");
                         }
-                      })()}
+                      }}
                       className="px-5 py-2.5 bg-purple-500 hover:bg-purple-600 rounded-lg transition-all text-white font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clipRule="evenodd" />
                       </svg>
                       Back to Home
-                    </a>
+                    </button>
                   </div>
                 </div>
               </div>

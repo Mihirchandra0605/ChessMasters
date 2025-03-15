@@ -238,4 +238,42 @@ export const getSubscribedCoachVideos = async (req, res) => {
     console.error("Error fetching subscribed coach videos:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const unsubscribeFromCoach = async (req, res) => {
+  try {
+    const { coachId } = req.body;
+    const playerId = req.userId;
+
+    // Find the coach by ID
+    const coach = await CoachDetails.findById(coachId);
+    const player = await UserModel.findById(playerId);
+
+    if (!coach) {
+      return res.status(404).json({ message: "Coach not found" });
+    }
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    // Remove player from coach's subscribers
+    coach.subscribers = coach.subscribers.filter(
+      subscriber => subscriber.user.toString() !== playerId
+    );
+    
+    await coach.save();
+
+    // Remove coach's user ID from player's subscribedCoaches
+    player.subscribedCoaches = player.subscribedCoaches.filter(
+      coachUserId => coachUserId.toString() !== coach.user.toString()
+    );
+    
+    await player.save();
+
+    res.status(200).json({ message: "Successfully unsubscribed from coach", coachId });
+  } catch (error) {
+    console.error("Error unsubscribing from coach:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }; 

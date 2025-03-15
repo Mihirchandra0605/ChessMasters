@@ -13,6 +13,7 @@ const LogoutButton = () => {
 
       if (response.ok) {
         localStorage.removeItem("userId");
+        localStorage.removeItem("role");
         navigate('/');
       } else {
         console.error('Error logging out');
