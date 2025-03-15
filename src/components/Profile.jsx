@@ -19,7 +19,6 @@ const Profile = () => {
   const [eloData, setEloData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subscribedCoaches, setSubscribedCoaches] = useState([]);
-  const [unsubscribing, setUnsubscribing] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -65,34 +64,6 @@ const Profile = () => {
       isMounted = false;
     };
   }, [id]);
-
-  const handleUnsubscribe = async (coachId) => {
-    if (unsubscribing) return;
-    
-    setUnsubscribing(true);
-    const token = document.cookie.split("=")[1];
-    
-    try {
-      await axios.post(
-        'http://localhost:3000/player/unsubscribe',
-        { coachId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
-        }
-      );
-      
-      // Remove the coach from the local state
-      setSubscribedCoaches(prev => prev.filter(coach => coach._id !== coachId));
-      
-    } catch (error) {
-      console.error('Error unsubscribing from coach:', error);
-      // Show error notification
-      alert('Failed to unsubscribe. Please try again.');
-    } finally {
-      setUnsubscribing(false);
-    }
-  };
 
   const handleEdit = (field) => {
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
@@ -206,45 +177,28 @@ const Profile = () => {
             <div className="relative">
               <div 
                 ref={coachScrollContainerRef} 
-                className="flex space-x-4 sm:space-x-6 overflow-x-auto py-4 sm:py-6 px-8 sm:px-10
+                className="flex overflow-x-auto space-x-4 sm:space-x-6 py-4 px-2 
                   scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/40
                   hover:scrollbar-thumb-slate-500"
               >
                 {subscribedCoaches.length > 0 ? subscribedCoaches.map((coach) => (
-                  <div 
-                    key={coach._id} 
-                    className="flex-shrink-0 w-48 sm:w-56 bg-slate-800/50 rounded-xl shadow-lg 
-                      p-4 sm:p-6 space-y-3 sm:space-y-4 transform transition duration-300 
-                      hover:scale-105 hover:bg-slate-700/50"
-                  >
-                    <h3 className="text-base sm:text-xl font-semibold text-center text-slate-200">
-                      {coach.UserName}
-                    </h3>
-                    <p className="text-blue-400 text-center ">
-                      {coach.Email}
-                    </p>
-                    {coach.rating && (
-                      <p className="text-emerald-400 text-center">Rating: {coach.rating}</p>
-                    )}
-                    {coach.location && (
-                      <p className="text-slate-300 text-center text-sm">{coach.location}</p>
-                    )}
-                    <button 
-                      className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
-                        transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
-                      onClick={() => handleUnsubscribe(coach._id)}
-                      disabled={unsubscribing}
-                    >
-                      {unsubscribing ? (
-                        <span className="flex items-center justify-center">
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Unsubscribing...
-                        </span>
-                      ) : "Unsubscribe"}
-                    </button>
+                  <div key={coach._id} className="flex-none w-48 sm:w-56">
+                    <div className="bg-slate-800/50 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105 hover:bg-slate-700/50">
+                      <img
+                        src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+                        alt={coach.UserName}
+                        className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl border-2 border-emerald-500/30"
+                      />
+                      <h3 className="text-base sm:text-xl text-center font-semibold text-slate-200 mt-2">{coach.UserName}</h3>
+                      <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
+                      <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
+                      <button 
+                        className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
+                          transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                      >
+                        Unsubscribe
+                      </button>
+                    </div>
                   </div>
                 )) : (
                   <p className="text-slate-300">No subscribed coaches found.</p>
@@ -260,4 +214,3 @@ const Profile = () => {
 };
 
 export default Profile;
-        

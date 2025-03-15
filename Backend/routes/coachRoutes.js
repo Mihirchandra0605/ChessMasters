@@ -32,7 +32,7 @@ router.get("/content/:coachId", getCoachContent);
 router.get("/subscribedPlayers/:coachId", authMiddleware, isCoach, getSubscribedPlayers);
 router.post("/addArticle", isCoach, addArticle);
 router.post("/addVideo", isCoach, addVideo);
-router.put("/completeProfile", authMiddleware, isCoach, completeProfile);
+router.put("/completeProfile", isCoach, completeProfile);
 router.get("/articles", isCoach, getArticles);
 router.get("/Articledetail/:id", getArticleById);
 router.get("/videos", getVideos);
