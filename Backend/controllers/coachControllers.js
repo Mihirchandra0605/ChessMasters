@@ -8,6 +8,8 @@ import upload from "../middlewares/uploadMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddlerware.js";
 import { jwtSecretKey } from "../config.js";
 import mongoose from "mongoose";
+import Video from "../models/videoModel.js";
+import Article from "../models/articleModel.js";
 export const getCoachDetails = async (req, res) => {
   try {
     // Check token from cookies or headers
@@ -270,5 +272,51 @@ export const getCoachRevenue = async (req, res) => {
   } catch (error) {
     console.error("Error fetching coach revenue:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getCoachContent = async (req, res) => {
+  try {
+    const { coachId } = req.params;
+    
+    // Get videos and articles with populated views
+    const videos = await Video.find({ coach: coachId });
+    const articles = await Article.find({ coach: coachId });
+    
+    return res.status(200).json({
+      videos,
+      articles
+    });
+  } catch (error) {
+    console.error("Error fetching coach content:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getCoachVideos = async (req, res) => {
+  try {
+    // Get the coach ID from the authenticated user - using id instead of _id
+    const coachId = req.user.id;
+    
+    const videos = await Video.find({ coach: coachId });
+    
+    return res.status(200).json(videos);
+  } catch (error) {
+    console.error("Error fetching coach videos:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getCoachArticles = async (req, res) => {
+  try {
+    // Get the coach ID from the authenticated user - using id instead of _id
+    const coachId = req.user.id;
+    
+    const articles = await Article.find({ coach: coachId });
+    
+    return res.status(200).json(articles);
+  } catch (error) {
+    console.error("Error fetching coach articles:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

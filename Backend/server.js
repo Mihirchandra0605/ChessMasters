@@ -14,6 +14,8 @@ import playerRoutes from './routes/playerRoutes.js';
 import coachRoutes from './routes/coachRoutes.js';
 import gameRoutes from './routes/gameRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import videoRoutes from "./routes/videoRoutes.js";
+import articleRoutes from "./routes/articleRoutes.js";
 
 // Import models
 import UserModel from "./models/userModel.js";
@@ -40,6 +42,8 @@ app.use("/player", playerRoutes);
 app.use("/coach", coachRoutes);
 app.use("/game", gameRoutes);
 app.use("/admin", adminRoutes);
+app.use("/video", videoRoutes);
+app.use("/article", articleRoutes);
 
 // Game stats update endpoint
 app.post("/updateGameStats", async (req, res) => {

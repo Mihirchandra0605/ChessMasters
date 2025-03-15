@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -20,6 +20,7 @@ axios.interceptors.response.use(
 
 const ViewChart = () => {
   const navigate = useNavigate();
+  const { coachId } = useParams(); // Get coach ID from URL if available
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [viewData, setViewData] = useState({});
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,10 @@ const ViewChart = () => {
 
   // Function to process view data
   const processViewData = (videos, articles) => {
+    console.log('Processing view data:');
+    console.log('Videos:', videos);
+    console.log('Articles:', articles);
+    
     const years = {};
     
     // Process video views
@@ -70,123 +75,81 @@ const ViewChart = () => {
       }
     });
     
-    // If no data exists, create sample data for current year
-    if (Object.keys(years).length === 0) {
-      const currentYear = new Date().getFullYear();
-      years[currentYear] = {
-        videoViews: [55, 68, 72, 85, 95, 110, 130, 150, 175, 190, 210, 230],
-        articleViews: [35, 50, 60, 65, 75, 85, 90, 105, 115, 125, 135, 150]
-      };
-    }
+    console.log('Processed view data:', years);
     
     return years;
-  };
-
-  // Generate sample data function
-  const generateSampleData = () => {
-    return {
-      [new Date().getFullYear()]: {
-        videoViews: [55, 68, 72, 85, 95, 110, 130, 150, 175, 190, 210, 230],
-        articleViews: [35, 50, 60, 65, 75, 85, 90, 105, 115, 125, 135, 150]
-      },
-      [new Date().getFullYear() - 1]: {
-        videoViews: [45, 58, 62, 75, 85, 100, 120, 140, 165, 180, 200, 220],
-        articleViews: [25, 40, 50, 55, 65, 75, 80, 95, 105, 115, 125, 140]
-      }
-    };
   };
 
   // Fetch view data
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('authorization='))
-          ?.split('=')[1];
-    
-        if (!token) {
-          console.error('Authentication required. Please login again.');
-          navigate('/login');
+        setLoading(true);
+        console.log("🔍 Fetching coach content data...");
+        
+        // Get user details to get coach ID if not available from URL
+        const userResponse = await axios.get("http://localhost:3000/auth/details", { 
+          withCredentials: true 
+        });
+        
+        // If coachId is not in URL params, try to get it from user data
+        const activeCoachId = coachId || userResponse.data._id;
+        
+        console.log("👤 Active coach ID:", activeCoachId);
+        
+        if (!activeCoachId) {
+          console.error("❌ No coach ID found");
+          setError("Coach ID not found. Please try again.");
+          setLoading(false);
           return;
         }
-    
-        // Try to fetch videos first
-        let videosData = [];
-        let articlesData = [];
         
-        try {
-          const videosResponse = await axios.get("http://localhost:3000/coach/videos", {
-            headers: {
-              'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
+        // Fetch videos and articles for this coach specifically
+        const [videosResponse, articlesResponse] = await Promise.all([
+          axios.get(`http://localhost:3000/video/coach/${activeCoachId}`, {
             withCredentials: true
-          });
-          videosData = videosResponse.data || [];
-          console.log("Videos data fetched successfully:", videosData);
-        } catch (videoError) {
-          console.error("Error fetching videos:", videoError);
-          // Don't set error state, just log to console
-        }
+          }),
+          axios.get(`http://localhost:3000/article/coach/${activeCoachId}`, {
+            withCredentials: true
+          })
+        ]);
         
-        // Try to fetch articles separately to isolate errors
-        try {
-          const articlesResponse = await axios.get("http://localhost:3000/admin/getarticles", {
-            headers: {
-              'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            withCredentials: true
-          });
-          articlesData = articlesResponse.data || [];
-          console.log("Articles data fetched successfully:", articlesData);
-        } catch (articleError) {
-          console.error("Error fetching articles:", articleError);
-          // Don't set error state, just log to console
-        }
-    
-        // If we have no data, use sample data without showing error to user
+        const videosData = videosResponse.data || [];
+        const articlesData = articlesResponse.data || [];
+        
+        console.log("📹 Videos fetched:", videosData.length);
+        console.log("📝 Articles fetched:", articlesData.length);
+        
         if (videosData.length === 0 && articlesData.length === 0) {
-          console.warn("No real data available, using sample data instead");
-          const sampleData = generateSampleData();
-          setViewData(sampleData);
-          setAvailableYears(Object.keys(sampleData).sort((a, b) => b - a));
-          setSelectedYear(new Date().getFullYear().toString());
-        } else {
-          // Process whatever data we managed to get
-          const processedData = processViewData(videosData, articlesData);
-          setViewData(processedData);
-          
-          const years = Object.keys(processedData);
-          setAvailableYears(years.sort((a, b) => b - a));
-          
-          if (years.length > 0) {
-            setSelectedYear(Math.max(...years).toString());
-          }
+          console.warn("⚠️ No videos or articles found for this coach");
         }
         
-        // Clear any previous errors and finish loading
-        setError(null);
-        setLoading(false);
+        // Process the actual data from backend
+        const processedData = processViewData(videosData, articlesData);
+        setViewData(processedData);
         
+        const years = Object.keys(processedData);
+        if (years.length > 0) {
+          setAvailableYears(years.sort((a, b) => b - a));
+          setSelectedYear(Math.max(...years.map(Number)).toString());
+        } else {
+          // If no data was processed, set the current year
+          const currentYear = new Date().getFullYear().toString();
+          setAvailableYears([currentYear]);
+          setSelectedYear(currentYear);
+        }
+        
+        setError(null);
       } catch (error) {
-        console.error('Error in view data fetching process:', error);
-        
-        // Create sample data if API fails, but don't show error to user
-        const sampleData = generateSampleData();
-        
-        setViewData(sampleData);
-        setAvailableYears(Object.keys(sampleData).sort((a, b) => b - a));
-        setSelectedYear(new Date().getFullYear().toString());
+        console.error("❌ Error fetching view data:", error);
+        setError("Failed to load view data. Please try again later.");
+      } finally {
         setLoading(false);
-        // Don't set error state, just use sample data
-        setError(null);
       }
     };
     
     fetchData();
-  }, [navigate]);
+  }, [coachId]);
 
   const getChartData = (year) => {
     const months = [
@@ -194,7 +157,6 @@ const ViewChart = () => {
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    // Default empty data if the selected year doesn't exist
     const yearData = viewData[year] || {
       videoViews: new Array(12).fill(0),
       articleViews: new Array(12).fill(0)
@@ -293,6 +255,16 @@ const ViewChart = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-6 md:py-8 px-2 sm:px-4 md:px-6 lg:px-8 flex items-center justify-center">
+        <div className="text-xl font-semibold text-red-600">{error}</div>
+      </div>
+    );
+  }
+
+  const hasData = Object.keys(viewData).length > 0;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-4 sm:py-6 md:py-8 px-2 sm:px-4 md:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md sm:shadow-lg lg:shadow-xl overflow-hidden">
@@ -301,42 +273,45 @@ const ViewChart = () => {
             Views Analysis Dashboard
           </h1>
           
-          <div className="mb-3 sm:mb-4 md:mb-6">
-            <label 
-              htmlFor="year" 
-              className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2"
-            >
-              Select Year:
-            </label>
-            <select
-              id="year"
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(e.target.value)}
-              className="block w-full pl-2 sm:pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 
-                text-sm sm:text-base border-gray-300 rounded-md shadow-sm 
-                focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
-                bg-white transition-all duration-200"
-            >
-              {availableYears.length > 0 ? (
-                availableYears.map(year => (
-                  <option key={year} value={year}>{year}</option>
-                ))
-              ) : (
-                <option value={new Date().getFullYear().toString()}>
-                  {new Date().getFullYear()}
-                </option>
-              )}
-            </select>
-          </div>
+          {hasData ? (
+            <>
+              <div className="mb-3 sm:mb-4 md:mb-6">
+                <label 
+                  htmlFor="year" 
+                  className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2"
+                >
+                  Select Year:
+                </label>
+                <select
+                  id="year"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  className="block w-full pl-2 sm:pl-3 pr-8 sm:pr-10 py-1.5 sm:py-2 
+                    text-sm sm:text-base border-gray-300 rounded-md shadow-sm 
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 
+                    bg-white transition-all duration-200"
+                >
+                  {availableYears.map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
 
-          <div className="h-48 sm:h-64 md:h-80 lg:h-96 mb-4 sm:mb-6 md:mb-8">
-            <Line data={getChartData(selectedYear)} options={options} />
-          </div>
-
-          <div className="mt-2 sm:mt-4 text-xs sm:text-sm text-gray-600">
-            <p className="hidden sm:block text-center">* Hover over data points to see detailed information</p>
-            <p className="sm:hidden text-center">* Tap on data points to see detailed information</p>
-          </div>
+              <div className="h-48 sm:h-64 md:h-80 lg:h-96 mb-4 sm:mb-6 md:mb-8">
+                <Line data={getChartData(selectedYear)} options={options} />
+              </div>
+              
+              <div className="mt-2 sm:mt-4 text-xs sm:text-sm text-gray-600">
+                <p className="hidden sm:block text-center">* Hover over data points to see detailed information</p>
+                <p className="sm:hidden text-center">* Tap on data points to see detailed information</p>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-10">
+              <p className="text-lg font-medium text-gray-700 mb-4">No view data available yet.</p>
+              <p className="text-sm text-gray-500">Views will appear here once players start viewing your content.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

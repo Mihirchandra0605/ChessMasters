@@ -5,6 +5,7 @@ import NavbarPlay from "./navbarplay.jsx";
 import axios from "axios";
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { toast } from 'react-toastify';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -168,10 +169,10 @@ function HomePage() {
   };
 
   useEffect(() => {
-    if (showStats) {
+    if (showStats && details) {
       fetchStats();
     }
-  }, [showStats]);
+  }, [showStats, details]);
 
   const chartData = {
     labels: ['Wins', 'Losses', 'Draws'],
@@ -182,6 +183,42 @@ function HomePage() {
         hoverBackgroundColor: ['#059669', '#DC2626', '#D97706'],
       },
     ],
+  };
+
+  const recordVideoView = async (videoId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/video/${videoId}/view`,
+        {},
+        { withCredentials: true }
+      );
+      
+      toast.success("View recorded");
+      
+      console.log("Video view recorded successfully");
+      return true;
+    } catch (error) {
+      console.error("Error recording video view:", error);
+      return false;
+    }
+  };
+
+  const recordArticleView = async (articleId) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/article/${articleId}/view`,
+        {},
+        { withCredentials: true }
+      );
+      
+      toast.success("View recorded");
+      
+      console.log("Article view recorded successfully");
+      return true;
+    } catch (error) {
+      console.error("Error recording article view:", error);
+      return false;
+    }
   };
 
   if (!details || !articles) {
@@ -215,7 +252,6 @@ function HomePage() {
           </button>
         </div>
 
-        {/* Stats Section */}
         <div className="bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-md p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
       <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-center text-green-400 mb-3 sm:mb-4">
         Stats
@@ -316,9 +352,7 @@ function HomePage() {
                 to={`/Videodetail/${video._id}`} 
                 onClick={() => {
                   // Record video view when clicked
-                  axios.post(`http://localhost:3000/video/${video._id}/view`, {}, 
-                    { withCredentials: true })
-                    .catch(err => console.error("Error recording view:", err));
+                  recordVideoView(video._id);
                 }}
                 className="flex-shrink-0 inline-flex items-center justify-center 
                         bg-green-500 text-white font-medium sm:font-semibold 
@@ -351,9 +385,7 @@ function HomePage() {
                 to={`/Articledetail/${article._id}`}
                 onClick={() => {
                   // Record article view when clicked
-                  axios.post(`http://localhost:3000/article/${article._id}/view`, {}, 
-                    { withCredentials: true })
-                    .catch(err => console.error("Error recording view:", err));
+                  recordArticleView(article._id);
                 }}
                 className="flex-shrink-0 inline-flex items-center justify-center 
                         bg-green-500 text-white font-medium sm:font-semibold 
