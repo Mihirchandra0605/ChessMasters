@@ -188,18 +188,18 @@ const Profile = () => {
                       p-4 sm:p-6 space-y-3 sm:space-y-4 transform transition duration-300 
                       hover:scale-105 hover:bg-slate-700/50"
                   >
-                    {/* <img
-                      src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
-                      alt={coach.user.UserName}
-                      className="w-full h-32 sm:h-40 object-cover rounded-lg"
-                    /> */}
                     <h3 className="text-base sm:text-xl font-semibold text-center text-slate-200">
                       {coach.UserName}
                     </h3>
                     <p className="text-blue-400 text-center ">
                       {coach.Email}
                     </p>
-                    {/* <p className="text-emerald-400 text-center ">Rating: {coach.rating}</p> */}
+                    {coach.rating && (
+                      <p className="text-emerald-400 text-center">Rating: {coach.rating}</p>
+                    )}
+                    {coach.location && (
+                      <p className="text-slate-300 text-center text-sm">{coach.location}</p>
+                    )}
                     <button 
                       className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
                         transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"

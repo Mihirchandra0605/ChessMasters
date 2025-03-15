@@ -42,7 +42,7 @@ export const subscribeToCoach = async (req, res) => {
     const playerId = req.userId;
     const SUBSCRIPTION_REVENUE = 5.04; // Revenue per subscription in dollars
 
-    // Find the coach by user ID instead of _id
+    // Find the coach by ID
     const coach = await CoachDetails.findById(coachId);
     const player = await UserModel.findById(playerId);
     console.log("Found coach:", coach);
@@ -63,9 +63,11 @@ export const subscribeToCoach = async (req, res) => {
     
     await coach.save();
 
-    // Store coach's document ID in player's subscribedCoaches
-    player.subscribedCoaches.push(coach.user);
-    await player.save();
+    // Store coach's user ID in player's subscribedCoaches
+    if (!player.subscribedCoaches.includes(coach.user)) {
+      player.subscribedCoaches.push(coach.user);
+      await player.save();
+    }
 
     res.status(200).json({ message: "Successfully subscribed to coach", coachId });
   } catch (error) {
@@ -78,27 +80,39 @@ export const getSubscribedCoaches = async (req, res) => {
   try {
     const { playerId } = req.params;
 
-    // Find the player by ID and populate subscribedCoaches
-    const player = await UserModel.findById(playerId).populate({
-      path: 'subscribedCoaches',
-      populate: { 
-        path: 'user', // Populate the 'user' field in subscribedCoaches
-        select: 'UserName Email' // Select only the 'UserName' field from the User model
-      },
-      select: 'user Fide_id quote location languages rating hourlyRate' // Select additional fields in subscribedCoaches
-    }); 
-    console.log("Fetched player:", player); // Debugging: Log the player object
-
+    // Find the player by ID
+    const player = await UserModel.findById(playerId);
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
 
-    // Return the populated subscribedCoaches
-    res.status(200).json(player.subscribedCoaches);
-  } catch (error) {
-    console.error("Error fetching subscribed coaches for player ID:", playerId, error);
+    // Find all coach details where the user ID is in the player's subscribedCoaches array
+    const coaches = await CoachDetails.find({
+      user: { $in: player.subscribedCoaches }
+    }).populate({
+      path: 'user',
+      select: 'UserName Email'
+    });
 
+    // Map the coaches to include both coach details and user details
+    const coachesWithUserDetails = coaches.map(coach => {
+      return {
+        _id: coach._id,
+        UserName: coach.user.UserName,
+        Email: coach.user.Email,
+        rating: coach.rating,
+        hourlyRate: coach.hourlyRate,
+        location: coach.location,
+        languages: coach.languages,
+        Fide_id: coach.Fide_id,
+        quote: coach.quote
+      };
+    });
+
+    res.status(200).json(coachesWithUserDetails);
+  } catch (error) {
+    console.error("Error fetching subscribed coaches for player ID:", req.params.playerId, error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
