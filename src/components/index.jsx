@@ -340,7 +340,7 @@ function HomePage() {
                 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 border-l-4 border-green-500">
     <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center text-green-400 
                 mb-3 sm:mb-4 lg:mb-6">
-      Featured Videos
+      Subscribed Videos
     </h2>
     <div className="relative">
       <div ref={videoScrollContainerRef} 
@@ -373,7 +373,7 @@ function HomePage() {
                 p-4 sm:p-6 lg:p-8 border-l-4 border-green-500">
     <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold text-center text-green-400 
                 mb-3 sm:mb-4 lg:mb-6">
-      Featured Articles
+      Subscribed Articles
     </h2>
     <div className="relative">
       <div ref={articleScrollContainerRef} 
