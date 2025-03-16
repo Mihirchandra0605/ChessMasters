@@ -276,4 +276,37 @@ export const unsubscribeFromCoach = async (req, res) => {
     console.error("Error unsubscribing from coach:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const updatePlayerProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { UserName, Email, Password } = req.body;
+    
+    // Find the player by ID
+    const player = await UserModel.findById(userId);
+    
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+    
+    // Update fields if provided
+    if (UserName) player.UserName = UserName;
+    if (Email) player.Email = Email;
+    
+    // Only update password if it's not the placeholder
+    if (Password && Password !== '********') {
+      // Password will be hashed by the pre-save hook in the model
+      player.Password = Password;
+    }
+    
+    await player.save();
+    
+    // Return updated player without password
+    const updatedPlayer = await UserModel.findById(userId).select('-Password');
+    res.status(200).json(updatedPlayer);
+  } catch (error) {
+    console.error("Error updating player profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }; 

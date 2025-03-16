@@ -19,6 +19,7 @@ const Profile = () => {
   const [eloData, setEloData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subscribedCoaches, setSubscribedCoaches] = useState([]);
+  const [updateMessage, setUpdateMessage] = useState('');
 
   useEffect(() => {
     let isMounted = true;
@@ -65,7 +66,62 @@ const Profile = () => {
     };
   }, [id]);
 
-  const handleEdit = (field) => {
+  const handleEdit = async (field) => {
+    // If currently editing and trying to save
+    if (isEditing[field]) {
+      const token = document.cookie.split("=")[1];
+      
+      try {
+        // Map frontend field names to backend field names
+        const fieldMapping = {
+          name: 'UserName',
+          email: 'Email',
+          password: 'Password'
+        };
+        
+        // Only send the field being updated
+        const updateData = {
+          [fieldMapping[field]]: formData[field]
+        };
+        
+        // Send update request to backend
+        const response = await axios.put(
+          'http://localhost:3000/player/update-profile',
+          updateData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true
+          }
+        );
+        
+        // If password was updated, reset it to asterisks in the UI
+        if (field === 'password') {
+          setFormData({
+            ...formData,
+            password: '********'
+          });
+        }
+        
+        // Show success message
+        setUpdateMessage(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`);
+        
+        // Clear message after 3 seconds
+        setTimeout(() => {
+          setUpdateMessage('');
+        }, 3000);
+        
+      } catch (error) {
+        console.error(`Error updating ${field}:`, error);
+        setUpdateMessage(`Failed to update ${field}. Please try again.`);
+        
+        // Clear error message after 3 seconds
+        setTimeout(() => {
+          setUpdateMessage('');
+        }, 3000);
+      }
+    }
+    
+    // Toggle editing state
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
   };
 
@@ -76,6 +132,25 @@ const Profile = () => {
 
   const coachScrollContainerRef = useRef(null);
 
+  const handleUnsubscribe = async (coachId) => {
+    const token = document.cookie.split("=")[1];
+    try {
+      await axios.post(
+        'http://localhost:3000/player/unsubscribe',
+        { coachId },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
+      
+      // Update the list of subscribed coaches
+      setSubscribedCoaches(subscribedCoaches.filter(coach => coach._id !== coachId));
+      
+    } catch (error) {
+      console.error('Error unsubscribing from coach:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -96,6 +171,13 @@ const Profile = () => {
               Home
             </Link>
           </div>
+
+          {/* Update Message */}
+          {updateMessage && (
+            <div className={`mb-4 p-3 rounded-lg text-center ${updateMessage.includes('Failed') ? 'bg-red-600/20 text-red-400' : 'bg-green-600/20 text-green-400'}`}>
+              {updateMessage}
+            </div>
+          )}
 
           {/* Profile Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
@@ -193,6 +275,7 @@ const Profile = () => {
                       <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
                       <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
                       <button 
+                        onClick={() => handleUnsubscribe(coach._id)}
                         className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
                           transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
                       >

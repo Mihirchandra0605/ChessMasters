@@ -320,3 +320,36 @@ export const getCoachArticles = async (req, res) => {
     return res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const updateCoachProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { UserName, Email, Password } = req.body;
+    
+    // Find the user by ID
+    const user = await UserModel.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: "Coach not found" });
+    }
+    
+    // Update fields if provided
+    if (UserName) user.UserName = UserName;
+    if (Email) user.Email = Email;
+    
+    // Only update password if it's not the placeholder
+    if (Password && Password !== '********') {
+      // Password will be hashed by the pre-save hook in the model
+      user.Password = Password;
+    }
+    
+    await user.save();
+    
+    // Return updated user without password
+    const updatedUser = await UserModel.findById(userId).select('-Password');
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    console.error("Error updating coach profile:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

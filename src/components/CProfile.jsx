@@ -26,6 +26,7 @@ const CProfile = () => {
   const [eloData, setEloData] = useState([]);
   const [loading, setLoading] = useState(true); // For loading state
   const [subscribedPlayers, setSubscribedPlayers] = useState([]);
+  const [updateMessage, setUpdateMessage] = useState('');
 
   // Fetch player details on component mount
   useEffect(() => {
@@ -61,7 +62,6 @@ const CProfile = () => {
       } catch (error) {
         if (isMounted) {
           console.error('Error fetching coach details:', error);
-          setError('Failed to fetch data.');
           setLoading(false);
         }
       }
@@ -74,8 +74,62 @@ const CProfile = () => {
     };
   }, [coachId]);
   
-
-  const handleEdit = (field) => {
+  const handleEdit = async (field) => {
+    // If currently editing and trying to save
+    if (isEditing[field]) {
+      const token = document.cookie.split("=")[1];
+      
+      try {
+        // Map frontend field names to backend field names
+        const fieldMapping = {
+          name: 'UserName',
+          email: 'Email',
+          password: 'Password'
+        };
+        
+        // Only send the field being updated
+        const updateData = {
+          [fieldMapping[field]]: formData[field]
+        };
+        
+        // Send update request to backend
+        const response = await axios.put(
+          'http://localhost:3000/coach/update-profile',
+          updateData,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true
+          }
+        );
+        
+        // If password was updated, reset it to asterisks in the UI
+        if (field === 'password') {
+          setFormData({
+            ...formData,
+            password: '********'
+          });
+        }
+        
+        // Show success message
+        setUpdateMessage(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`);
+        
+        // Clear message after 3 seconds
+        setTimeout(() => {
+          setUpdateMessage('');
+        }, 3000);
+        
+      } catch (error) {
+        console.error(`Error updating ${field}:`, error);
+        setUpdateMessage(`Failed to update ${field}. Please try again.`);
+        
+        // Clear error message after 3 seconds
+        setTimeout(() => {
+          setUpdateMessage('');
+        }, 3000);
+      }
+    }
+    
+    // Toggle editing state
     setIsEditing({ ...isEditing, [field]: !isEditing[field] });
   };
 
@@ -126,6 +180,17 @@ const CProfile = () => {
             </Link>
           </div>
 
+          {/* Update Message */}
+          {updateMessage && (
+            <div className={`mb-4 p-3 rounded-lg text-center font-medium ${
+              updateMessage.includes('Failed') 
+                ? 'bg-red-100 text-red-800 border border-red-300' 
+                : 'bg-teal-100 text-teal-800 border border-teal-300'
+            }`}>
+              {updateMessage}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             <div className="space-y-6 sm:space-y-8">
               <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -172,86 +237,83 @@ const CProfile = () => {
             </div>
 
             <div className="h-64 sm:h-80 md:h-auto bg-lime-200 rounded-xl sm:rounded-2xl shadow-lg p-4">
-  <ResponsiveContainer width="100%" height="100%">
-    <LineChart data={eloData}>
-      <CartesianGrid strokeDasharray="3 3" stroke="#e0f2f1" />
-      <XAxis 
-        dataKey="gameNumber" 
-        stroke="#00897b" 
-        label={{ 
-          value: "Games", 
-          position: "insideBottom", 
-          offset: -5, 
-          fill: "#00897b" 
-        }} 
-      />
-      <YAxis 
-        stroke="#00897b" 
-        label={{ 
-          value: "ELO", 
-          angle: -90, 
-          position: "insideLeft", 
-          fill: "#00897b" 
-        }} 
-      />
-      <Tooltip 
-        contentStyle={{ 
-          backgroundColor: '#e0f2f1', 
-          borderColor: '#4db6ac' 
-        }} 
-      />
-      <Legend />
-      <Line 
-        type="linear" // Ensures a straight line between points
-        dataKey="elo" 
-        stroke="#00897b" 
-        strokeWidth={2} 
-        dot={{ fill: '#4db6ac', strokeWidth: 2 }} 
-        connectNulls={true} // Ensures null or missing values are connected
-      />
-    </LineChart>
-  </ResponsiveContainer>
-</div>
-
-
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={eloData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0f2f1" />
+                  <XAxis 
+                    dataKey="gameNumber" 
+                    stroke="#00897b" 
+                    label={{ 
+                      value: "Games", 
+                      position: "insideBottom", 
+                      offset: -5, 
+                      fill: "#00897b" 
+                    }} 
+                  />
+                  <YAxis 
+                    stroke="#00897b" 
+                    label={{ 
+                      value: "ELO", 
+                      angle: -90, 
+                      position: "insideLeft", 
+                      fill: "#00897b" 
+                    }} 
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#e0f2f1', 
+                      borderColor: '#4db6ac' 
+                    }} 
+                  />
+                  <Legend />
+                  <Line 
+                    type="linear" // Ensures a straight line between points
+                    dataKey="elo" 
+                    stroke="#00897b" 
+                    strokeWidth={2} 
+                    dot={{ fill: '#4db6ac', strokeWidth: 2 }} 
+                    connectNulls={true} // Ensures null or missing values are connected
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
 
-{/* Subscribed Players Section */}
-<div className="mt-8 sm:mt-12 md:mt-16">
-  <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4 sm:mb-6">
-    Subscribed Players
-  </h2>
-  <div className="relative">
-    <div 
-      ref={coachScrollContainerRef} 
-      className="flex overflow-x-auto space-x-4 sm:space-x-6 py-4 px-2 
-        scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 
-        hover:scrollbar-thumb-gray-400"
-    >
-      {subscribedPlayers.map((player) => (
-        <div key={player._id} className="flex-none w-48 sm:w-56">
-          <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
-            <img
-              src={player.user.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
-              alt={player.user.UserName}
-              className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl"
-            />
-            <h3 className="text-base sm:text-xl text-center font-semibold text-gray-800 mt-2">{player.user.UserName}</h3>
-            <p className="text-gray-600 text-center mb-1">{player.user.Email}</p>
-            <p className="text-gray-600 text-center mb-4">ELO: {player.user.elo}</p>
-            <button
-              onClick={() => console.log(`Unsubscribing from ${player.user.UserName}`)}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
-            >
-              Remove
-            </button>
+          {/* Subscribed Players Section */}
+          <div className="mt-8 sm:mt-12 md:mt-16">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-gray-800 mb-4 sm:mb-6">
+              Subscribed Players
+            </h2>
+            <div className="relative">
+              <div 
+                ref={coachScrollContainerRef} 
+                className="flex overflow-x-auto space-x-4 sm:space-x-6 py-4 px-2 
+                  scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 
+                  hover:scrollbar-thumb-gray-400"
+              >
+                {subscribedPlayers.map((player) => (
+                  <div key={player._id} className="flex-none w-48 sm:w-56">
+                    <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
+                      <img
+                        src={player.user.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+                        alt={player.user.UserName}
+                        className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl"
+                      />
+                      <h3 className="text-base sm:text-xl text-center font-semibold text-gray-800 mt-2">{player.user.UserName}</h3>
+                      <p className="text-gray-600 text-center mb-1">{player.user.Email}</p>
+                      <p className="text-gray-600 text-center mb-4">ELO: {player.user.elo}</p>
+                      <button
+                        onClick={() => console.log(`Unsubscribing from ${player.user.UserName}`)}
+                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</div>
-
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import {
   getPlayerGameStats, // Import the new function
   getSubscribedCoachArticles, // Import the subscribed articles function
   getSubscribedCoachVideos, // Import the subscribed videos function
+  updatePlayerProfile, // Import the new function
 } from "../controllers/playerControllers.js";
 import { isPlayer } from "../middlewares/isPlayer.js";
 
@@ -17,6 +18,7 @@ const router = Router();
 
 // Place specific routes before parameterized routes
 router.get("/details", isPlayer, getPlayerDetails);
+router.put("/update-profile", isPlayer, updatePlayerProfile); // Add this new route
 router.get("/subscribed-articles", isPlayer, getSubscribedCoachArticles); // Move this route up
 router.get("/subscribed-videos", isPlayer, getSubscribedCoachVideos); // Add route for subscribed videos
 router.post("/subscribe", isPlayer, subscribeToCoach);

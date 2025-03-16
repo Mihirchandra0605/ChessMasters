@@ -15,6 +15,7 @@ import {
   getCoachContent, 
   getCoachVideos, 
   getCoachArticles,
+  updateCoachProfile,
 } from "../controllers/coachControllers.js";
 import { isCoach } from "../middlewares/isCoach.js"; 
 import { authMiddleware } from "../middlewares/authMiddlerware.js";
@@ -37,6 +38,7 @@ router.put("/completeProfile", authMiddleware, isCoach, completeProfile);
 router.get("/Articledetail/:id", getArticleById);
 router.get("/Videodetail/:id", getVideoById);
 router.get("/revenue/:coachId", authMiddleware, isCoach, getCoachRevenue);
+router.put("/update-profile", authMiddleware, isCoach, updateCoachProfile);
 
 // Generic ID route last
 router.get("/:id", getCoachById);
