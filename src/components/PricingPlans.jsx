@@ -1,81 +1,37 @@
-// import React from "react";
-// import { useLocation, useNavigate } from "react-router-dom";
-// import "../styles/pricing.css";
-
-// const PricingPlans = () => {
-//   const location = useLocation();
-//   const navigate = useNavigate();
-
-//   // Extract the query parameters from the URL
-//   const queryParams = new URLSearchParams(location.search);
-//   const coachId = queryParams.get("coachId"); // Get the coachId from query params
-//   console.log(coachId);
-
-//   const handlePlanSelection = (plan) => {
-//     // Navigate to the payment page with the selected plan and coachId
-//     navigate("/payment", { state: { coachId, plan } });
-//   };
-
-//   return (
-//     <div className="pricing-plans-container">
-//       <h2 className="title">Choose your plan for Coach {coachId}</h2>
-//       <hr className="divider" />
-//       <div className="plans">
-//         {/* <PlanCard
-//           title="Free"
-//           price="$1"
-//           duration="per month"
-//           description="Perfect for beginners learning the game."
-//           buttonLabel="Get this plan"
-//           onSelect={() => handlePlanSelection("Free")}
-//         /> */}
-//         <PlanCard
-//           title="Standard"
-//           price="$9.99"
-//           duration="per month"
-//           description="Unlock advanced strategies and get regular feedback."
-//           buttonLabel="Get this plan"
-//           isRecommended={true}
-//           onSelect={() => handlePlanSelection("Standard")}
-//         />
-//         {/* <PlanCard
-//           title="Pro"
-//           price="$19.99"
-//           duration="per month"
-//           description="Access deep analysis tools and lessons from grandmasters."
-//           buttonLabel="Get this plan"
-//           onSelect={() => handlePlanSelection("Pro")}
-//         /> */}
-//       </div>
-//     </div>
-//   );
-// };
-
-// const PlanCard = ({ title, price, duration, description, buttonLabel, isRecommended, onSelect }) => (
-//   <div className={`plan-card ${isRecommended ? "recommended" : ""}`}>
-//     {isRecommended && <span className="recommended-badge">Recommended</span>}
-//     <h3>{title}</h3>
-//     <p className="price">{price}</p>
-//     <p className="duration">{duration}</p>
-//     <p className="description">{description}</p>
-//     <button className="plan-button" onClick={onSelect}>{buttonLabel}</button>
-//   </div>
-// );
-
-// export default PricingPlans;
-
-
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const PricingPlans = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [coachName, setCoachName] = useState("");
+  const [loading, setLoading] = useState(true);
 
   const queryParams = new URLSearchParams(location.search);
   const coachId = queryParams.get("coachId");
-  console.log(coachId);
+
+  useEffect(() => {
+    // Fetch coach details when component mounts
+    const fetchCoachDetails = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`http://localhost:3000/coach/${coachId}`);
+        // Get the coach's name from the user field that's populated
+        const coach = response.data;
+        setCoachName(coach.user.UserName || "Coach");
+      } catch (error) {
+        console.error("Error fetching coach details:", error);
+        setCoachName("Coach"); // Fallback to generic name
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (coachId) {
+      fetchCoachDetails();
+    }
+  }, [coachId]);
 
   const handlePlanSelection = (plan) => {
     navigate("/payment", { state: { coachId, plan } });
@@ -94,7 +50,7 @@ const PricingPlans = () => {
                     animate-fade-in-down">
         <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center 
                      text-gray-800 mb-4 sm:mb-6 md:mb-8 animate-slide-in-left">
-          Choose your plan for Coach {coachId}
+          {loading ? "Loading..." : `Choose your plan for ${coachName}`}
         </h2>
         
         <div className="h-1 w-20 sm:w-24 md:w-32 bg-green-500 mx-auto 
@@ -178,97 +134,3 @@ const PlanCard = ({ title, price, duration, description, buttonLabel, isRecommen
 );
 
 export default PricingPlans;
-
-
-
-//import React from 'react';
-// import { useNavigate, useSearchParams } from 'react-router-dom';
-
-// const PricingPlans = () => {
-//   const navigate = useNavigate();
-//   const [searchParams] = useSearchParams();
-//   const coachId = searchParams.get('coachId');
-
-//   const handleSubscribe = (plan) => {
-//     navigate('/payment', { state: { coachId, plan } });
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 
-//                     py-8 sm:py-12 md:py-16 px-4 sm:px-6 lg:px-8">
-//       <div className="max-w-7xl mx-auto">
-//         <div className="text-center mb-8 sm:mb-12 md:mb-16">
-//           <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold 
-//                        text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-//             Choose Your Plan
-//           </h1>
-//           <p className="mt-4 text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
-//             Select the perfect subscription plan that matches your chess learning goals
-//           </p>
-//         </div>
-
-//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
-//           {/* Basic Plan */}
-//           <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform 
-//                         hover:scale-105 transition-transform duration-300">
-//             <div className="p-6 sm:p-8 bg-gradient-to-br from-purple-500 to-indigo-600">
-//               <h2 className="text-xl sm:text-2xl font-bold text-white">Basic Plan</h2>
-//               <p className="mt-2 text-purple-100 text-sm sm:text-base">Perfect for beginners</p>
-//               <p className="mt-4 text-2xl sm:text-3xl font-bold text-white">$9.99/month</p>
-//             </div>
-//             <div className="p-6 sm:p-8 space-y-4">
-//               <ul className="space-y-3 text-sm sm:text-base">
-//                 <li className="flex items-center">
-//                   <svg className="h-5 w-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-//                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"/>
-//                   </svg>
-//                   Basic video lessons
-//                 </li>
-//                 {/* Add other list items similarly */}
-//               </ul>
-//               <button
-//                 onClick={() => handleSubscribe('basic')}
-//                 className="w-full py-2 sm:py-3 px-4 sm:px-6 bg-purple-600 text-white 
-//                          rounded-lg font-semibold hover:bg-purple-700 
-//                          transition-colors duration-300 text-sm sm:text-base"
-//               >
-//                 Subscribe Now
-//               </button>
-//             </div>
-//           </div>
-
-//           {/* Premium Plan */}
-//           <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform 
-//                         hover:scale-105 transition-transform duration-300 
-//                         border-4 border-yellow-400">
-//             <div className="p-6 sm:p-8 bg-gradient-to-br from-yellow-400 to-orange-500">
-//               <div className="absolute top-0 right-0 mt-4 mr-4">
-//                 <span className="bg-yellow-200 text-yellow-800 text-xs sm:text-sm px-2 py-1 
-//                                rounded-full font-semibold">
-//                   Popular
-//                 </span>
-//               </div>
-//               <h2 className="text-xl sm:text-2xl font-bold text-white">Premium Plan</h2>
-//               <p className="mt-2 text-yellow-100 text-sm sm:text-base">For serious players</p>
-//               <p className="mt-4 text-2xl sm:text-3xl font-bold text-white">$19.99/month</p>
-//             </div>
-//             {/* Add Premium plan content similarly */}
-//           </div>
-
-//           {/* Pro Plan */}
-//           <div className="bg-white rounded-2xl shadow-xl overflow-hidden transform 
-//                         hover:scale-105 transition-transform duration-300">
-//             <div className="p-6 sm:p-8 bg-gradient-to-br from-pink-500 to-rose-600">
-//               <h2 className="text-xl sm:text-2xl font-bold text-white">Pro Plan</h2>
-//               <p className="mt-2 text-pink-100 text-sm sm:text-base">For elite players</p>
-//               <p className="mt-4 text-2xl sm:text-3xl font-bold text-white">$29.99/month</p>
-//             </div>
-//             {/* Add Pro plan content similarly */}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default PricingPlans;

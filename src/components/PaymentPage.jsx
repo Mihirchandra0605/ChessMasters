@@ -8,11 +8,35 @@ const PaymentPage = () => {
     const dispatch = useDispatch(); 
     const navigate = useNavigate(); 
     const { state } = useLocation(); 
+    const [coachName, setCoachName] = useState("");
+    const [loading, setLoading] = useState(true);
 
     const { coachId, plan } = state || {}; 
 
     const { cardNumber, expiryDate, cvv, cardHolderName, errors, isSubmitted } = useSelector((state) => state.payment); 
     const [paymentError, setPaymentError] = useState(""); 
+
+    // Fetch coach name when component mounts
+    useEffect(() => {
+        const fetchCoachDetails = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get(`http://localhost:3000/coach/${coachId}`);
+                // Get the coach's name from the user field that's populated
+                const coach = response.data;
+                setCoachName(coach.user.UserName || "Coach");
+            } catch (error) {
+                console.error("Error fetching coach details:", error);
+                setCoachName("Coach"); // Fallback to generic name
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (coachId) {
+            fetchCoachDetails();
+        }
+    }, [coachId]);
 
     // Reset form values when component mounts or when navigating back
     useEffect(() => {
@@ -122,7 +146,12 @@ const PaymentPage = () => {
         
                 <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-center mb-4 sm:mb-6"> Payment Details </h2> 
         
-                <p className="text-center text-green-300 mb-6 sm:mb-8 text-sm sm:text-base"> You are subscribing to the <span className="font-semibold text-green-400 mx-1">{plan}</span> plan for Coach <span className="font-semibold text-green-400 mx-1">{coachId}</span> </p> 
+                <p className="text-center text-green-300 mb-6 sm:mb-8 text-sm sm:text-base"> 
+                    You are subscribing to the <span className="font-semibold text-green-400 mx-1">{plan}</span> plan for 
+                    <span className="font-semibold text-green-400 mx-1">
+                        {loading ? "Loading..." : coachName}
+                    </span> 
+                </p> 
         
                 <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6"> 
         
