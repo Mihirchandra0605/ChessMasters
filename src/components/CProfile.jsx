@@ -171,7 +171,7 @@ const CProfile = () => {
       <div className="max-w-6xl mx-auto bg-yellow-50 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden">
         <div className="p-4 sm:p-6 md:p-8 lg:p-10">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-800 mb-4 sm:mb-0">Profile</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-800 mb-4 sm:mb-0">Coach Profile</h1>
             <Link to="/Index?role=coach" 
                   className="bg-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full 
                            hover:bg-teal-700 transition duration-300 shadow-md hover:shadow-xl 

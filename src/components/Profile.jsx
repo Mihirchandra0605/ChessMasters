@@ -166,7 +166,7 @@ const Profile = () => {
         <div className="p-4 sm:p-6 md:p-8 lg:p-10">
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400 mb-4 sm:mb-0">Profile</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400 mb-4 sm:mb-0">Player Profile</h1>
             <Link to="/Index?role=player" className="bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base">
               Home
             </Link>
