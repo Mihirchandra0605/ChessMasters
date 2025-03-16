@@ -66,7 +66,8 @@ export const deleteGame = async (req, res) => {
 
 export const getAllCoaches = async (req, res) => {
     try {
-        const coaches = await CoachDetails.find().populate("user", "UserName Email");
+        const coaches = await CoachDetails.find().populate("user", "UserName Email elo");
+        console.log('coaches', coaches);
         res.status(200).json(coaches);
     } catch (error) {
         res.status(500).json({ message: "Error fetching coaches", error });

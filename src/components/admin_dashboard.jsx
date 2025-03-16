@@ -280,17 +280,18 @@ const Dashboard = () => {
             filteredItems.map(item => {
               // Determine what to render based on item type
               let username, rating, elo;
+              console.log('item', item);
               
               if (title === 'Players') {
                 username = item.user?.UserName || item.UserName || 'N/A';
-                elo = item.elo || 'N/A'; // Use elo for players
+                elo = item.elo || '1200'; // Use elo for players
               } else if (title === 'Coaches') {
                 username = item.user?.UserName || item.UserName || 'N/A';
                 rating = item.rating || 'N/A';
                 
                 // For coaches, we need to check multiple possible locations for ELO
                 // This is because coach ELO might be in different places depending on the API
-                elo = item.elo || (item.user && item.user.elo) || '1100'; // Default to 1100 if not found
+                elo = item.user.elo || '1200'; // Default to 1200 if not found
               }
               
               return (

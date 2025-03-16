@@ -162,6 +162,7 @@ function HomePage() {
   const fetchStats = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/player/${details._id}/game-stats`, { withCredentials: true });
+      console.log('stats data', response.data);
       setStats(response.data);
     } catch (error) {
       console.error('Error fetching stats:', error);

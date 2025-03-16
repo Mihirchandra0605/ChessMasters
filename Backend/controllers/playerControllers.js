@@ -154,6 +154,7 @@ export const getPlayerGameStats = async (req, res) => {
 
     // Fetch the player by ID and select the relevant fields
     const player = await UserModel.findById(playerId, 'gamesWon gamesLost gamesDraw elo');
+    console.log('player', player);
 
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
