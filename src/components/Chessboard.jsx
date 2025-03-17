@@ -26,6 +26,9 @@ function ChessBoard() {
   const [showDrawConfirm, setShowDrawConfirm] = useState(false);
   const [drawRequested, setDrawRequested] = useState(false);
   const [drawRequestFrom, setDrawRequestFrom] = useState(null);
+  const [gameEndReason, setGameEndReason] = useState(null);
+  const [eloChange, setEloChange] = useState(0);
+  const [showEloAnimation, setShowEloAnimation] = useState(false);
   const socket = useRef(null);
   const containerRef = useRef(null);
 
@@ -140,18 +143,21 @@ function ChessBoard() {
         gameInstance.move(move);
       });
       setHistory((prevHistory) => [...prevHistory, san]);
+      
+      // Check for game ending conditions after receiving a move
+      checkGameEndingConditions();
     });
 
     socket.current.on("playerResigned", ({ winner }) => {
-      handleGameOver(winner);
+      handleGameOver(winner, "Resignation");
     });
 
-    socket.current.on("gameOver", ({ winner }) => {
-      handleGameOver(winner);
+    socket.current.on("gameOver", ({ winner, reason }) => {
+      handleGameOver(winner, reason);
     });
 
     socket.current.on("playerDisconnected", ({ winner }) => {
-      handleGameOver(winner);
+      handleGameOver(winner, "Disconnection");
     });
 
     // Handle draw request
@@ -161,8 +167,8 @@ function ChessBoard() {
     });
 
     // Handle draw accepted
-    socket.current.on("drawAccepted", () => {
-      handleGameOver("Draw");
+    socket.current.on("drawAccepted", ({ reason }) => {
+      handleGameOver("Draw", reason);
     });
 
     // Handle draw declined
@@ -186,8 +192,44 @@ function ChessBoard() {
     };
   }, []);
 
+  // Function to check for game ending conditions
+  function checkGameEndingConditions() {
+    // Don't check if game is already over
+    if (gameOver) return;
+    
+    // Check for checkmate
+    if (game.in_checkmate()) {
+      const winnerColor = game.turn() === "w" ? "Black" : "White";
+      handleGameOver(winnerColor, "Checkmate");
+      socket.current.emit("gameOver", { winner: winnerColor, room, reason: "Checkmate" });
+      return;
+    }
+    
+    // Check for stalemate
+    if (game.in_stalemate()) {
+      handleGameOver("Draw", "Stalemate");
+      socket.current.emit("gameOver", { winner: "Draw", room, reason: "Stalemate" });
+      return;
+    }
+    
+    // Check for threefold repetition
+    if (game.in_threefold_repetition()) {
+      console.log("Threefold repetition detected");
+      handleGameOver("Draw", "Threefold Repetition");
+      socket.current.emit("gameOver", { winner: "Draw", room, reason: "Threefold Repetition" });
+      return;
+    }
+    
+    // Check for insufficient material
+    if (game.insufficient_material()) {
+      handleGameOver("Draw", "Insufficient Material");
+      socket.current.emit("gameOver", { winner: "Draw", room, reason: "Insufficient Material" });
+      return;
+    }
+  }
+
   // Handle game over logic
-  function handleGameOver(winnerColor) {
+  function handleGameOver(winnerColor, reason) {
     const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
     const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
     const playerWhite = players.white.userId;
@@ -203,6 +245,7 @@ function ChessBoard() {
       winner: winnerColor,
       additionalAttributes: {
         duration: Math.floor(performance.now() / 1000),
+        reason: reason
       },
     };
 
@@ -212,8 +255,26 @@ function ChessBoard() {
       .catch((err) => console.error("Error saving game result:", err));
 
     setWinner(winnerColor);
+    setGameEndReason(reason);
     setGameOver(true);
     setIsConnected(false);
+    
+    // Calculate ELO change - this is only for display purposes
+    // The actual ELO update is handled by the server
+    if (winnerColor === "Draw") {
+      setEloChange(0);
+    } else {
+      // Determine if the current player won
+      const playerWon = (color === "w" && winnerColor === "White") || 
+                        (color === "b" && winnerColor === "Black");
+      
+      // Set the correct ELO change value based on win/loss
+      const eloChangeValue = playerWon ? 100 : -100;
+      setEloChange(eloChangeValue);
+    }
+    
+    // Show ELO animation
+    setShowEloAnimation(true);
   }
 
   function handleResign() {
@@ -221,7 +282,7 @@ function ChessBoard() {
     
     const winnerColor = color === "w" ? "Black" : "White";
     socket.current.emit("playerResigned", { winner: winnerColor, room });
-    handleGameOver(winnerColor);
+    handleGameOver(winnerColor, "Resignation");
   }
 
   function handleDrawRequest() {
@@ -250,7 +311,7 @@ function ChessBoard() {
         requesterColor: drawRequestFrom.color,
         responderColor: color
       });
-      handleGameOver("Draw");
+      handleGameOver("Draw", "Draw Accepted");
     } else {
       socket.current.emit("drawResponse", { 
         room, 
@@ -307,11 +368,8 @@ function ChessBoard() {
     socket.current.emit("move", { move, room });
     setHistory((prevHistory) => [...prevHistory, result.san]);
 
-    if (game.in_checkmate()) {
-      const winnerColor = game.turn() === "w" ? "Black" : "White";
-      handleGameOver(winnerColor);
-      socket.current.emit("gameOver", { winner: winnerColor, room });
-    }
+    // Check for game ending conditions after making a move
+    checkGameEndingConditions();
   }
 
   // Custom square styling
@@ -338,6 +396,9 @@ function ChessBoard() {
     setDrawRequestFrom(null);
     setSelectedSquare(null);
     setLegalMoves([]);
+    setGameEndReason(null);
+    setEloChange(0);
+    setShowEloAnimation(false);
     socket.current.emit("joinGame", localStorage.getItem("userId"));
   };
 
@@ -399,11 +460,45 @@ function ChessBoard() {
                     Game Over
                   </div>
                   <div className="text-xl text-indigo-200 font-medium">
-                    {winner === "Draw" ? "Result: You Drew" : 
+                    {winner === "Draw" ? "Result: Draw" : 
                       (winner === (color === "w" ? "White" : "Black") ? 
                         "Result: You Won" : 
                         "Result: You Lost")}
                   </div>
+                  <div className="text-lg text-indigo-300 font-medium">
+                    {gameEndReason && `By ${gameEndReason}`}
+                  </div>
+                  
+                  {/* Enhanced ELO Change Animation */}
+                  <div className="mt-4 flex justify-center items-center">
+                    <div className="text-xl font-bold relative p-4">
+                      <div className="animate-fadeIn">
+                        {color === "w" ? players.white.elo : players.black.elo}
+                      </div>
+                      {showEloAnimation && (
+                        <span 
+                          className={`ml-2 inline-flex items-center ${
+                            winner === (color === "w" ? "White" : "Black") ? 'text-green-400' : 
+                            winner !== "Draw" ? 'text-red-400' : 
+                            'text-yellow-400'
+                          } ${winner !== "Draw" ? 'animate-customPulse' : ''} animate-glowEffect`}
+                        >
+                          {winner === (color === "w" ? "White" : "Black") ? '+100' : 
+                           winner !== "Draw" ? '-100' : '0'}
+                        </span>
+                      )}
+                      {showEloAnimation && (
+                        <div 
+                          className="mt-2 text-white text-2xl font-bold animate-slideUp"
+                        >
+                          = {(color === "w" ? players.white.elo : players.black.elo) + 
+                             (winner === (color === "w" ? "White" : "Black") ? 100 : 
+                              winner !== "Draw" ? -100 : 0)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
                   <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
                     <button
                       onClick={restartGame}

@@ -241,7 +241,7 @@ io.on('connection', (socket) => {
             san: result.san 
           });
 
-          // Check for game over
+          // Check for game over conditions
           if (gameRoom.game.in_checkmate()) {
             gameRoom.isGameOver = true;
             const winnerColor = gameRoom.game.turn() === 'w' ? 'Black' : 'White';
@@ -250,7 +250,8 @@ io.on('connection', (socket) => {
             
             io.to(room).emit('gameOver', { 
               winner: winnerColor,
-              winnerId: winnerPlayer.userId
+              winnerId: winnerPlayer.userId,
+              reason: 'Checkmate'
             });
 
             // Update game stats for winner and loser
@@ -263,6 +264,77 @@ io.on('connection', (socket) => {
               userId: loserPlayer.userId,
               result: 'loss'
             }).catch(console.error);
+          }
+          // Check for stalemate
+          else if (gameRoom.game.in_stalemate()) {
+            gameRoom.isGameOver = true;
+            
+            io.to(room).emit('gameOver', { 
+              winner: 'Draw',
+              reason: 'Stalemate'
+            });
+
+            // Update game stats for both players with no ELO change
+            gameRoom.players.forEach(player => {
+              axios.post('http://localhost:3000/updateGameStats', {
+                userId: player.userId,
+                result: 'draw',
+                eloChange: 0
+              }).catch(console.error);
+            });
+          }
+          // Check for threefold repetition
+          else if (gameRoom.game.in_threefold_repetition()) {
+            console.log("Server detected threefold repetition");
+            gameRoom.isGameOver = true;
+            
+            io.to(room).emit('gameOver', { 
+              winner: 'Draw',
+              reason: 'Threefold Repetition'
+            });
+
+            // Update game stats for both players with no ELO change
+            gameRoom.players.forEach(player => {
+              axios.post('http://localhost:3000/updateGameStats', {
+                userId: player.userId,
+                result: 'draw',
+                eloChange: 0
+              }).catch(console.error);
+            });
+
+            // Save the game result in the game model
+            const gameResult = {
+              playerWhite: gameRoom.players[0].userId,
+              playerBlack: gameRoom.players[1].userId,
+              winner: 'Draw',
+              reason: 'Threefold Repetition',
+              moves: gameRoom.game.history(),
+              additionalAttributes: {
+                duration: Math.floor(performance.now() / 1000) // Example duration
+              }
+            };
+
+            axios.post('http://localhost:3000/game/saveGameResult', gameResult)
+              .then(() => console.log("Game result saved successfully"))
+              .catch(err => console.error("Error saving game result:", err));
+          }
+          // Check for insufficient material
+          else if (gameRoom.game.in_draw() && gameRoom.game.insufficient_material()) {
+            gameRoom.isGameOver = true;
+            
+            io.to(room).emit('gameOver', { 
+              winner: 'Draw',
+              reason: 'Insufficient Material'
+            });
+
+            // Update game stats for both players with no ELO change
+            gameRoom.players.forEach(player => {
+              axios.post('http://localhost:3000/updateGameStats', {
+                userId: player.userId,
+                result: 'draw',
+                eloChange: 0
+              }).catch(console.error);
+            });
           }
         }
       });
@@ -321,33 +393,20 @@ io.on('connection', (socket) => {
           const requester = gameRoom.players.find(p => p.color === requesterColor);
           const responder = gameRoom.players.find(p => p.color === responderColor);
           
-          // Calculate ELO changes based on ratings
-          let requesterEloChange, responderEloChange;
-          
-          if (requesterElo <= responderElo) {
-            // Lower or equal rated player asked for draw
-            requesterEloChange = -25;
-            responderEloChange = 25;
-          } else {
-            // Higher rated player asked for draw
-            requesterEloChange = -50;
-            responderEloChange = 50;
-          }
-          
           // Notify both players
-          io.to(room).emit('drawAccepted');
+          io.to(room).emit('drawAccepted', { reason: 'Agreement' });
           
-          // Update ELO for both players
+          // Update game stats for both players with no ELO change
           axios.post('http://localhost:3000/updateGameStats', {
             userId: requester.userId,
             result: 'draw',
-            eloChange: requesterEloChange
+            eloChange: 0
           }).catch(console.error);
           
           axios.post('http://localhost:3000/updateGameStats', {
             userId: responder.userId,
             result: 'draw',
-            eloChange: responderEloChange
+            eloChange: 0
           }).catch(console.error);
         } else {
           // Find the requester socket
@@ -410,6 +469,47 @@ io.on('connection', (socket) => {
               }, 5000);
             }
           }
+        }
+      });
+
+      // Handle game over from client
+      socket.on('gameOver', ({ winner, room, reason }) => {
+        console.log(`Game over received from client: ${winner}, reason: ${reason}`);
+        const gameRoom = games[room];
+        if (!gameRoom || gameRoom.isGameOver) return;
+        
+        gameRoom.isGameOver = true;
+        
+        // Broadcast to all players in the room
+        io.to(room).emit('gameOver', { winner, reason });
+        
+        // Update game stats based on the result
+        if (winner === 'Draw') {
+          // For draws, update both players with no ELO change
+          gameRoom.players.forEach(player => {
+            axios.post('http://localhost:3000/updateGameStats', {
+              userId: player.userId,
+              result: 'draw',
+              eloChange: 0
+            }).catch(console.error);
+          });
+        } else {
+          // For wins/losses, find winner and loser
+          const winnerColor = winner === 'White' ? 'w' : 'b';
+          const winnerPlayer = gameRoom.players.find(p => p.color === winnerColor);
+          const loserPlayer = gameRoom.players.find(p => p.color !== winnerColor);
+          
+          // Update winner stats
+          axios.post('http://localhost:3000/updateGameStats', {
+            userId: winnerPlayer.userId,
+            result: 'win'
+          }).catch(console.error);
+          
+          // Update loser stats
+          axios.post('http://localhost:3000/updateGameStats', {
+            userId: loserPlayer.userId,
+            result: 'loss'
+          }).catch(console.error);
         }
       });
 
