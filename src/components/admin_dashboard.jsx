@@ -129,9 +129,10 @@ const Dashboard = () => {
   const handleDelete = async (id, type) => {
     if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
     try {
-      await axios.delete(`http://localhost:3000/admin/${type}s/${id}`);
+      const endpoint = type === 'coach' ? 'coaches' : `${type}s`;
+      await axios.delete(`http://localhost:3000/admin/${endpoint}/${id}`);
       fetchData(
-        `${type}s`,
+        type === 'coach' ? 'coaches' : `${type}s`,
         type === 'player' ? setPlayers : type === 'coach' ? setCoaches : type === 'article' ? setArticles : setVideos
       );
     } catch (error) {
@@ -569,7 +570,7 @@ const Dashboard = () => {
             <ContentSection
               title="Coaches"
               data={coaches}
-              onDelete={(id) => handleDelete(id, 'coache')}
+              onDelete={(id) => handleDelete(id, 'coach')}
               gradient="bg-gradient-to-br from-emerald-50/90 to-teal-50/90"
               itemKey="UserName"
             />

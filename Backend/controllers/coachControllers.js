@@ -4,12 +4,14 @@ import ArticleModel from "../models/articleModel.js"; // for default export
 import UserModel from "../models/userModel.js";
 import videoModel from "../models/videoModel.js";
 import jwt from "jsonwebtoken";
-import upload from "../middlewares/uploadMiddleware.js";
+import upload, { handleUploadErrors } from "../middlewares/uploadMiddleware.js";
 import { authMiddleware } from "../middlewares/authMiddlerware.js";
 import { jwtSecretKey } from "../config.js";
 import mongoose from "mongoose";
 import Video from "../models/videoModel.js";
 import Article from "../models/articleModel.js";
+import ErrorHandler, { catchAsync } from "../middlewares/errorHandler.js";
+
 export const getCoachDetails = async (req, res) => {
   try {
     // Check token from cookies or headers
@@ -132,55 +134,83 @@ export const getSubscribedPlayers = async (req, res) => {
 };
 
 export const addArticle = [
-  upload.single("file"), // Middleware for handling a single file upload
-  async (req, res) => {
-    try {
-      const { title, content } = req.body;
-      const coachId = req.userId;
-
-      const article = new ArticleModel({
-        coach: coachId,
-        title,
-        content,
-        filePath: req.file.path, // Save the uploaded file path
-      });
-
-      await article.save();
-      res.status(201).json({ message: "Article added successfully", article });
-    } catch (error) {
-      console.error("Error adding article:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
+  // Handle file upload with error handling
+  (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        return next(new ErrorHandler(err.message || 'File upload error', 400));
+      }
+      if (!req.file) {
+        return next(new ErrorHandler('No file uploaded', 400));
+      }
+      next();
+    });
   },
+  // Process article creation using catchAsync
+  catchAsync(async (req, res, next) => {
+    const { title, content } = req.body;
+    const coachId = req.userId;
+
+    if (!title || !content) {
+      return next(new ErrorHandler('Title and content are required', 400));
+    }
+
+    const article = new ArticleModel({
+      coach: coachId,
+      title,
+      content,
+      filePath: req.file.path,
+      dateCreated: new Date()
+    });
+
+    await article.save();
+    res.status(201).json({ 
+      success: true,
+      message: "Article added successfully", 
+      article 
+    });
+  })
 ];
 
 export const addVideo = [
-  upload.single("file"),
-  async (req, res) => {
-    try {
-      const { title, content } = req.body;
-      const coachId = req.userId;
-
-      if (!req.file) {
-        return res.status(400).json({ message: "No file uploaded" });
+  // Handle file upload with error handling
+  (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        return next(new ErrorHandler(err.message || 'File upload error', 400));
       }
-
-      // Create a new video document
-      const video = new videoModel({
-        coach: coachId,
-        title,
-        content,
-        filePath: req.file.path,
-      });
-
-      await video.save();
-
-      res.status(201).json({ message: "Video added successfully", video });
-    } catch (error) {
-      console.error("Error adding video:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
+      if (!req.file) {
+        return next(new ErrorHandler('No file uploaded', 400));
+      }
+      next();
+    });
   },
+  // Process video creation using catchAsync
+  catchAsync(async (req, res, next) => {
+    const { title, content } = req.body;
+    const coachId = req.userId;
+
+    if (!title) {
+      return next(new ErrorHandler('Title is required', 400));
+    }
+
+    // Create a new video document
+    const video = new videoModel({
+      coach: coachId,
+      title,
+      content: content || '',
+      filePath: req.file.path,
+      dateCreated: new Date()
+    });
+
+    await video.save();
+
+    res.status(201).json({ 
+      success: true,
+      message: "Video added successfully", 
+      video 
+    });
+  })
 ];
 
 export const completeProfile = async (req, res) => {

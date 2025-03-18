@@ -12,26 +12,74 @@ import { jwtSecretKey } from '../config.js';
 import { console } from 'inspector';
 
 export const deletePlayer = async (req, res) => {
-    console.log(req.params)
     try {
         const { playerId } = req.params;
+        
+        // First check if player exists
+        const player = await UserModel.findById(playerId);
+        if (!player) {
+            return res.status(404).json({ message: "Player not found" });
+        }
+        
+        // Remove player from subscribers list of all coaches
+        await CoachDetails.updateMany(
+            { "subscribers.user": playerId },
+            { $pull: { subscribers: { user: playerId } } }
+        );
+        
+        // Delete the player
         await UserModel.findByIdAndDelete(playerId);
+        
         res.status(200).json({ message: "Player deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting player", error });
+        console.error("Error deleting player:", error);
+        res.status(500).json({ message: "Error deleting player", error: error.message });
     }
 };
 
 export const deleteCoach = async (req, res) => {
-    console.log(req)
     try {
         const { coachId } = req.params;
-        console.log(coachId)
-        await UserModel.findByIdAndDelete(coachId);
-        await CoachDetails.findOneAndDelete({ user: coachId });
-        res.status(200).json({ message: "Coach deleted successfully" });
+        
+        // First find the coach details since coachId is from CoachDetails model
+        const coachDetails = await CoachDetails.findById(coachId);
+        if (!coachDetails) {
+            return res.status(404).json({ message: "Coach details not found" });
+        }
+
+        // Get the associated user ID from coach details
+        const userId = coachDetails.user;
+        
+        // Find and verify the user exists
+        const coach = await UserModel.findById(userId);
+        if (!coach) {
+            // Delete coach details if user not found
+            await CoachDetails.findByIdAndDelete(coachId);
+            return res.status(200).json({ message: "Coach details deleted (no user found)" });
+        }
+        
+        // Remove coach from subscribedCoaches list of all players - using coachId since that's what's stored in subscribedCoaches
+        await UserModel.updateMany(
+            { subscribedCoaches: coachId },
+            { $pull: { subscribedCoaches: coachId } }
+        );
+        
+        // Delete all articles by the coach
+        await ArticleModel.deleteMany({ coach: userId });
+        
+        // Delete all videos by the coach
+        await VideoModel.deleteMany({ coach: userId });
+        
+        // Delete the coach details
+        await CoachDetails.findByIdAndDelete(coachId);
+        
+        // Delete the coach user
+        await UserModel.findByIdAndDelete(userId);
+        
+        res.status(200).json({ message: "Coach and all related content deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting coach", error });
+        console.error("Error deleting coach:", error);
+        res.status(500).json({ message: "Error deleting coach", error: error.message });
     }
 };
 

@@ -8,6 +8,7 @@ import { Chess } from 'chess.js';
 import axios from 'axios';
 import morgan from 'morgan'
 import { startSubscriptionCleanupJob } from './jobs/subscriptionJobs.js';
+import ErrorHandler, { errorMiddleware } from './middlewares/errorHandler.js';
 
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
@@ -34,7 +35,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// app.use(morgan("dev"));
+app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded payloads
 
 // Routes
@@ -47,7 +48,7 @@ app.use("/video", videoRoutes);
 app.use("/article", articleRoutes);
 
 // Game stats update endpoint
-app.post("/updateGameStats", async (req, res) => {
+app.post("/updateGameStats", async (req, res, next) => {
   try {
     const { userId, result, eloChange } = req.body;
 
@@ -99,11 +100,17 @@ app.post("/updateGameStats", async (req, res) => {
 
     res.status(200).json({ message: "Game stats updated successfully", user: updatedUser });
   } catch (error) {
-    console.error("Error updating game stats:", error);
-    res.status(500).json({ error: "Internal server error" });
+    next(error); // Pass error to error handling middleware
   }
 });
 
+// 404 Route for handling undefined routes
+app.all('*', (req, res, next) => {
+  next(new ErrorHandler(`Cannot find ${req.originalUrl} on this server!`, 404));
+});
+
+// Error handling middleware - must be last
+app.use(errorMiddleware);
 
 // Create an HTTP server
 const server = http.createServer(app);
