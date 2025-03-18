@@ -23,7 +23,8 @@ const Profile = () => {
   const [confirmationDialog, setConfirmationDialog] = useState({
     isOpen: false,
     coachId: null,
-    coachName: ''
+    coachName: '',
+    daysRemaining: 0
   });
 
   useEffect(() => {
@@ -163,12 +164,31 @@ const Profile = () => {
     }
   };
 
-  const handleUnsubscribeClick = (coachUserId, coachName) => {
+  const handleUnsubscribeClick = (coachUserId, coachName, subscribedAt) => {
+    // Calculate days remaining in subscription
+    let daysRemaining = 0;
+    
+    if (subscribedAt) {
+      const subscriptionDate = new Date(subscribedAt);
+      const today = new Date();
+      
+      // Assume subscription is for 30 days from the subscription date
+      const subscriptionEndDate = new Date(subscriptionDate);
+      subscriptionEndDate.setDate(subscriptionEndDate.getDate() + 30);
+      
+      // Calculate days remaining (round down to nearest whole day)
+      daysRemaining = Math.max(0, Math.floor((subscriptionEndDate - today) / (1000 * 60 * 60 * 24)));
+    } else {
+      // Default to -1 days if subscribedAt is null
+      daysRemaining = -1;
+    }
+    
     // Show custom confirmation dialog
     setConfirmationDialog({
       isOpen: true,
       coachId: coachUserId,
-      coachName: coachName
+      coachName: coachName,
+      daysRemaining: daysRemaining
     });
   };
 
@@ -176,12 +196,12 @@ const Profile = () => {
     // Call the existing unsubscribe handler with the coach ID from state
     handleUnsubscribe(confirmationDialog.coachId);
     // Close the dialog
-    setConfirmationDialog({ isOpen: false, coachId: null, coachName: '' });
+    setConfirmationDialog({ isOpen: false, coachId: null, coachName: '', daysRemaining: 0 });
   };
 
   const cancelUnsubscribe = () => {
     // Just close the dialog
-    setConfirmationDialog({ isOpen: false, coachId: null, coachName: '' });
+    setConfirmationDialog({ isOpen: false, coachId: null, coachName: '', daysRemaining: 0 });
   };
 
   if (loading) {
@@ -200,8 +220,11 @@ const Profile = () => {
           <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl shadow-2xl p-6 max-w-md w-full border border-slate-700 animate-fadeIn">
             <h3 className="text-xl font-semibold text-slate-100 mb-1">Confirm Unsubscription</h3>
             <h4 className="text-emerald-400 font-medium mb-4">{confirmationDialog.coachName}</h4>
+            <p className="text-slate-300 mb-3">
+              You have <span className="text-amber-400 font-bold">{confirmationDialog.daysRemaining} days</span> remaining in your subscription.
+            </p>
             <p className="text-slate-300 mb-6">
-              Are you sure you want to unsubscribe from this coach? You will lose access to all premium articles and videos. 
+              Are you sure you want to unsubscribe from coach <span className="text-yellow-500 font-semibold">{confirmationDialog.coachName}</span>? You will lose access to all premium articles and videos. 
               Please note that your subscription payment for the current period will not be refunded.
             </p>
             <div className="flex space-x-4 justify-end">
@@ -337,7 +360,7 @@ const Profile = () => {
                           <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
                           <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
                           <button 
-                            onClick={() => handleUnsubscribeClick(coach.user._id, coach.UserName)}
+                            onClick={() => handleUnsubscribeClick(coach.user._id, coach.UserName, coach.subscribedAt)}
                             className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
                               transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
                           >

@@ -95,8 +95,13 @@ export const getSubscribedCoaches = async (req, res) => {
       select: 'UserName Email'
     });
 
-    // Map the coaches to include both coach details and user details
-    const coachesWithUserDetails = coaches.map(coach => {
+    // Map the coaches to include both coach details, user details, and subscription dates
+    const coachesWithUserDetails = await Promise.all(coaches.map(async (coach) => {
+      // Find the subscription entry for this player
+      const subscriptionEntry = coach.subscribers.find(
+        subscriber => subscriber.user.toString() === playerId
+      );
+      
       return {
         _id: coach._id,
         user: coach.user,
@@ -107,9 +112,10 @@ export const getSubscribedCoaches = async (req, res) => {
         location: coach.location,
         languages: coach.languages,
         Fide_id: coach.Fide_id,
-        quote: coach.quote
+        quote: coach.quote,
+        subscribedAt: subscriptionEntry ? subscriptionEntry.subscribedAt : null
       };
-    });
+    }));
 
     res.status(200).json(coachesWithUserDetails);
   } catch (error) {
