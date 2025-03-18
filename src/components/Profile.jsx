@@ -20,6 +20,11 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [subscribedCoaches, setSubscribedCoaches] = useState([]);
   const [updateMessage, setUpdateMessage] = useState('');
+  const [confirmationDialog, setConfirmationDialog] = useState({
+    isOpen: false,
+    coachId: null,
+    coachName: ''
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -158,6 +163,27 @@ const Profile = () => {
     }
   };
 
+  const handleUnsubscribeClick = (coachUserId, coachName) => {
+    // Show custom confirmation dialog
+    setConfirmationDialog({
+      isOpen: true,
+      coachId: coachUserId,
+      coachName: coachName
+    });
+  };
+
+  const confirmUnsubscribe = () => {
+    // Call the existing unsubscribe handler with the coach ID from state
+    handleUnsubscribe(confirmationDialog.coachId);
+    // Close the dialog
+    setConfirmationDialog({ isOpen: false, coachId: null, coachName: '' });
+  };
+
+  const cancelUnsubscribe = () => {
+    // Just close the dialog
+    setConfirmationDialog({ isOpen: false, coachId: null, coachName: '' });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -168,6 +194,34 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-800 to-blue-900 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+      {/* Confirmation Dialog */}
+      {confirmationDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl shadow-2xl p-6 max-w-md w-full border border-slate-700 animate-fadeIn">
+            <h3 className="text-xl font-semibold text-slate-100 mb-1">Confirm Unsubscription</h3>
+            <h4 className="text-emerald-400 font-medium mb-4">{confirmationDialog.coachName}</h4>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to unsubscribe from this coach? You will lose access to all premium articles and videos. 
+              Please note that your subscription payment for the current period will not be refunded.
+            </p>
+            <div className="flex space-x-4 justify-end">
+              <button 
+                onClick={cancelUnsubscribe}
+                className="px-4 py-2 bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition duration-300 shadow-md"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmUnsubscribe}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 shadow-md"
+              >
+                Unsubscribe
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-6xl mx-auto bg-gradient-to-r from-slate-900/80 to-slate-800/80 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden backdrop-blur-sm">
         <div className="p-4 sm:p-6 md:p-8 lg:p-10">
           {/* Header Section */}
@@ -270,32 +324,32 @@ const Profile = () => {
                   hover:scrollbar-thumb-slate-500"
               >
                 {subscribedCoaches.length > 0 ? (
-  subscribedCoaches.map((coach) => {
-    return (
-      <div key={coach._id} className="flex-none w-48 sm:w-56">
-        <div className="bg-slate-800/50 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105 hover:bg-slate-700/50">
-          <img
-            src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
-            alt={coach.UserName}
-            className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl border-2 border-emerald-500/30"
-          />
-          <h3 className="text-base sm:text-xl text-center font-semibold text-slate-200 mt-2">{coach.UserName}</h3>
-          <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
-          <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
-          <button 
-            onClick={() => handleUnsubscribe(coach.user._id)}
-            className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
-              transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
-          >
-            Unsubscribe
-          </button>
-        </div>
-      </div>
-    );
-  })
-) : (
-  <p className="text-slate-300">No subscribed coaches found.</p>
-)}
+                  subscribedCoaches.map((coach) => {
+                    return (
+                      <div key={coach._id} className="flex-none w-48 sm:w-56">
+                        <div className="bg-slate-800/50 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105 hover:bg-slate-700/50">
+                          <img
+                            src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+                            alt={coach.UserName}
+                            className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl border-2 border-emerald-500/30"
+                          />
+                          <h3 className="text-base sm:text-xl text-center font-semibold text-slate-200 mt-2">{coach.UserName}</h3>
+                          <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
+                          <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
+                          <button 
+                            onClick={() => handleUnsubscribeClick(coach.user._id, coach.UserName)}
+                            className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
+                              transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                          >
+                            Unsubscribe
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-slate-300">No subscribed coaches found.</p>
+                )}
               </div>
             </div>
           </div>
