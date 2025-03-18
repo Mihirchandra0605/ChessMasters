@@ -302,12 +302,6 @@ const CProfile = () => {
                       <h3 className="text-base sm:text-xl text-center font-semibold text-gray-800 mt-2">{player.user.UserName}</h3>
                       <p className="text-gray-600 text-center mb-1">{player.user.Email}</p>
                       <p className="text-gray-600 text-center mb-4">ELO: {player.user.elo}</p>
-                      <button
-                        onClick={() => console.log(`Unsubscribing from ${player.user.UserName}`)}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out"
-                      >
-                        Remove
-                      </button>
                     </div>
                   </div>
                 ))}
