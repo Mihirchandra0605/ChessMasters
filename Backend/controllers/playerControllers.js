@@ -99,6 +99,7 @@ export const getSubscribedCoaches = async (req, res) => {
     const coachesWithUserDetails = coaches.map(coach => {
       return {
         _id: coach._id,
+        user: coach.user,
         UserName: coach.user.UserName,
         Email: coach.user.Email,
         rating: coach.rating,
@@ -243,36 +244,51 @@ export const getSubscribedCoachVideos = async (req, res) => {
 
 export const unsubscribeFromCoach = async (req, res) => {
   try {
-    const { coachId } = req.body;
+    const { coachId } = req.body; // This is the coach's user ID
     const playerId = req.userId;
+    
+    console.log("Unsubscribe request received:");
+    console.log("Player ID:", playerId);
+    console.log("Coach User ID:", coachId);
 
-    // Find the coach by ID
-    const coach = await CoachDetails.findById(coachId);
-    const player = await UserModel.findById(playerId);
-
+    // Find the coach by user ID first to verify it exists
+    const coach = await CoachDetails.findOne({ user: coachId });
     if (!coach) {
       return res.status(404).json({ message: "Coach not found" });
     }
 
+    // Find the player to verify it exists
+    const player = await UserModel.findById(playerId);
     if (!player) {
       return res.status(404).json({ message: "Player not found" });
     }
 
-    // Remove player from coach's subscribers
-    coach.subscribers = coach.subscribers.filter(
-      subscriber => subscriber.user.toString() !== playerId
+    // Use updateOne to directly pull the player from the coach's subscribers array
+    const coachUpdateResult = await CoachDetails.updateOne(
+      { user: coachId },
+      { $pull: { subscribers: { user: playerId } } }
     );
     
-    await coach.save();
+    console.log("Coach update result:", coachUpdateResult);
 
-    // Remove coach's user ID from player's subscribedCoaches
-    player.subscribedCoaches = player.subscribedCoaches.filter(
-      coachUserId => coachUserId.toString() !== coach.user.toString()
+    // Use updateOne to directly pull the coach from the player's subscribedCoaches array
+    const playerUpdateResult = await UserModel.updateOne(
+      { _id: playerId },
+      { $pull: { subscribedCoaches: coachId } }
     );
     
-    await player.save();
+    console.log("Player update result:", playerUpdateResult);
 
-    res.status(200).json({ message: "Successfully unsubscribed from coach", coachId });
+    // Verify that the updates were successful
+    if (coachUpdateResult.modifiedCount === 0 && playerUpdateResult.modifiedCount === 0) {
+      return res.status(400).json({ message: "No subscription found to remove" });
+    }
+
+    res.status(200).json({ 
+      message: "Successfully unsubscribed from coach",
+      coachUpdateResult,
+      playerUpdateResult
+    });
   } catch (error) {
     console.error("Error unsubscribing from coach:", error);
     res.status(500).json({ message: "Internal server error" });

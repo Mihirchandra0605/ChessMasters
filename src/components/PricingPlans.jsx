@@ -62,7 +62,7 @@ const PricingPlans = () => {
           <PlanCard
             title="Standard"
             price="$9.99"
-            duration="per month"
+            duration="for 30 days"
             description="Unlock advanced strategies and get regular feedback."
             buttonLabel="Get this plan"
             isRecommended={true}

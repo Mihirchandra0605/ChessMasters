@@ -48,7 +48,7 @@ const Profile = () => {
               withCredentials: true,
             }
           );
-          console.log(coachesResponse.data)
+          console.log('coach',coachesResponse.data)
           if (isMounted) setSubscribedCoaches(coachesResponse.data);
         }
       } catch (error) {
@@ -132,21 +132,27 @@ const Profile = () => {
 
   const coachScrollContainerRef = useRef(null);
 
-  const handleUnsubscribe = async (coachId) => {
+  const handleUnsubscribe = async (coachUserId) => {
     const token = document.cookie.split("=")[1];
+
+    // Debugging Log
+    console.log("Attempting to unsubscribe from coach userId:", coachUserId);
+
     try {
-      await axios.post(
+      const response = await axios.post(
         'http://localhost:3000/player/unsubscribe',
-        { coachId },
+        { coachId: coachUserId },  // Send the user ID of the coach
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         }
       );
       
-      // Update the list of subscribed coaches
-      setSubscribedCoaches(subscribedCoaches.filter(coach => coach._id !== coachId));
+      console.log("Unsubscribe response:", response.data);
       
+      // Update the UI by removing the unsubscribed coach
+      setSubscribedCoaches(subscribedCoaches.filter(coach => coach.user._id !== coachUserId));
+
     } catch (error) {
       console.error('Error unsubscribing from coach:', error);
     }
@@ -263,29 +269,33 @@ const Profile = () => {
                   scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-slate-800/40
                   hover:scrollbar-thumb-slate-500"
               >
-                {subscribedCoaches.length > 0 ? subscribedCoaches.map((coach) => (
-                  <div key={coach._id} className="flex-none w-48 sm:w-56">
-                    <div className="bg-slate-800/50 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105 hover:bg-slate-700/50">
-                      <img
-                        src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
-                        alt={coach.UserName}
-                        className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl border-2 border-emerald-500/30"
-                      />
-                      <h3 className="text-base sm:text-xl text-center font-semibold text-slate-200 mt-2">{coach.UserName}</h3>
-                      <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
-                      <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
-                      <button 
-                        onClick={() => handleUnsubscribe(coach._id)}
-                        className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
-                          transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
-                      >
-                        Unsubscribe
-                      </button>
-                    </div>
-                  </div>
-                )) : (
-                  <p className="text-slate-300">No subscribed coaches found.</p>
-                )}
+                {subscribedCoaches.length > 0 ? (
+  subscribedCoaches.map((coach) => {
+    return (
+      <div key={coach._id} className="flex-none w-48 sm:w-56">
+        <div className="bg-slate-800/50 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105 hover:bg-slate-700/50">
+          <img
+            src={coach.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+            alt={coach.UserName}
+            className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl border-2 border-emerald-500/30"
+          />
+          <h3 className="text-base sm:text-xl text-center font-semibold text-slate-200 mt-2">{coach.UserName}</h3>
+          <p className="text-blue-400 text-center mb-1">{coach.Email}</p>
+          <p className="text-emerald-400 text-center mb-4">Rating: {coach.rating || 'N/A'}</p>
+          <button 
+            onClick={() => handleUnsubscribe(coach.user._id)}
+            className="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 
+              transition duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+          >
+            Unsubscribe
+          </button>
+        </div>
+      </div>
+    );
+  })
+) : (
+  <p className="text-slate-300">No subscribed coaches found.</p>
+)}
               </div>
             </div>
           </div>

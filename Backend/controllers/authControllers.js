@@ -5,7 +5,7 @@ import { jwtSecretKey } from "../config.js";
 import CoachDetails from "../models/CoachModel.js";
 
 function generateToken(userId, role) {
-  return jwt.sign({ userId, role }, jwtSecretKey, { expiresIn: "1h" });
+  return jwt.sign({ userId, role }, jwtSecretKey, { expiresIn: "7d" });
 }
 
 export const registerUser = async (req, res) => {
