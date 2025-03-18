@@ -7,6 +7,7 @@ import { Server } from 'socket.io';
 import { Chess } from 'chess.js';
 import axios from 'axios';
 import morgan from 'morgan'
+import { startSubscriptionCleanupJob } from './jobs/subscriptionJobs.js';
 
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
@@ -526,6 +527,9 @@ mongoose.connect("mongodb://0.0.0.0:27017/chessApp", {
   useUnifiedTopology: true,
 }).then(() => {
   console.log("Connected to MongoDB");
+
+  // Start subscription cleanup job
+  startSubscriptionCleanupJob();
 
   // Start server only after successful database connection
   server.listen(PORT, () => {

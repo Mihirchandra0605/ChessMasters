@@ -6,6 +6,7 @@ export const isSubscriptionExpired = (subscribedAt) => {
   const subscriptionDate = new Date(subscribedAt);
   const currentDate = new Date();
   const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+  //const threeMinutesInMs = 3 * 60 * 1000; // 3 minutes in milliseconds for testing
   
   return (currentDate - subscriptionDate) > thirtyDaysInMs;
 };

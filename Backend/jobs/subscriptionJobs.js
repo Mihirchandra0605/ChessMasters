@@ -7,8 +7,7 @@ export const startSubscriptionCleanupJob = () => {
   // Run immediately when the server starts
   unsubscribeExpiredSubscriptions();
   
-  // Then run every 24 hours (86400000 ms) 1min = 60000ms for testing
-
+  // Run daily (24 hours = 86400000 ms)
   setInterval(async () => {
     try {
       console.log("Running scheduled subscription cleanup...");
@@ -16,5 +15,5 @@ export const startSubscriptionCleanupJob = () => {
     } catch (error) {
       console.error("Error in subscription cleanup job:", error);
     }
-  }, 60000);
+  }, 86400000);
 }; 
