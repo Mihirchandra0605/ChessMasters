@@ -35,7 +35,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(morgan("dev"));
+app.use(morgan("dev")); //morgan used here
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded payloads
 
 // Routes
