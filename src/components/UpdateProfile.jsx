@@ -26,8 +26,9 @@ const UpdateProfile = () => {
             errorMessage = "Quote must be at least 5 characters long.";
         } else if (name === "languages" && value && value.split(",").length < 1) {
             errorMessage = "Please specify at least one language.";
-        } else if (name === "rating" && value && (isNaN(value) || value < 1 || value > 5)) {
-            errorMessage = "Rating must be a number between 1 and 5.";
+        } else if (name === "rating" && value && 
+                  ((isNaN(value) || (value !== "0" && (value < 1400 || value > 3000))))) {
+            errorMessage = "Rating must be a number between 1400 and 3000, or exactly 0.";
         } else if (name === "hourlyRate" && value && (isNaN(value) || value <= 0)) {
             errorMessage = "Hourly Rate must be a positive number.";
         } else if (name === "aboutMe" && value && value.length < 10) {

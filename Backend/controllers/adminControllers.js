@@ -40,6 +40,7 @@ export const deletePlayer = async (req, res) => {
 export const deleteCoach = async (req, res) => {
     try {
         const { coachId } = req.params;
+        console.log(`Deleting coach with ID: ${coachId}`);
         
         // First find the coach details since coachId is from CoachDetails model
         const coachDetails = await CoachDetails.findById(coachId);
@@ -58,25 +59,59 @@ export const deleteCoach = async (req, res) => {
             return res.status(200).json({ message: "Coach details deleted (no user found)" });
         }
         
-        // Remove coach from subscribedCoaches list of all players - using coachId since that's what's stored in subscribedCoaches
-        await UserModel.updateMany(
-            { subscribedCoaches: coachId },
-            { $pull: { subscribedCoaches: coachId } }
-        );
+        // Track number of subscribers for response
+        const subscribersCount = coachDetails.subscribers ? coachDetails.subscribers.length : 0;
+        
+        // Clean up subscriptions: loop through all subscribers and remove this coach from their subscribedCoaches array
+        if (coachDetails.subscribers && Array.isArray(coachDetails.subscribers)) {
+            console.log(`Coach has ${coachDetails.subscribers.length} subscribers to clean up`);
+            
+            // Process each subscriber
+            for (const subscription of coachDetails.subscribers) {
+                const playerId = subscription.user;
+                
+                console.log(`Removing coach ${coachId} from player ${playerId}'s subscribedCoaches array`);
+                
+                // Update player's subscribedCoaches array to remove this coach
+                await UserModel.findByIdAndUpdate(
+                    playerId,
+                    { $pull: { subscribedCoaches: userId } },
+                    { new: true }
+                );
+            }
+            
+            // Clear the subscribers array in coach details
+            coachDetails.subscribers = [];
+            await coachDetails.save();
+            console.log(`Cleared subscribers array for coach ${coachId}`);
+        } else {
+            console.log("No subscribers found for this coach");
+        }
         
         // Delete all articles by the coach
-        await ArticleModel.deleteMany({ coach: userId });
+        const deletedArticles = await ArticleModel.deleteMany({ coach: userId });
+        console.log(`Deleted ${deletedArticles.deletedCount} articles`);
         
         // Delete all videos by the coach
-        await VideoModel.deleteMany({ coach: userId });
+        const deletedVideos = await VideoModel.deleteMany({ coach: userId });
+        console.log(`Deleted ${deletedVideos.deletedCount} videos`);
         
         // Delete the coach details
         await CoachDetails.findByIdAndDelete(coachId);
+        console.log(`Deleted coach details with ID: ${coachId}`);
         
         // Delete the coach user
         await UserModel.findByIdAndDelete(userId);
+        console.log(`Deleted coach user with ID: ${userId}`);
         
-        res.status(200).json({ message: "Coach and all related content deleted successfully" });
+        res.status(200).json({ 
+            message: "Coach and all related content deleted successfully",
+            details: {
+                articlesDeleted: deletedArticles.deletedCount,
+                videosDeleted: deletedVideos.deletedCount,
+                subscribersRemoved: subscribersCount
+            }
+        });
     } catch (error) {
         console.error("Error deleting coach:", error);
         res.status(500).json({ message: "Error deleting coach", error: error.message });
