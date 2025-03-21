@@ -383,3 +383,49 @@ export const updateCoachProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const deleteCoachAccount = async (req, res) => {
+  try {
+    const coachId = req.userId;
+    
+    // Find the coach details
+    const coach = await CoachDetails.findOne({ user: coachId });
+    
+    if (!coach) {
+      return res.status(404).json({ message: "Coach not found" });
+    }
+    
+    // Step 1: Update all subscribed players to remove this coach
+    if (coach.subscribers && coach.subscribers.length > 0) {
+      // Get all subscribed player IDs
+      const subscribedPlayerIds = coach.subscribers.map(sub => sub.user);
+      
+      // Update all those players to remove this coach from their subscribedCoaches array
+      await UserModel.updateMany(
+        { _id: { $in: subscribedPlayerIds } },
+        { $pull: { subscribedCoaches: coachId } }
+      );
+      
+      console.log(`Removed coach from ${subscribedPlayerIds.length} players' subscriptions`);
+    }
+    
+    // Step 2: Delete all articles by this coach
+    const articlesDeleteResult = await ArticleModel.deleteMany({ coach: coachId });
+    console.log(`Deleted ${articlesDeleteResult.deletedCount} articles`);
+    
+    // Step 3: Delete all videos by this coach
+    const videosDeleteResult = await videoModel.deleteMany({ coach: coachId });
+    console.log(`Deleted ${videosDeleteResult.deletedCount} videos`);
+    
+    // Step 4: Delete the coach details from CoachModel
+    await CoachDetails.findOneAndDelete({ user: coachId });
+    
+    // Step 5: Delete the user account from UserModel
+    await UserModel.findByIdAndDelete(coachId);
+    
+    res.status(200).json({ message: "Coach account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting coach account:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

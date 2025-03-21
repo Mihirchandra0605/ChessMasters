@@ -27,6 +27,9 @@ const CProfile = () => {
   const [loading, setLoading] = useState(true); // For loading state
   const [subscribedPlayers, setSubscribedPlayers] = useState([]);
   const [updateMessage, setUpdateMessage] = useState('');
+  const [deleteAccountDialog, setDeleteAccountDialog] = useState({
+    isOpen: false
+  });
 
   // Fetch player details on component mount
   useEffect(() => {
@@ -156,6 +159,44 @@ const CProfile = () => {
     }
   };
 
+  const handleDeleteAccount = () => {
+    setDeleteAccountDialog({ isOpen: true });
+  };
+
+  const confirmDeleteAccount = async () => {
+    const token = document.cookie.split("=")[1];
+    
+    try {
+      // Delete the coach account through our API
+      const response = await axios.delete(
+        'http://localhost:3000/coach/delete-account',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
+      
+      // Redirect to login page after successful deletion
+      if (response.status === 200) {
+        window.location.href = '/'; // Redirect to login page
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setUpdateMessage('Failed to delete account. Please try again.');
+      setTimeout(() => {
+        setUpdateMessage('');
+      }, 3000);
+    }
+    
+    // Close the dialog
+    setDeleteAccountDialog({ isOpen: false });
+  };
+
+  const cancelDeleteAccount = () => {
+    // Just close the dialog
+    setDeleteAccountDialog({ isOpen: false });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gradient-to-br from-teal-50 to-cyan-100">
@@ -168,16 +209,59 @@ const CProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50 to-cyan-100 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+      {/* Delete Account Confirmation Dialog */}
+      {deleteAccountDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full border border-teal-100 animate-fadeIn">
+            <h3 className="text-xl font-semibold text-red-600 mb-4">Delete Coach Account</h3>
+            <p className="text-gray-700 mb-4">
+              Are you sure you want to delete your coach account? This action cannot be undone.
+            </p>
+            <p className="text-gray-700 mb-3">
+              By confirming, you understand that:
+            </p>
+            <ul className="list-disc list-inside text-gray-700 mb-6 space-y-2">
+              <li>All your uploaded articles and educational videos will be permanently removed</li>
+              <li>Your subscriber base and analytics data will be lost</li>
+              <li>If you create a new account in the future, you will need to rebuild your content library and subscriber network</li>
+              <li>Any revenue tracking information will be permanently deleted</li>
+            </ul>
+            <div className="flex space-x-4 justify-end">
+              <button 
+                onClick={cancelDeleteAccount}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-300 shadow-md"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteAccount}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 shadow-md"
+              >
+                Confirm Deletion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="max-w-6xl mx-auto bg-yellow-50 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden">
         <div className="p-4 sm:p-6 md:p-8 lg:p-10">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-teal-800 mb-4 sm:mb-0">Coach Profile</h1>
-            <Link to="/Index?role=coach" 
-                  className="bg-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full 
-                           hover:bg-teal-700 transition duration-300 shadow-md hover:shadow-xl 
-                           transform hover:-translate-y-1 text-sm sm:text-base">
-              Home
-            </Link>
+            <div className="flex space-x-3 sm:space-x-4">
+              <button 
+                onClick={handleDeleteAccount}
+                className="bg-red-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-full hover:bg-red-700 transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base"
+              >
+                Delete Account
+              </button>
+              <Link to="/Index?role=coach" 
+                    className="bg-teal-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full 
+                             hover:bg-teal-700 transition duration-300 shadow-md hover:shadow-xl 
+                             transform hover:-translate-y-1 text-sm sm:text-base">
+                Home
+              </Link>
+            </div>
           </div>
 
           {/* Update Message */}
@@ -291,20 +375,24 @@ const CProfile = () => {
                   scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 
                   hover:scrollbar-thumb-gray-400"
               >
-                {subscribedPlayers.map((player) => (
-                  <div key={player._id} className="flex-none w-48 sm:w-56">
-                    <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
-                      <img
-                        src={player.user.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
-                        alt={player.user.UserName}
-                        className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl"
-                      />
-                      <h3 className="text-base sm:text-xl text-center font-semibold text-gray-800 mt-2">{player.user.UserName}</h3>
-                      <p className="text-gray-600 text-center mb-1">{player.user.Email}</p>
-                      <p className="text-gray-600 text-center mb-4">ELO: {player.user.elo}</p>
+                {subscribedPlayers.length > 0 ? (
+                  subscribedPlayers.map((player) => (
+                    <div key={player._id} className="flex-none w-48 sm:w-56">
+                      <div className="bg-gray-100 rounded-lg p-4 transition duration-300 ease-in-out transform hover:scale-105">
+                        <img
+                          src={player.user.imageUrl || "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"}
+                          alt={player.user.UserName}
+                          className="w-full h-32 sm:h-40 object-cover rounded-lg sm:rounded-xl"
+                        />
+                        <h3 className="text-base sm:text-xl text-center font-semibold text-gray-800 mt-2">{player.user.UserName}</h3>
+                        <p className="text-gray-600 text-center mb-1">{player.user.Email}</p>
+                        <p className="text-gray-600 text-center mb-4">ELO: {player.user.elo}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-gray-600">No subscribers found.</p>
+                )}
               </div>
             </div>
           </div>
