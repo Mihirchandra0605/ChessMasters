@@ -39,6 +39,7 @@ const Coachdash = () => {
   //   fetchDtails()
   //   fetchCoachDetails();
   // }, [id]);
+  
   useEffect(() => {
     const fetchCoachDetails = async () => {
       try {

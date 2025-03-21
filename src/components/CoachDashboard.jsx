@@ -16,6 +16,7 @@ const CoachDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [subscribedPlayers, setSubscribedPlayers] = useState([]);
   const [revenue, setRevenue] = useState(0);
+  const [profileCompleted, setProfileCompleted] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
     type: null, // 'article' or 'video'
@@ -28,7 +29,7 @@ const CoachDashboard = () => {
       const token = document.cookie.split("=")[1];
       try {
         // Fetch all articles and videos first
-        const [articlesResponse, videosResponse, playersResponse, revenueResponse] = await Promise.all([
+        const [articlesResponse, videosResponse, playersResponse, revenueResponse, profileResponse] = await Promise.all([
           axios.get('http://localhost:3000/admin/articles', {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
@@ -44,8 +45,28 @@ const CoachDashboard = () => {
           axios.get(`http://localhost:3000/coach/revenue/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
+          }),
+          axios.get(`http://localhost:3000/coach/details`, {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true,
           })
         ]);
+        
+        // Check if profile is completed based on profile data
+        const profile = profileResponse.data;
+        const isProfileComplete = 
+          profile && 
+          profile.quote && 
+          profile.location && 
+          profile.languages && 
+          profile.rating && 
+          profile.hourlyRate && 
+          profile.aboutMe && 
+          profile.playingExperience && 
+          profile.teachingExperience && 
+          profile.teachingMethodology;
+        
+        setProfileCompleted(isProfileComplete);
         
         console.log('playersResponse', playersResponse);
         
@@ -241,6 +262,23 @@ const CoachDashboard = () => {
                 Complete Profile
               </motion.button>
             </Link>
+
+            {/* Show Update Profile button only if profile is completed */}
+            {profileCompleted && (
+              <Link to="/update-profile" className="block">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 
+                             hover:from-amber-600 hover:to-yellow-600 
+                             text-white font-bold py-3 px-6 rounded-lg 
+                             transition duration-300 ease-in-out shadow-md 
+                             hover:shadow-lg text-sm sm:text-base"
+                >
+                  Update Profile
+                </motion.button>
+              </Link>
+            )}
 
             <motion.button
               whileHover={{ scale: 1.05 }}

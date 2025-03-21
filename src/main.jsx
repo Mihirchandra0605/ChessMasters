@@ -26,6 +26,7 @@ import VideoDetail from "./components/VideoDetails.jsx";
 // Import our new update components
 import ArticleUpdate from "./components/ArticleUpdate.jsx";
 import VideoUpdate from "./components/VideoUpdate.jsx";
+import UpdateProfile from "./components/UpdateProfile.jsx";
 axios.defaults.withCredentials = true; // Add this line
 
 axios.interceptors.request.use(
@@ -87,6 +88,7 @@ function App() {
         // Add these new routes for update functionality
         { path: '/article-update/:id', element: <ArticleUpdate /> },
         { path: '/video-update/:id', element: <VideoUpdate /> },
+        { path: '/update-profile', element: <UpdateProfile /> },
     ]);
 
     return (
