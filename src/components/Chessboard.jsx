@@ -215,81 +215,137 @@ function ChessBoard() {
     // Check for checkmate
     if (game.in_checkmate()) {
       const winnerColor = game.turn() === "w" ? "Black" : "White";
-      handleGameOver(winnerColor, "Checkmate");
-      socket.current.emit("gameOver", { winner: winnerColor, room, reason: "Checkmate" });
+      
+      // Get complete move history
+      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
+      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      
+      // We'll only emit the event to server and let the server handle saving
+      socket.current.emit("gameOver", { 
+        winner: winnerColor, 
+        room, 
+        reason: "Checkmate",
+        moves: {
+          whiteMoves,
+          blackMoves
+        }
+      });
+      
+      // We're just setting state locally, without saving to DB
+      handleGameOver(winnerColor, "Checkmate", true);
       return;
     }
     
     // Check for stalemate
     if (game.in_stalemate()) {
-      handleGameOver("Draw", "Stalemate");
-      socket.current.emit("gameOver", { winner: "Draw", room, reason: "Stalemate" });
+      // Get complete move history
+      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
+      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      
+      socket.current.emit("gameOver", { 
+        winner: "Draw", 
+        room, 
+        reason: "Stalemate",
+        moves: {
+          whiteMoves,
+          blackMoves
+        }
+      });
+      
+      handleGameOver("Draw", "Stalemate", true);
       return;
     }
     
     // Check for threefold repetition
     if (game.in_threefold_repetition()) {
       console.log("Threefold repetition detected");
-      handleGameOver("Draw", "Threefold Repetition");
-      socket.current.emit("gameOver", { winner: "Draw", room, reason: "Threefold Repetition" });
+      
+      // Get complete move history
+      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
+      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      
+      socket.current.emit("gameOver", { 
+        winner: "Draw", 
+        room, 
+        reason: "Threefold Repetition",
+        moves: {
+          whiteMoves,
+          blackMoves
+        }
+      });
+      
+      handleGameOver("Draw", "Threefold Repetition", true);
       return;
     }
     
     // Check for insufficient material
     if (game.insufficient_material()) {
-      handleGameOver("Draw", "Insufficient Material");
-      socket.current.emit("gameOver", { winner: "Draw", room, reason: "Insufficient Material" });
+      // Get complete move history
+      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
+      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      
+      socket.current.emit("gameOver", { 
+        winner: "Draw", 
+        room, 
+        reason: "Insufficient Material",
+        moves: {
+          whiteMoves,
+          blackMoves
+        }
+      });
+      
+      handleGameOver("Draw", "Insufficient Material", true);
       return;
     }
   }
 
-  // Handle game over logic
-  function handleGameOver(winnerColor, reason) {
-    const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
-    const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-    const playerWhite = players.white.userId;
-    const playerBlack = players.black.userId;
-
-    const gameResult = {
-      playerWhite,
-      playerBlack,
-      moves: {
-        whiteMoves,
-        blackMoves,
-      },
-      winner: winnerColor,
-      additionalAttributes: {
-        duration: Math.floor(performance.now() / 1000),
-        reason: reason
-      },
-    };
-
-    axios
-      .post("http://localhost:3000/game/saveGameResult", gameResult)
-      .then(() => console.log("Game result saved successfully"))
-      .catch((err) => console.error("Error saving game result:", err));
-
+  // Handle game over logic with option to skip DB save
+  function handleGameOver(winnerColor, reason, skipDbSave = false) {
+    // Set UI state
     setWinner(winnerColor);
     setGameEndReason(reason);
     setGameOver(true);
     setIsConnected(false);
     
-    // Calculate ELO change - this is only for display purposes
-    // The actual ELO update is handled by the server
+    // Calculate ELO change for display purposes
     if (winnerColor === "Draw") {
       setEloChange(0);
     } else {
-      // Determine if the current player won
       const playerWon = (color === "w" && winnerColor === "White") || 
                         (color === "b" && winnerColor === "Black");
-      
-      // Set the correct ELO change value based on win/loss
       const eloChangeValue = playerWon ? 100 : -100;
       setEloChange(eloChangeValue);
     }
     
     // Show ELO animation
     setShowEloAnimation(true);
+    
+    // Only save to DB if not skipped (will be handled by server instead)
+    if (!skipDbSave) {
+      const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+      const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+      const playerWhite = players.white.userId;
+      const playerBlack = players.black.userId;
+
+      const gameResult = {
+        playerWhite,
+        playerBlack,
+        moves: {
+          whiteMoves,
+          blackMoves,
+        },
+        winner: winnerColor,
+        additionalAttributes: {
+          duration: Math.floor(performance.now() / 1000),
+          reason: reason
+        },
+      };
+
+      axios
+        .post("http://localhost:3000/game/saveGameResult", gameResult)
+        .then(() => console.log("Game result saved successfully"))
+        .catch((err) => console.error("Error saving game result:", err));
+    }
   }
 
   function handleResign() {
@@ -297,7 +353,9 @@ function ChessBoard() {
     
     const winnerColor = color === "w" ? "Black" : "White";
     socket.current.emit("playerResigned", { winner: winnerColor, room });
-    handleGameOver(winnerColor, "Resignation");
+    
+    // Server will save the game result
+    handleGameOver(winnerColor, "Resignation", true);
   }
 
   function handleDrawRequest() {
@@ -326,7 +384,9 @@ function ChessBoard() {
         requesterColor: drawRequestFrom.color,
         responderColor: color
       });
-      handleGameOver("Draw", "Draw Accepted");
+      
+      // Server will save the game result
+      handleGameOver("Draw", "Draw Accepted", true);
     } else {
       socket.current.emit("drawResponse", { 
         room, 

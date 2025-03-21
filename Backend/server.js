@@ -257,6 +257,26 @@ io.on('connection', (socket) => {
             const winnerPlayer = gameRoom.players.find(p => p.color !== gameRoom.game.turn());
             const loserPlayer = gameRoom.players.find(p => p.color === gameRoom.game.turn());
             
+            // Get the full history including the winning move
+            const history = gameRoom.game.history();
+            const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+            const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+            
+            // Save the game result with complete move history
+            axios.post('http://localhost:3000/game/saveGameResult', {
+              playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+              playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+              moves: {
+                whiteMoves,
+                blackMoves,
+              },
+              winner: winnerColor,
+              additionalAttributes: {
+                duration: Math.floor(performance.now() / 1000),
+                reason: 'Checkmate'
+              },
+            }).catch(console.error);
+            
             io.to(room).emit('gameOver', { 
               winner: winnerColor,
               winnerId: winnerPlayer.userId,
@@ -278,6 +298,26 @@ io.on('connection', (socket) => {
           else if (gameRoom.game.in_stalemate()) {
             gameRoom.isGameOver = true;
             
+            // Get the full history
+            const history = gameRoom.game.history();
+            const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+            const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+            
+            // Save the game result with complete move history
+            axios.post('http://localhost:3000/game/saveGameResult', {
+              playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+              playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+              moves: {
+                whiteMoves,
+                blackMoves,
+              },
+              winner: 'Draw',
+              additionalAttributes: {
+                duration: Math.floor(performance.now() / 1000),
+                reason: 'Stalemate'
+              },
+            }).catch(console.error);
+            
             io.to(room).emit('gameOver', { 
               winner: 'Draw',
               reason: 'Stalemate'
@@ -297,6 +337,26 @@ io.on('connection', (socket) => {
             console.log("Server detected threefold repetition");
             gameRoom.isGameOver = true;
             
+            // Get the full history
+            const history = gameRoom.game.history();
+            const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+            const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+            
+            // Save the game result with complete move history
+            axios.post('http://localhost:3000/game/saveGameResult', {
+              playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+              playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+              moves: {
+                whiteMoves,
+                blackMoves,
+              },
+              winner: 'Draw',
+              additionalAttributes: {
+                duration: Math.floor(performance.now() / 1000),
+                reason: 'Threefold Repetition'
+              },
+            }).catch(console.error);
+            
             io.to(room).emit('gameOver', { 
               winner: 'Draw',
               reason: 'Threefold Repetition'
@@ -310,22 +370,6 @@ io.on('connection', (socket) => {
                 eloChange: 0
               }).catch(console.error);
             });
-
-            // Save the game result in the game model
-            const gameResult = {
-              playerWhite: gameRoom.players[0].userId,
-              playerBlack: gameRoom.players[1].userId,
-              winner: 'Draw',
-              reason: 'Threefold Repetition',
-              moves: gameRoom.game.history(),
-              additionalAttributes: {
-                duration: Math.floor(performance.now() / 1000) // Example duration
-              }
-            };
-
-            axios.post('http://localhost:3000/game/saveGameResult', gameResult)
-              .then(() => console.log("Game result saved successfully"))
-              .catch(err => console.error("Error saving game result:", err));
           }
           // Check for insufficient material
           else if (gameRoom.game.in_draw() && gameRoom.game.insufficient_material()) {
@@ -482,17 +526,35 @@ io.on('connection', (socket) => {
       });
 
       // Handle game over from client
-      socket.on('gameOver', ({ winner, room, reason }) => {
+      socket.on('gameOver', ({ winner, room, reason, moves }) => {
         console.log(`Game over received from client: ${winner}, reason: ${reason}`);
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
         
         gameRoom.isGameOver = true;
         
+        // If moves were provided, use them; otherwise get them from game history
+        const gameHistory = moves || {
+          whiteMoves: gameRoom.game.history().filter((_, idx) => idx % 2 === 0),
+          blackMoves: gameRoom.game.history().filter((_, idx) => idx % 2 !== 0)
+        };
+        
+        // Save game result with complete move history
+        axios.post('http://localhost:3000/game/saveGameResult', {
+          playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+          playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+          moves: gameHistory,
+          winner: winner,
+          additionalAttributes: {
+            duration: Math.floor(performance.now() / 1000),
+            reason: reason
+          },
+        }).catch(console.error);
+        
         // Broadcast to all players in the room
         io.to(room).emit('gameOver', { winner, reason });
         
-        // Update game stats based on the result
+        // Update player stats
         if (winner === 'Draw') {
           // For draws, update both players with no ELO change
           gameRoom.players.forEach(player => {
