@@ -244,6 +244,7 @@ io.on('connection', (socket) => {
 
         const result = gameRoom.game.move(move);
         if (result) {
+          // Send the move to all clients with the SAN notation
           io.to(room).emit('move', { 
             move: result, 
             san: result.san 

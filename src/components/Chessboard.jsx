@@ -129,6 +129,8 @@ function ChessBoard() {
     socket.current.on("startGame", ({ fen, players }) => {
       setIsConnected(true);
       setGame(new Chess(fen));
+      // Reset history when game starts to ensure clean state
+      setHistory([]);
 
       // Set player usernames and ELO
       const whitePlayers = players.find((p) => p.color === "w");
@@ -152,6 +154,9 @@ function ChessBoard() {
       safeGameMutate((gameInstance) => {
         gameInstance.move(move);
       });
+      
+      // Only update history when receiving moves from server
+      // This ensures both clients have the same history
       setHistory((prevHistory) => [...prevHistory, san]);
       
       // Check for game ending conditions after receiving a move
@@ -375,8 +380,9 @@ function ChessBoard() {
     const result = game.move(move);
     if (result === null) return;
 
+    // Only emit move to server but DON'T update history locally
+    // Let the server broadcast the move to all clients, including the sender
     socket.current.emit("move", { move, room });
-    setHistory((prevHistory) => [...prevHistory, result.san]);
 
     // Check for game ending conditions after making a move
     checkGameEndingConditions();
