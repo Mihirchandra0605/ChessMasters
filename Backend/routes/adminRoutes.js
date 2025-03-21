@@ -11,7 +11,12 @@ import {
     adminLogin,
     getAllVideos,
     deleteVideo,
-    getvideos
+    getvideos,
+    getCoachGameStats,
+    deleteAllGames,
+    getTotalRevenue,
+    updateRevenue,
+    getRevenueStats
 } from '../controllers/adminControllers.js';
 import { isAdmin } from '../middlewares/isAdmin.js';
 
@@ -23,12 +28,18 @@ router.delete('/coaches/:coachId', deleteCoach);
 router.delete('/articles/:articleId', deleteArticle);
 router.delete('/videos/:videoId', deleteVideo);
 router.delete('/games/:gameId', deleteGame);
+router.delete('/games', deleteAllGames);
 
-router.get('/articles',getAllArticles);
-router.get('/coaches',getAllCoaches);
+router.get('/articles', getAllArticles);
+router.get('/coaches', getAllCoaches);
 router.get('/players', getAllPlayers);
 router.get('/games', getAllGames);
-router.get('/videos' , getAllVideos)
-router.get('/getvideos' , getvideos)
+router.get('/videos', getAllVideos);
+router.get('/getvideos', getvideos);
+router.get('/coach/:coachId/game-stats', getCoachGameStats);
+
+router.get('/total-revenue', getTotalRevenue);
+router.post('/update-revenue', updateRevenue);
+router.get('/revenue-stats', getRevenueStats);
 
 export default router;

@@ -109,6 +109,7 @@ const PaymentPage = () => {
             try {
                 const token = document.cookie.split("=")[1]; 
 
+                // First, process the subscription
                 const response = await axios.post( 
                     "http://localhost:3000/player/subscribe", {
                         coachId,
@@ -123,6 +124,18 @@ const PaymentPage = () => {
 
                 console.log("Subscription successful:", response.data); 
 
+                // Now update admin revenue - add a fixed amount of $4.95 per successful payment
+                await axios.post(
+                    "http://localhost:3000/admin/update-revenue",
+                    { amount: 4.95 }, // Admin gets $4.95 per subscription
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        },
+                        withCredentials: true,
+                    }
+                );
+
                 alert("Payment and subscription successful!"); 
 
                 // Reset form values after successful submission
@@ -135,6 +148,7 @@ const PaymentPage = () => {
 
             } catch (error) {
                 console.error("Error during subscription:", error.response?.data || error.message); 
+                setPaymentError("Payment failed. Please try again."); 
             } 
         } 
     }; 

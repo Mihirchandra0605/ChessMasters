@@ -318,13 +318,28 @@ function HomePage() {
         // Set result text
         const resultText = userWon ? "You won" : userLost ? "You lost" : "Draw";
         
+        // Handle player names with deleted user check
+        const whitePlayerName = game.playerWhite?.UserName || "Deleted User";
+        const blackPlayerName = game.playerBlack?.UserName || "Deleted User";
+        
+        const isWhiteDeleted = !game.playerWhite?.UserName;
+        const isBlackDeleted = !game.playerBlack?.UserName;
+        
         return (
           <div key={game._id} 
                className={`flex-shrink-0 inline-block ${bgColor} text-white 
                         font-medium sm:font-semibold py-2 sm:py-3 px-3 sm:px-4 
                         rounded-lg ${hoverBgColor} transition-all duration-300 
                         text-center text-sm sm:text-base transform hover:scale-105`}>
-            <p className="font-bold">{game.playerWhite?.UserName} vs {game.playerBlack?.UserName}</p>
+            <p className="font-bold">
+              <span className={isWhiteDeleted ? "text-yellow-300" : ""}>
+                {whitePlayerName}
+              </span>
+              {" vs "}
+              <span className={isBlackDeleted ? "text-yellow-300" : ""}>
+                {blackPlayerName}
+              </span>
+            </p>
             <p className="font-bold">{resultText}</p>
             <p className="text-xs sm:text-sm">{new Date(game.datePlayed).toLocaleDateString()}</p>
           </div>
