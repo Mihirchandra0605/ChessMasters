@@ -23,6 +23,9 @@ import ChessBoard from "./components/Chessboard.jsx";
 import PricingPlans from "./components/PricingPlans.jsx"
 import PaymentPage from "./components/PaymentPage.jsx";
 import VideoDetail from "./components/VideoDetails.jsx";
+// Import our new update components
+import ArticleUpdate from "./components/ArticleUpdate.jsx";
+import VideoUpdate from "./components/VideoUpdate.jsx";
 axios.defaults.withCredentials = true; // Add this line
 
 axios.interceptors.request.use(
@@ -81,9 +84,9 @@ function App() {
         { path: '/ChessBoard', element: <ChessBoard /> },
         { path: '/pricingplans', element: <PricingPlans /> },
         { path: '/payment', element: <PaymentPage /> },
-
-        
-        
+        // Add these new routes for update functionality
+        { path: '/article-update/:id', element: <ArticleUpdate /> },
+        { path: '/video-update/:id', element: <VideoUpdate /> },
     ]);
 
     return (

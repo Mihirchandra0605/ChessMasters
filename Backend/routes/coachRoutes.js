@@ -17,6 +17,10 @@ import {
   getCoachArticles,
   updateCoachProfile,
   deleteCoachAccount,
+  updateArticle,
+  updateVideo,
+  deleteArticle,
+  deleteVideo,
 } from "../controllers/coachControllers.js";
 import { isCoach } from "../middlewares/isCoach.js"; 
 import { authMiddleware } from "../middlewares/authMiddlerware.js";
@@ -41,6 +45,10 @@ router.get("/Videodetail/:id", getVideoById);
 router.get("/revenue/:coachId", authMiddleware, isCoach, getCoachRevenue);
 router.put("/update-profile", authMiddleware, isCoach, updateCoachProfile);
 router.delete("/delete-account", authMiddleware, isCoach, deleteCoachAccount);
+router.put("/article/:id", authMiddleware, isCoach, updateArticle);
+router.put("/video/:id", authMiddleware, isCoach, updateVideo);
+router.delete("/article/:id", authMiddleware, isCoach, deleteArticle);
+router.delete("/video/:id", authMiddleware, isCoach, deleteVideo);
 
 // Generic ID route last
 router.get("/:id", getCoachById);

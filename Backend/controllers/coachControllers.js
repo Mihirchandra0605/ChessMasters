@@ -429,3 +429,227 @@ export const deleteCoachAccount = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const updateArticle = [
+  // Handle file upload if it exists
+  (req, res, next) => {
+    // Use this approach to handle file upload
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        return next(new ErrorHandler(err.message || 'File upload error', 400));
+      }
+      next();
+    });
+  },
+  // Process article update
+  catchAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const { title, content } = req.body;
+    const coachId = req.userId;
+
+    console.log("Update Article Request:", {
+      articleId: id,
+      coachId: coachId,
+      title: title,
+      content: content
+    });
+
+    // Verify this article belongs to the coach
+    const article = await ArticleModel.findById(id);
+    
+    if (!article) {
+      return next(new ErrorHandler('Article not found', 404));
+    }
+    
+    console.log("Found article:", {
+      articleId: article._id,
+      articleCoach: article.coach,
+      requestCoachId: coachId
+    });
+    
+    // Convert both IDs to strings for comparison
+    // This is important because MongoDB ObjectId comparison can be tricky
+    if (article.coach.toString() !== coachId.toString()) {
+      console.log("Authorization failed:", {
+        articleCoach: article.coach.toString(),
+        requestCoachId: coachId.toString()
+      });
+      return next(new ErrorHandler('You are not authorized to update this article', 403));
+    }
+    
+    // Prepare update object
+    const updateData = {
+      title: title || article.title,
+      content: content || article.content
+    };
+    
+    // If a new file was uploaded, update the filePath
+    if (req.file) {
+      updateData.filePath = req.file.path;
+    }
+    
+    console.log("Updating article with data:", updateData);
+    
+    // Update the article
+    const updatedArticle = await ArticleModel.findByIdAndUpdate(
+      id, 
+      updateData, 
+      { new: true }
+    );
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Article updated successfully", 
+      article: updatedArticle 
+    });
+  })
+];
+
+export const updateVideo = [
+  // Handle file upload if it exists
+  (req, res, next) => {
+    upload.single("file")(req, res, (err) => {
+      if (err) {
+        return next(new ErrorHandler(err.message || 'File upload error', 400));
+      }
+      next();
+    });
+  },
+  // Process video update
+  catchAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const { title, content } = req.body;
+    const coachId = req.userId;
+
+    console.log("Update Video Request:", {
+      videoId: id,
+      coachId: coachId,
+      title: title,
+      content: content
+    });
+
+    // Verify this video belongs to the coach
+    const video = await videoModel.findById(id);
+    
+    if (!video) {
+      return next(new ErrorHandler('Video not found', 404));
+    }
+    
+    console.log("Found video:", {
+      videoId: video._id,
+      videoCoach: video.coach,
+      requestCoachId: coachId
+    });
+    
+    // Convert both IDs to strings for comparison
+    if (video.coach.toString() !== coachId.toString()) {
+      console.log("Authorization failed:", {
+        videoCoach: video.coach.toString(),
+        requestCoachId: coachId.toString()
+      });
+      return next(new ErrorHandler('You are not authorized to update this video', 403));
+    }
+    
+    // Prepare update object
+    const updateData = {
+      title: title || video.title,
+      content: content || video.content
+    };
+    
+    // If a new file was uploaded, update the filePath
+    if (req.file) {
+      updateData.filePath = req.file.path;
+    }
+    
+    console.log("Updating video with data:", updateData);
+    
+    // Update the video
+    const updatedVideo = await videoModel.findByIdAndUpdate(
+      id, 
+      updateData, 
+      { new: true }
+    );
+
+    res.status(200).json({ 
+      success: true, 
+      message: "Video updated successfully", 
+      video: updatedVideo 
+    });
+  })
+];
+
+export const deleteArticle = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coachId = req.userId;
+    
+    console.log("Delete article attempt:", {
+      articleId: id,
+      requestingCoachId: coachId
+    });
+    
+    // Verify this article belongs to the coach
+    const article = await ArticleModel.findById(id);
+    
+    if (!article) {
+      return res.status(404).json({ message: 'Article not found' });
+    }
+
+    console.log("Article coach ID:", article.coach.toString());
+    console.log("Request coach ID:", coachId.toString());
+    
+    // Convert both IDs to strings for comparison
+    if (article.coach.toString() !== coachId.toString()) {
+      return res.status(403).json({ message: 'You are not authorized to delete this article' });
+    }
+    
+    // Delete the article
+    await ArticleModel.findByIdAndDelete(id);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: "Article deleted successfully" 
+    });
+  } catch (error) {
+    console.error("Error deleting article:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteVideo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const coachId = req.userId;
+    
+    console.log("Delete video attempt:", {
+      videoId: id,
+      requestingCoachId: coachId
+    });
+    
+    // Verify this video belongs to the coach
+    const video = await videoModel.findById(id);
+    
+    if (!video) {
+      return res.status(404).json({ message: 'Video not found' });
+    }
+    
+    console.log("Video coach ID:", video.coach.toString());
+    console.log("Request coach ID:", coachId.toString());
+    
+    // Convert both IDs to strings for comparison
+    if (video.coach.toString() !== coachId.toString()) {
+      return res.status(403).json({ message: 'You are not authorized to delete this video' });
+    }
+    
+    // Delete the video
+    await videoModel.findByIdAndDelete(id);
+    
+    res.status(200).json({ 
+      success: true, 
+      message: "Video deleted successfully" 
+    });
+  } catch (error) {
+    console.error("Error deleting video:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
