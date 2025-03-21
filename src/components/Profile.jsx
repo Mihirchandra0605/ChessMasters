@@ -26,6 +26,9 @@ const Profile = () => {
     coachName: '',
     daysRemaining: 0
   });
+  const [deleteAccountDialog, setDeleteAccountDialog] = useState({
+    isOpen: false
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -204,6 +207,49 @@ const Profile = () => {
     setConfirmationDialog({ isOpen: false, coachId: null, coachName: '', daysRemaining: 0 });
   };
 
+  const handleDeleteAccount = () => {
+    setDeleteAccountDialog({ isOpen: true });
+  };
+
+  const confirmDeleteAccount = async () => {
+    const token = document.cookie.split("=")[1];
+    
+    try {
+      // First unsubscribe from all coaches
+      for (const coach of subscribedCoaches) {
+        await handleUnsubscribe(coach.user._id);
+      }
+      
+      // Then delete the account
+      const response = await axios.delete(
+        'http://localhost:3000/player/delete-account',
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true
+        }
+      );
+      
+      // Redirect to login page after successful deletion
+      if (response.status === 200) {
+        window.location.href = '/'; // Redirect to login page
+      }
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setUpdateMessage('Failed to delete account. Please try again.');
+      setTimeout(() => {
+        setUpdateMessage('');
+      }, 3000);
+    }
+    
+    // Close the dialog
+    setDeleteAccountDialog({ isOpen: false });
+  };
+
+  const cancelDeleteAccount = () => {
+    // Just close the dialog
+    setDeleteAccountDialog({ isOpen: false });
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -214,6 +260,41 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-800 to-blue-900 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
+      {/* Delete Account Confirmation Dialog */}
+      {deleteAccountDialog.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
+          <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl shadow-2xl p-6 max-w-md w-full border border-slate-700 animate-fadeIn">
+            <h3 className="text-xl font-semibold text-red-400 mb-4">Delete Account</h3>
+            <p className="text-slate-300 mb-6">
+              Are you sure you want to delete your account? This action cannot be undone.
+            </p>
+            <p className="text-slate-300 mb-6">
+              By confirming, you understand that:
+            </p>
+            <ul className="list-disc list-inside text-slate-300 mb-6 space-y-2">
+              <li>You will need to register again to use our services</li>
+              <li>All active subscriptions will be automatically terminated</li>
+              <li>Subscription fees are non-refundable</li>
+              <li>Your account data and history will be permanently removed</li>
+            </ul>
+            <div className="flex space-x-4 justify-end">
+              <button 
+                onClick={cancelDeleteAccount}
+                className="px-4 py-2 bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition duration-300 shadow-md"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteAccount}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 shadow-md"
+              >
+                Confirm Deletion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Confirmation Dialog */}
       {confirmationDialog.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70">
@@ -247,12 +328,20 @@ const Profile = () => {
       
       <div className="max-w-6xl mx-auto bg-gradient-to-r from-slate-900/80 to-slate-800/80 rounded-2xl sm:rounded-3xl shadow-xl sm:shadow-2xl overflow-hidden backdrop-blur-sm">
         <div className="p-4 sm:p-6 md:p-8 lg:p-10">
-          {/* Header Section */}
+          {/* Header Section with Home and Delete Account buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 md:mb-10">
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400 mb-4 sm:mb-0">Player Profile</h1>
-            <Link to="/Index?role=player" className="bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base">
-              Home
-            </Link>
+            <div className="flex space-x-3 sm:space-x-4">
+              <button 
+                onClick={handleDeleteAccount}
+                className="bg-red-600 text-white px-4 sm:px-5 py-2 sm:py-3 rounded-lg hover:bg-red-700 transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base"
+              >
+                Delete Account
+              </button>
+              <Link to="/Index?role=player" className="bg-emerald-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-emerald-700 transition duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-1 text-sm sm:text-base">
+                Home
+              </Link>
+            </div>
           </div>
 
           {/* Update Message */}

@@ -11,6 +11,7 @@ import {
   getSubscribedCoachArticles, // Import the subscribed articles function
   getSubscribedCoachVideos, // Import the subscribed videos function
   updatePlayerProfile, // Import the new function
+  deletePlayerAccount, // Import the new function
 } from "../controllers/playerControllers.js";
 import { isPlayer } from "../middlewares/isPlayer.js";
 
@@ -23,6 +24,7 @@ router.get("/subscribed-articles", isPlayer, getSubscribedCoachArticles); // Mov
 router.get("/subscribed-videos", isPlayer, getSubscribedCoachVideos); // Add route for subscribed videos
 router.post("/subscribe", isPlayer, subscribeToCoach);
 router.post("/unsubscribe", isPlayer, unsubscribeFromCoach); // Add unsubscribe route
+router.delete("/delete-account", isPlayer, deletePlayerAccount); // Add this new route
 router.get("/username/:userId", getUsernameById);
 
 // Then place parameterized routes

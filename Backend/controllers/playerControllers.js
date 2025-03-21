@@ -332,4 +332,37 @@ export const updatePlayerProfile = async (req, res) => {
     console.error("Error updating player profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+export const deletePlayerAccount = async (req, res) => {
+  try {
+    const playerId = req.userId;
+    
+    // First, get the player to check for subscriptions
+    const player = await UserModel.findById(playerId);
+    
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+    
+    // Handle any remaining subscriptions
+    if (player.subscribedCoaches && player.subscribedCoaches.length > 0) {
+      // For each coach the player is subscribed to
+      for (const coachId of player.subscribedCoaches) {
+        // Remove player from coach's subscribers list
+        await CoachDetails.updateOne(
+          { user: coachId },
+          { $pull: { subscribers: { user: playerId } } }
+        );
+      }
+    }
+    
+    // Finally, delete the player account
+    await UserModel.findByIdAndDelete(playerId);
+    
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting player account:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 }; 
