@@ -6,6 +6,8 @@ import io from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const FIXED_BOARD_WIDTH = 715; // Set to a comfortable size for most screens
+
 function ChessBoard() {
   const navigate = useNavigate();
   const [game, setGame] = useState(new Chess());
@@ -29,12 +31,18 @@ function ChessBoard() {
   const [gameEndReason, setGameEndReason] = useState(null);
   const [eloChange, setEloChange] = useState(0);
   const [showEloAnimation, setShowEloAnimation] = useState(false);
+  const [showRefreshConfirm, setShowRefreshConfirm] = useState(false);
+  const [showEscWarning, setShowEscWarning] = useState(false);
   const socket = useRef(null);
   const containerRef = useRef(null);
+  const fullscreenContainerRef = useRef(null);
+  const [isHandlingFullscreenExit, setIsHandlingFullscreenExit] = useState(false);
 
   // Resize board logic
   useEffect(() => {
     const updateBoardWidth = () => {
+      if (isHandlingFullscreenExit) return;
+      
       if (containerRef.current) {
         const containerWidth = containerRef.current.offsetWidth;
         const newWidth = Math.min(650, containerWidth - 32);
@@ -46,7 +54,7 @@ function ChessBoard() {
     updateBoardWidth();
 
     return () => window.removeEventListener("resize", updateBoardWidth);
-  }, []);
+  }, [isHandlingFullscreenExit]);
 
   // Safe game mutation function
   function safeGameMutate(modify) {
@@ -97,9 +105,11 @@ function ChessBoard() {
       socket.current.emit("joinGame", userId);
     });
 
-    // Add beforeunload event to warn user before refreshing
+    // IMPORTANT CHANGE: Replace the beforeunload event with a custom handler
+    // that shows a confirmation dialog instead of immediately counting as resignation
     const handleBeforeUnload = (e) => {
       if (isConnected && !gameOver) {
+        // This displays the browser's default confirmation dialog
         e.preventDefault();
         e.returnValue = "Refreshing will count as resignation. Are you sure?";
         return e.returnValue;
@@ -414,10 +424,178 @@ function ChessBoard() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [gameOver]);
 
+  // Modify the keyboard event handler to truly prevent default browser behavior
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Detect F5 key or Ctrl+R or Cmd+R (common refresh shortcuts)
+      if ((e.key === 'F5' || 
+          (e.ctrlKey && e.key === 'r') || 
+          (e.metaKey && e.key === 'r')) && 
+          isConnected && !gameOver) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowRefreshConfirm(true);
+        return false; // Try to prevent the default in all possible ways
+      }
+    };
+    
+    // Capture the event in the capture phase, before it bubbles
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+    };
+  }, [isConnected, gameOver]);
+
+  // Replace the beforeunload handler with a more aggressive approach
+  useEffect(() => {
+    // This function runs when the user tries to refresh or close the page
+    const handleBeforeUnload = (e) => {
+      if (isConnected && !gameOver) {
+        // Instead of letting the browser show its dialog, show our custom dialog first
+        e.preventDefault();
+        e.returnValue = '';
+        
+        // Show our custom dialog
+        setShowRefreshConfirm(true);
+        
+        // The delay is a hack to try to show our dialog before the browser's dialog
+        return new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
+          // This will never execute in practice, but it's an attempt to delay
+          // the browser's dialog as much as possible
+          return false;
+        });
+      }
+    };
+    
+    // Add a completely separate handler for the 'unload' event as a fallback
+    const handleUnload = () => {
+      if (isConnected && !gameOver) {
+        // If the user is still refreshing, treat it as a resignation
+        const winnerColor = color === "w" ? "Black" : "White";
+        socket.current.emit("playerResigned", { winner: winnerColor, room });
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload, { capture: true });
+    window.addEventListener('unload', handleUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload, { capture: true });
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, [isConnected, gameOver, color, room]);
+
+  // Modify the fullscreen change handler
+  useEffect(() => {
+    if (isConnected && !gameOver && fullscreenContainerRef.current) {
+      try {
+        // Request fullscreen when the game starts
+        if (fullscreenContainerRef.current.requestFullscreen) {
+          fullscreenContainerRef.current.requestFullscreen();
+        } else if (fullscreenContainerRef.current.mozRequestFullScreen) {
+          fullscreenContainerRef.current.mozRequestFullScreen();
+        } else if (fullscreenContainerRef.current.webkitRequestFullscreen) {
+          fullscreenContainerRef.current.webkitRequestFullscreen();
+        } else if (fullscreenContainerRef.current.msRequestFullscreen) {
+          fullscreenContainerRef.current.msRequestFullscreen();
+        }
+        
+        // Handle fullscreen exit
+        const handleFullscreenChange = () => {
+          if (!document.fullscreenElement && 
+              !document.webkitFullscreenElement && 
+              !document.mozFullScreenElement && 
+              !document.msFullscreenElement) {
+            
+            // If game is still in progress and user exits fullscreen
+            if (isConnected && !gameOver) {
+              // Set flag to prevent resizing during this process
+              setIsHandlingFullscreenExit(true);
+              
+              // Show ESC warning
+              setShowEscWarning(true);
+              
+              // Try to go back to fullscreen after a short delay
+              setTimeout(() => {
+                if (!gameOver && !document.fullscreenElement && fullscreenContainerRef.current) {
+                  try {
+                    fullscreenContainerRef.current.requestFullscreen();
+                  } catch (error) {
+                    console.error("Could not re-enter fullscreen:", error);
+                  } finally {
+                    // Reset the handling flag after attempting to re-enter fullscreen
+                    setTimeout(() => {
+                      setIsHandlingFullscreenExit(false);
+                    }, 100);
+                  }
+                } else {
+                  setIsHandlingFullscreenExit(false);
+                }
+              }, 10);
+            }
+          }
+        };
+        
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+        
+        return () => {
+          document.removeEventListener('fullscreenchange', handleFullscreenChange);
+          document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+          document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+          document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
+        };
+      } catch (error) {
+        console.error("Error requesting fullscreen:", error);
+      }
+    }
+  }, [isConnected, gameOver]);
+
+  // Add a function to exit fullscreen when game is over
+  useEffect(() => {
+    if (gameOver && document.fullscreenElement) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { // Chrome, Safari and Opera
+        document.webkitExitFullscreen();
+      } else if (document.mozCancelFullScreen) { // Firefox
+        document.mozCancelFullScreen();
+      } else if (document.msExitFullscreen) { // IE/Edge
+        document.msExitFullscreen();
+      }
+    }
+  }, [gameOver]);
+
+  // Add a keyboard event listener for ESC key
+  useEffect(() => {
+    const handleEscKey = (e) => {
+      // Check if ESC key was pressed during a game
+      if (e.key === 'Escape' && isConnected && !gameOver) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Show ESC warning dialog
+        setShowEscWarning(true);
+        
+        return false;
+      }
+    };
+    
+    // Add the event listener
+    window.addEventListener('keydown', handleEscKey, { capture: true });
+    
+    return () => {
+      window.removeEventListener('keydown', handleEscKey, { capture: true });
+    };
+  }, [isConnected, gameOver]);
+
   // Loading state
   if (!color || (!isConnected && !gameOver)) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 p-4">
+      <div ref={fullscreenContainerRef} className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 p-4">
         <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-2xl p-8 text-center">
           <div className="animate-spin mb-6 mx-auto w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
           <div className="text-xl md:text-2xl font-bold text-indigo-800">
@@ -429,7 +607,7 @@ function ChessBoard() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 p-3 sm:p-6 gap-6 lg:gap-8">
+    <div ref={fullscreenContainerRef} className="flex flex-col lg:flex-row items-start justify-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200 p-3 sm:p-6 gap-6 lg:gap-8">
       <div className="w-full lg:w-auto flex flex-col items-center">
         <div 
           ref={containerRef}
@@ -451,7 +629,7 @@ function ChessBoard() {
               onSquareClick={onSquareClick}
               customSquareStyles={customSquareStyles}
               boardOrientation={color === "b" ? "black" : "white"}
-              boardWidth={boardWidth}
+              boardWidth={FIXED_BOARD_WIDTH}
             />
             {gameOver && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm text-white z-50">
@@ -645,6 +823,109 @@ function ChessBoard() {
           />
         </div>
       </div>
+
+      {/* Refresh confirmation modal */}
+      {showRefreshConfirm && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          <div className="bg-gradient-to-br from-white to-red-50 rounded-xl p-6 max-w-xs w-full shadow-2xl border border-red-100 animate-fade-in">
+            <div className="flex items-center mb-4 text-red-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-xl font-bold text-gray-800">Page Refresh Warning</h3>
+            </div>
+            <p className="text-gray-600 mb-6">Refreshing the page will count as resignation and you will lose the game. Do you want to resign?</p>
+            <div className="flex justify-end space-x-3">
+              <button 
+                onClick={() => setShowRefreshConfirm(false)}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-gray-800 transition-colors shadow-sm hover:shadow"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setShowRefreshConfirm(false);
+                  handleResign();
+                }}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors shadow-sm hover:shadow"
+              >
+                Resign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ESC key warning modal */}
+      {showEscWarning && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50">
+          <div className="bg-gradient-to-br from-white to-red-50 rounded-xl p-6 max-w-xs w-full shadow-2xl border border-red-100 animate-fade-in">
+            <div className="flex items-center mb-4 text-red-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <h3 className="text-xl font-bold text-gray-800">Fullscreen Warning</h3>
+            </div>
+            <p className="text-gray-600 mb-6">
+              Exiting fullscreen mode will count as resignation and you will lose the game. 
+              Do you want to continue playing or resign?
+            </p>
+            <div className="flex justify-between space-x-3">
+              <button 
+                onClick={() => {
+                  setShowEscWarning(false);
+                  // Try to re-enter fullscreen when user clicks Continue
+                  if (fullscreenContainerRef.current) {
+                    try {
+                      // Using a small delay to ensure the dialog is fully closed before requesting fullscreen
+                      setTimeout(() => {
+                        fullscreenContainerRef.current.requestFullscreen()
+                          .catch(error => console.error("Could not re-enter fullscreen:", error))
+                          .finally(() => {
+                            // Reset the handling flag after attempting to re-enter fullscreen
+                            setIsHandlingFullscreenExit(false);
+                          });
+                      }, 50);
+                    } catch (error) {
+                      console.error("Could not re-enter fullscreen:", error);
+                      setIsHandlingFullscreenExit(false);
+                    }
+                  } else {
+                    setIsHandlingFullscreenExit(false);
+                  }
+                }}
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white transition-colors shadow-sm hover:shadow flex-1"
+              >
+                Continue Playing
+              </button>
+              <button 
+                onClick={() => {
+                  setShowEscWarning(false);
+                  handleResign();
+                }}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg text-white transition-colors shadow-sm hover:shadow flex-1"
+              >
+                Resign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add a fullscreen button for additional control */}
+      <button 
+        onClick={() => {
+          if (!document.fullscreenElement) {
+            fullscreenContainerRef.current.requestFullscreen();
+          }
+        }}
+        className="fixed bottom-4 right-4 bg-indigo-600 text-white p-2 rounded-full shadow-lg z-10 hover:bg-indigo-700 transition-colors"
+        title="Enter fullscreen mode"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+        </svg>
+      </button>
     </div>
   );
 }
