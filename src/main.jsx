@@ -29,6 +29,8 @@ import VideoUpdate from "./components/VideoUpdate.jsx";
 import UpdateProfile from "./components/UpdateProfile.jsx";
 // Import our new ViewGame component
 import ViewGame from "./components/ViewGame.jsx";
+// Import the Rules component
+import Rules from "./components/rules.jsx";
 axios.defaults.withCredentials = true; // Add this line
 
 axios.interceptors.request.use(
@@ -93,6 +95,8 @@ function App() {
         { path: '/update-profile', element: <UpdateProfile /> },
         // Add the new route for viewing past games
         { path: '/ViewGame/:gameId', element: <ViewGame /> },
+        // Add the new route for chess game rules
+        { path: '/rules', element: <Rules /> },
     ]);
 
     return (
