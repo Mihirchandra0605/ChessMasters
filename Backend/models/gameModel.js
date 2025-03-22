@@ -23,6 +23,7 @@ const GameSchema = new Schema({
     duration: { type: Number },
     rating: { type: Number },
     notes: { type: String },
+    reason: { type: String },
   },
 });
 

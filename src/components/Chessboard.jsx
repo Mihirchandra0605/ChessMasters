@@ -212,13 +212,16 @@ function ChessBoard() {
     // Don't check if game is already over
     if (gameOver) return;
     
+    // Get current move history in the correct format
+    const moveHistory = game.history({verbose: false});
+    const whiteMoves = moveHistory.filter((_, idx) => idx % 2 === 0);
+    const blackMoves = moveHistory.filter((_, idx) => idx % 2 !== 0);
+    
     // Check for checkmate
     if (game.in_checkmate()) {
       const winnerColor = game.turn() === "w" ? "Black" : "White";
       
-      // Get complete move history
-      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
-      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      console.log("Checkmate detected with move history:", whiteMoves, blackMoves);
       
       // We'll only emit the event to server and let the server handle saving
       socket.current.emit("gameOver", { 
@@ -238,9 +241,7 @@ function ChessBoard() {
     
     // Check for stalemate
     if (game.in_stalemate()) {
-      // Get complete move history
-      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
-      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      console.log("Stalemate detected with move history:", whiteMoves, blackMoves);
       
       socket.current.emit("gameOver", { 
         winner: "Draw", 
@@ -258,11 +259,7 @@ function ChessBoard() {
     
     // Check for threefold repetition
     if (game.in_threefold_repetition()) {
-      console.log("Threefold repetition detected");
-      
-      // Get complete move history
-      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
-      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      console.log("Threefold repetition detected with move history:", whiteMoves, blackMoves);
       
       socket.current.emit("gameOver", { 
         winner: "Draw", 
@@ -280,9 +277,7 @@ function ChessBoard() {
     
     // Check for insufficient material
     if (game.insufficient_material()) {
-      // Get complete move history
-      const whiteMoves = game.history().filter((_, idx) => idx % 2 === 0);
-      const blackMoves = game.history().filter((_, idx) => idx % 2 !== 0);
+      console.log("Insufficient material detected with move history:", whiteMoves, blackMoves);
       
       socket.current.emit("gameOver", { 
         winner: "Draw", 
@@ -322,8 +317,12 @@ function ChessBoard() {
     
     // Only save to DB if not skipped (will be handled by server instead)
     if (!skipDbSave) {
-      const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
-      const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+      // Extract moves directly from the game object, not from the React state
+      // This ensures we get the full move history
+      const moveHistory = game.history({verbose: false});
+      const whiteMoves = moveHistory.filter((_, idx) => idx % 2 === 0);
+      const blackMoves = moveHistory.filter((_, idx) => idx % 2 !== 0);
+      
       const playerWhite = players.white.userId;
       const playerBlack = players.black.userId;
 
@@ -341,6 +340,8 @@ function ChessBoard() {
         },
       };
 
+      console.log("Saving game result with move history and reason:", gameResult);
+
       axios
         .post("http://localhost:3000/game/saveGameResult", gameResult)
         .then(() => console.log("Game result saved successfully"))
@@ -352,7 +353,23 @@ function ChessBoard() {
     if (gameOver) return;
     
     const winnerColor = color === "w" ? "Black" : "White";
-    socket.current.emit("playerResigned", { winner: winnerColor, room });
+    
+    // Ensure we get the move history in the correct format
+    const moveHistory = game.history({verbose: false});
+    const whiteMoves = moveHistory.filter((_, idx) => idx % 2 === 0);
+    const blackMoves = moveHistory.filter((_, idx) => idx % 2 !== 0);
+    
+    console.log("Resigning with move history:", whiteMoves, blackMoves);
+    
+    // Include the move history when emitting the resignation
+    socket.current.emit("playerResigned", { 
+      winner: winnerColor, 
+      room,
+      moves: {
+        whiteMoves,
+        blackMoves
+      }
+    });
     
     // Server will save the game result
     handleGameOver(winnerColor, "Resignation", true);
@@ -362,12 +379,21 @@ function ChessBoard() {
     if (gameOver || drawRequested) return;
     
     setDrawRequested(true);
+    // Get current move history in the correct format
+    const moveHistory = game.history({verbose: false});
+    const whiteMoves = moveHistory.filter((_, idx) => idx % 2 === 0);
+    const blackMoves = moveHistory.filter((_, idx) => idx % 2 !== 0);
+    
     socket.current.emit("drawRequest", { 
       room,
       from: {
         color,
         userId: color === "w" ? players.white.userId : players.black.userId,
         elo: color === "w" ? players.white.elo : players.black.elo
+      },
+      moves: {
+        whiteMoves,
+        blackMoves
       }
     });
   }
@@ -376,13 +402,24 @@ function ChessBoard() {
     setShowDrawConfirm(false);
     
     if (accept) {
+      // Ensure we get the proper move history
+      const moveHistory = game.history({verbose: false});
+      const whiteMoves = moveHistory.filter((_, idx) => idx % 2 === 0);
+      const blackMoves = moveHistory.filter((_, idx) => idx % 2 !== 0);
+      
+      console.log("Accepting draw with move history:", whiteMoves, blackMoves);
+      
       socket.current.emit("drawResponse", { 
         room, 
         accepted: true,
         requesterElo: drawRequestFrom.elo,
         responderElo: color === "w" ? players.white.elo : players.black.elo,
         requesterColor: drawRequestFrom.color,
-        responderColor: color
+        responderColor: color,
+        moves: {
+          whiteMoves,
+          blackMoves
+        }
       });
       
       // Server will save the game result
@@ -518,19 +555,13 @@ function ChessBoard() {
     // This function runs when the user tries to refresh or close the page
     const handleBeforeUnload = (e) => {
       if (isConnected && !gameOver) {
-        // Instead of letting the browser show its dialog, show our custom dialog first
         e.preventDefault();
         e.returnValue = '';
         
         // Show our custom dialog
         setShowRefreshConfirm(true);
         
-        // The delay is a hack to try to show our dialog before the browser's dialog
-        return new Promise(resolve => setTimeout(resolve, 1000)).then(() => {
-          // This will never execute in practice, but it's an attempt to delay
-          // the browser's dialog as much as possible
-          return false;
-        });
+        return e.returnValue;
       }
     };
     
@@ -539,7 +570,39 @@ function ChessBoard() {
       if (isConnected && !gameOver) {
         // If the user is still refreshing, treat it as a resignation
         const winnerColor = color === "w" ? "Black" : "White";
-        socket.current.emit("playerResigned", { winner: winnerColor, room });
+        
+        // Make sure to include move history when resigning due to page refresh
+        const moveHistory = game.history({verbose: false});
+        const whiteMoves = moveHistory.filter((_, idx) => idx % 2 === 0);
+        const blackMoves = moveHistory.filter((_, idx) => idx % 2 !== 0);
+        
+        // Use a synchronous request to ensure it completes before page unload
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:3000/game/saveGameResult', false); // false makes it synchronous
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({
+          playerWhite: players.white.userId,
+          playerBlack: players.black.userId,
+          moves: {
+            whiteMoves,
+            blackMoves
+          },
+          winner: winnerColor,
+          additionalAttributes: {
+            duration: Math.floor(performance.now() / 1000),
+            reason: 'Disconnection' 
+          }
+        }));
+        
+        // Still emit event to socket (may not complete)
+        socket.current.emit("playerResigned", { 
+          winner: winnerColor, 
+          room,
+          moves: {
+            whiteMoves,
+            blackMoves
+          }
+        });
       }
     };
     
@@ -550,7 +613,7 @@ function ChessBoard() {
       window.removeEventListener('beforeunload', handleBeforeUnload, { capture: true });
       window.removeEventListener('unload', handleUnload);
     };
-  }, [isConnected, gameOver, color, room]);
+  }, [isConnected, gameOver, color, room, game, players]);
 
   // Modify the fullscreen change handler
   useEffect(() => {

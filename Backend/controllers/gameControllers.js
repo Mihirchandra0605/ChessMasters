@@ -37,14 +37,24 @@ export const saveGameResult = catchAsync(async (req, res, next) => {
     return next(new ErrorHandler("Missing required fields", 400));
   }
 
+  // Ensure we have a structured additionalAttributes object
+  const gameAttributes = additionalAttributes || {};
+  
+  // Log what we're saving for debugging
+  console.log("Saving game with attributes:", {
+    winner,
+    reason: gameAttributes.reason || "Not specified",
+    moves: moves ? `White: ${moves.whiteMoves?.length || 0}, Black: ${moves.blackMoves?.length || 0}` : "None"
+  });
+
   // Create and save the game record
   const newGame = new Game({
     playerWhite,
     playerBlack,
     moves,
     winner,
-    additionalAttributes,
-    datePlayed: new Date() // Add this line to include the date
+    additionalAttributes: gameAttributes,
+    datePlayed: new Date()
   });
 
   await newGame.save();

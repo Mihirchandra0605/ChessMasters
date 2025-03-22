@@ -27,6 +27,8 @@ import VideoDetail from "./components/VideoDetails.jsx";
 import ArticleUpdate from "./components/ArticleUpdate.jsx";
 import VideoUpdate from "./components/VideoUpdate.jsx";
 import UpdateProfile from "./components/UpdateProfile.jsx";
+// Import our new ViewGame component
+import ViewGame from "./components/ViewGame.jsx";
 axios.defaults.withCredentials = true; // Add this line
 
 axios.interceptors.request.use(
@@ -89,6 +91,8 @@ function App() {
         { path: '/article-update/:id', element: <ArticleUpdate /> },
         { path: '/video-update/:id', element: <VideoUpdate /> },
         { path: '/update-profile', element: <UpdateProfile /> },
+        // Add the new route for viewing past games
+        { path: '/ViewGame/:gameId', element: <ViewGame /> },
     ]);
 
     return (

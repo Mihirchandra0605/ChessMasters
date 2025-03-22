@@ -272,7 +272,7 @@ io.on('connection', (socket) => {
               },
               winner: winnerColor,
               additionalAttributes: {
-                duration: Math.floor(performance.now() / 1000),
+                duration: Math.floor(Date.now() / 1000),
                 reason: 'Checkmate'
               },
             }).catch(console.error);
@@ -313,7 +313,7 @@ io.on('connection', (socket) => {
               },
               winner: 'Draw',
               additionalAttributes: {
-                duration: Math.floor(performance.now() / 1000),
+                duration: Math.floor(Date.now() / 1000),
                 reason: 'Stalemate'
               },
             }).catch(console.error);
@@ -352,7 +352,7 @@ io.on('connection', (socket) => {
               },
               winner: 'Draw',
               additionalAttributes: {
-                duration: Math.floor(performance.now() / 1000),
+                duration: Math.floor(Date.now() / 1000),
                 reason: 'Threefold Repetition'
               },
             }).catch(console.error);
@@ -372,8 +372,30 @@ io.on('connection', (socket) => {
             });
           }
           // Check for insufficient material
-          else if (gameRoom.game.in_draw() && gameRoom.game.insufficient_material()) {
+          else if (gameRoom.game.insufficient_material()) {
             gameRoom.isGameOver = true;
+            
+            // Get the full history
+            const history = gameRoom.game.history();
+            const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+            const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+            
+            // Save the game result with complete move history
+            axios.post('http://localhost:3000/game/saveGameResult', {
+              playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+              playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+              moves: {
+                whiteMoves,
+                blackMoves,
+              },
+              winner: 'Draw',
+              additionalAttributes: {
+                duration: Math.floor(Date.now() / 1000),
+                reason: 'Insufficient Material'
+              },
+            })
+            .then(() => console.log("Game saved successfully on insufficient material with moves:", {whiteMoves, blackMoves}))
+            .catch(err => console.error("Error saving game on insufficient material:", err));
             
             io.to(room).emit('gameOver', { 
               winner: 'Draw',
@@ -393,7 +415,7 @@ io.on('connection', (socket) => {
       });
 
       // Handle player resignation
-      socket.on('playerResigned', ({ winner, room }) => {
+      socket.on('playerResigned', ({ winner, room, moves }) => {
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
         
@@ -403,6 +425,30 @@ io.on('connection', (socket) => {
         const winnerColor = winner === 'White' ? 'w' : 'b';
         const winnerPlayer = gameRoom.players.find(p => p.color === winnerColor);
         const loserPlayer = gameRoom.players.find(p => p.color !== winnerColor);
+        
+        // Get move history directly from the game instance for accuracy
+        const history = gameRoom.game.history();
+        const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+        const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+        
+        console.log("Resignation - saving with move history:", {whiteMoves, blackMoves});
+        
+        // Save game result to database
+        axios.post('http://localhost:3000/game/saveGameResult', {
+          playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+          playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+          moves: {
+            whiteMoves,
+            blackMoves
+          },
+          winner: winner,
+          additionalAttributes: {
+            duration: Math.floor(Date.now() / 1000),
+            reason: 'Resignation'
+          },
+        })
+        .then(() => console.log("Game saved successfully on resignation"))
+        .catch(err => console.error("Error saving game on resignation:", err));
         
         io.to(room).emit('playerResigned', { 
           winner,
@@ -435,7 +481,7 @@ io.on('connection', (socket) => {
       });
 
       // Handle draw response
-      socket.on('drawResponse', ({ room, accepted, requesterElo, responderElo, requesterColor, responderColor }) => {
+      socket.on('drawResponse', ({ room, accepted, requesterElo, responderElo, requesterColor, responderColor, moves }) => {
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
         
@@ -445,6 +491,30 @@ io.on('connection', (socket) => {
           // Find both players
           const requester = gameRoom.players.find(p => p.color === requesterColor);
           const responder = gameRoom.players.find(p => p.color === responderColor);
+          
+          // Get complete move history directly from game instance to ensure accuracy
+          const history = gameRoom.game.history();
+          const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+          const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+          
+          console.log("Draw agreement - saving with move history:", {whiteMoves, blackMoves});
+          
+          // Save game result to database
+          axios.post('http://localhost:3000/game/saveGameResult', {
+            playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+            playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+            moves: {
+              whiteMoves,
+              blackMoves
+            },
+            winner: 'Draw',
+            additionalAttributes: {
+              duration: Math.floor(Date.now() / 1000),
+              reason: 'Agreement'
+            },
+          })
+          .then(() => console.log("Game saved successfully on draw agreement"))
+          .catch(err => console.error("Error saving game on draw agreement:", err));
           
           // Notify both players
           io.to(room).emit('drawAccepted', { reason: 'Agreement' });
@@ -493,6 +563,30 @@ io.on('connection', (socket) => {
               gameRoom.isGameOver = true; // Mark game as over
               const winnerColor = remainingPlayer.color === 'w' ? 'White' : 'Black';
               
+              // Get the move history directly from game instance
+              const history = gameRoom.game.history();
+              const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
+              const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
+              
+              console.log("Disconnection - saving with move history:", {whiteMoves, blackMoves});
+              
+              // Save game result with complete move history for disconnection
+              axios.post('http://localhost:3000/game/saveGameResult', {
+                playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
+                playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
+                moves: {
+                  whiteMoves,
+                  blackMoves
+                },
+                winner: winnerColor,
+                additionalAttributes: {
+                  duration: Math.floor(Date.now() / 1000),
+                  reason: 'Disconnection'
+                },
+              })
+              .then(() => console.log("Game saved successfully on disconnection"))
+              .catch(err => console.error("Error saving game on disconnection:", err));
+              
               io.to(roomId).emit('playerDisconnected', { 
                 winner: winnerColor,
                 winnerId: remainingPlayer.userId,
@@ -533,11 +627,21 @@ io.on('connection', (socket) => {
         
         gameRoom.isGameOver = true;
         
-        // If moves were provided, use them; otherwise get them from game history
-        const gameHistory = moves || {
-          whiteMoves: gameRoom.game.history().filter((_, idx) => idx % 2 === 0),
-          blackMoves: gameRoom.game.history().filter((_, idx) => idx % 2 !== 0)
-        };
+        // Get complete move history - either use the provided history or extract from game instance
+        let gameHistory;
+        if (moves && moves.whiteMoves && moves.blackMoves) {
+          gameHistory = moves;
+        } else {
+          // Fallback to getting the history from the game instance
+          const history = gameRoom.game.history();
+          gameHistory = {
+            whiteMoves: history.filter((_, idx) => idx % 2 === 0),
+            blackMoves: history.filter((_, idx) => idx % 2 !== 0)
+          };
+        }
+        
+        // Make sure we have a valid reason
+        const gameEndReason = reason || 'Unknown';
         
         // Save game result with complete move history
         axios.post('http://localhost:3000/game/saveGameResult', {
@@ -546,13 +650,15 @@ io.on('connection', (socket) => {
           moves: gameHistory,
           winner: winner,
           additionalAttributes: {
-            duration: Math.floor(performance.now() / 1000),
-            reason: reason
+            duration: Math.floor(Date.now() / 1000),
+            reason: gameEndReason
           },
-        }).catch(console.error);
+        })
+        .then(() => console.log("Game saved successfully with reason:", gameEndReason))
+        .catch(err => console.error("Error saving game:", err));
         
         // Broadcast to all players in the room
-        io.to(room).emit('gameOver', { winner, reason });
+        io.to(room).emit('gameOver', { winner, reason: gameEndReason });
         
         // Update player stats
         if (winner === 'Draw') {

@@ -300,8 +300,8 @@ function HomePage() {
   </h2>
   <div className="relative">
     <div ref={gameScrollContainerRef} 
-         className="flex overflow-x-auto space-x-3 sm:space-x-4 
-                  items-center px-2 sm:px-4 min-h-[120px] sm:min-h-[150px]
+         className="flex overflow-x-auto overflow-y-hidden space-x-3 sm:space-x-4 
+                  items-center px-2 sm:px-4 h-[280px]
                   scrollbar-thin scrollbar-thumb-green-500 scrollbar-track-gray-800">
       {games.map((game) => {
         // Determine if current user won, lost, or drew
@@ -311,12 +311,32 @@ function HomePage() {
         const userLost = (isUserWhite && game.winner === "Black") || (isUserBlack && game.winner === "White");
         const isDraw = game.winner === "Draw";
         
-        // Set background color based on result
-        const bgColor = userWon ? "bg-green-600" : userLost ? "bg-red-600" : "bg-gray-600";
-        const hoverBgColor = userWon ? "hover:bg-green-700" : userLost ? "hover:bg-red-700" : "hover:bg-gray-700";
+        // Set colors based on result
+        const bgGradient = userWon 
+          ? "from-green-900 to-green-700" 
+          : userLost 
+            ? "from-red-900 to-red-700" 
+            : "from-yellow-900 to-yellow-700";
         
-        // Set result text
-        const resultText = userWon ? "You won" : userLost ? "You lost" : "Draw";
+        const borderColor = userWon 
+          ? "border-green-400" 
+          : userLost 
+            ? "border-red-400" 
+            : "border-yellow-400";
+        
+        const resultColor = userWon 
+          ? "text-green-300" 
+          : userLost 
+            ? "text-red-300" 
+            : "text-yellow-300";
+            
+        // Set result text and icon
+        const resultText = userWon ? "Victory" : userLost ? "Defeat" : "Draw";
+        const resultIcon = userWon 
+          ? "♔" // King for victory
+          : userLost 
+            ? "♖" // Rook for defeat
+            : "♘"; // Knight for draw
         
         // Handle player names with deleted user check
         const whitePlayerName = game.playerWhite?.UserName || "Deleted User";
@@ -325,23 +345,85 @@ function HomePage() {
         const isWhiteDeleted = !game.playerWhite?.UserName;
         const isBlackDeleted = !game.playerBlack?.UserName;
         
+        // Format date nicely
+        const gameDate = new Date(game.datePlayed);
+        const formattedDate = gameDate.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+        
+        // Game end reason, if available (shortened to fit)
+        const gameReason = game.additionalAttributes?.reason 
+          ? game.additionalAttributes.reason.toLowerCase()
+          : "";
+        
         return (
           <div key={game._id} 
-               className={`flex-shrink-0 inline-block ${bgColor} text-white 
-                        font-medium sm:font-semibold py-2 sm:py-3 px-3 sm:px-4 
-                        rounded-lg ${hoverBgColor} transition-all duration-300 
-                        text-center text-sm sm:text-base transform hover:scale-105`}>
-            <p className="font-bold">
-              <span className={isWhiteDeleted ? "text-yellow-300" : ""}>
-                {whitePlayerName}
-              </span>
-              {" vs "}
-              <span className={isBlackDeleted ? "text-yellow-300" : ""}>
-                {blackPlayerName}
-              </span>
-            </p>
-            <p className="font-bold">{resultText}</p>
-            <p className="text-xs sm:text-sm">{new Date(game.datePlayed).toLocaleDateString()}</p>
+               className={`flex-shrink-0 w-64 sm:w-72 h-[240px] bg-gradient-to-br ${bgGradient} text-white 
+                        rounded-xl border ${borderColor} shadow-lg overflow-hidden
+                        transition-all duration-300 transform hover:scale-105 hover:shadow-2xl
+                        backdrop-blur-sm flex flex-col`}>
+            {/* Header with result */}
+            <div className={`flex items-center justify-center p-2 bg-black/30 border-b ${borderColor}`}>
+              <span className="text-xl mr-2">{resultIcon}</span>
+              <h3 className={`text-lg font-bold ${resultColor}`}>{resultText}</h3>
+            </div>
+            
+            {/* Player matchup - simplified */}
+            <div className="p-2 flex-grow-0 flex flex-col items-center border-b border-gray-700">
+              <div className="flex items-center w-full justify-between">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 rounded-full bg-white mr-1"></div>
+                  <span className={`${isWhiteDeleted ? "text-yellow-300" : "text-white"} font-medium text-sm truncate max-w-[120px]`}>
+                    {whitePlayerName}
+                  </span>
+                </div>
+                <span className="text-white/70 text-xs">{isUserWhite ? "(You)" : ""}</span>
+              </div>
+              
+              <div className="text-xs text-gray-400 my-0.5">vs</div>
+              
+              <div className="flex items-center w-full justify-between">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 rounded-full bg-black mr-1"></div>
+                  <span className={`${isBlackDeleted ? "text-yellow-300" : "text-white"} font-medium text-sm truncate max-w-[120px]`}>
+                    {blackPlayerName}
+                  </span>
+                </div>
+                <span className="text-white/70 text-xs">{isUserBlack ? "(You)" : ""}</span>
+              </div>
+            </div>
+            
+            {/* Game details - simplified */}
+            <div className="p-3 bg-black/20 flex-grow flex flex-col justify-between">
+              <div>
+                <div className="text-xs text-gray-300">
+                  <span className="mr-1">📅</span> {formattedDate}
+                </div>
+                
+                {gameReason && (
+                  <div className="text-xs text-gray-300 mt-1">
+                    <span className="mr-1">🏆</span> 
+                    {isDraw ? `Draw by ${gameReason}` : userWon ? `Win by ${gameReason}` : `Loss by ${gameReason}`}
+                  </div>
+                )}
+              </div>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/ViewGame/${game._id}`);
+                }}
+                className="w-full flex items-center justify-center bg-white/10 hover:bg-white/20 
+                         text-white py-2 px-3 rounded-lg transition-all duration-300
+                         group border border-white/30 hover:border-white/50 backdrop-blur-sm
+                         font-medium mt-2"
+              >
+                <span className="group-hover:scale-110 transition-transform duration-300">♟</span>
+                <span className="ml-2 group-hover:translate-x-1 transition-transform duration-300 text-sm">Review Game</span>
+              </button>
+            </div>
           </div>
         );
       })}
