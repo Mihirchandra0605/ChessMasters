@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearUser } from '../redux/userSlice';
 
 const LogoutButton = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogout = async () => {
     try {
@@ -12,8 +15,7 @@ const LogoutButton = () => {
       });
 
       if (response.ok) {
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
+        dispatch(clearUser());
         navigate('/');
       } else {
         console.error('Error logging out');
@@ -60,8 +62,8 @@ const NavButton = ({ to, children }) => (
 );
 
 const Navbar = () => {
-  const coachId = localStorage.getItem('userId');
-  const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+  const coachId = useSelector((state) => state.user.userId);
+  const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png";
 
   return (
     <nav className="bg-purple-800 shadow-lg">

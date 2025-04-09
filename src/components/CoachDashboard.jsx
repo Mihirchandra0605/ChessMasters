@@ -235,7 +235,7 @@ const CoachDashboard = () => {
               </motion.button>
             </Link>
 
-            <Link to="/Index" className="block">
+            <Link to="/Index?role=coach" className="block">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

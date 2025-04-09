@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const UpdateProfile = () => {
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ const UpdateProfile = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState("");
-    const coachId = localStorage.getItem("userId");
+    const coachId = useSelector((state) => state.user.userId);
 
     const validateField = (name, value) => {
         let errorMessage = "";

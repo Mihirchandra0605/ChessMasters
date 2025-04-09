@@ -1,8 +1,11 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearUser } from '../redux/userSlice';
 
 const LogoutButton = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleLogout = async () => {
     try {
@@ -12,8 +15,7 @@ const LogoutButton = () => {
       });
 
       if (response.ok) {
-        localStorage.removeItem("userId");
-        localStorage.removeItem("role");
+        dispatch(clearUser());
         navigate('/');
       } else {
         console.error('Error logging out');
@@ -55,8 +57,7 @@ const NavButton = ({ to, children }) => (
 );
 
 const Navbar = () => {
-  const playerId = localStorage.getItem('userId');
-  console.log(playerId);
+  const userId = useSelector((state) => state.user.userId);
   const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png";
 
   return (
@@ -78,8 +79,8 @@ const Navbar = () => {
           <div className="flex flex-col sm:flex-row flex-grow">
             <NavButton to="/Index?role=player">Home</NavButton>
             <NavButton to="/CoachesAvailable">Coaches</NavButton>
-            {playerId && (
-              <NavButton to={`/player/${playerId}/profile`}>
+            {userId && (
+              <NavButton to={`/player/${userId}/profile`}>
                 Profile
               </NavButton>
             )}

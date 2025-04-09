@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { setUser } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
 
-console.log(jwtDecode);
 
 function LoginForm({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
@@ -12,8 +13,14 @@ function LoginForm({ onLoginSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  const dispatch = useDispatch();
+
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (!username || !password) {
+      alert("Please enter both username and password.");
+      return;
+    }
     setIsSubmitting(true);
   };
 
@@ -30,18 +37,17 @@ function LoginForm({ onLoginSuccess }) {
 
           const data = await response.json();
 
-          if (response.ok) {
-            const token = data.token;
-            const decodedToken = jwtDecode(token);
-            const userId = decodedToken.userId;
-            
-            console.log("userId", userId);
-            localStorage.setItem("userId", userId);
-            setAuthResponse({ data, ok: response.ok });
-          } else {
-            console.error("Error during login:", data.message);
-            setAuthResponse({ data, ok: false });
-          }
+          if (!response.ok) throw new Error(data.message || "Unknown error occurred");
+
+          const token = data.token;
+          const decodedToken = jwtDecode(token);
+          const userId = decodedToken.userId;
+          const role = data.userType || data.role;
+
+          console.log("Login successful: userId =", userId, "role =", role);
+          dispatch(setUser({ userId, role }));
+
+          setAuthResponse({ data, ok: true });
         } catch (error) {
           console.error("Error during sign-in:", error);
           setAuthResponse({ data: null, ok: false, error });
@@ -49,27 +55,26 @@ function LoginForm({ onLoginSuccess }) {
           setIsSubmitting(false);
         }
       };
-
       login();
     }
-  }, [isSubmitting, username, password]);
+  }, [isSubmitting, username, password, dispatch]);
 
   useEffect(() => {
     if (authResponse) {
       const { data, ok } = authResponse;
-
       if (ok) {
-        onLoginSuccess();
+        const decodedToken = jwtDecode(data.token);
         const role = data.userType || data.role;
-        localStorage.setItem("role", role);
-        const playerId = localStorage.getItem('userId');
-        const coachId = localStorage.getItem('userId');
+        const userId = decodedToken.userId;
+
+        onLoginSuccess();
+
         if (role === "admin") {
           navigate("/AdminDashboard");
         } else if (role === "player") {
-          navigate(`/player/${playerId}/profile`);
+          navigate(`/player/${userId}/profile`);
         } else if (role === "coach") {
-          navigate(`/coach/${coachId}/CoachDashboard?role=coach`);
+          navigate(`/coach/${userId}/CoachDashboard?role=coach`);
         }
       } else {
         alert(data?.message || "Login failed");

@@ -1,86 +1,9 @@
-// // SubscriptionChart.js
-// import React from 'react';
-// import { Bar } from 'react-chartjs-2';
-// import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, Colors } from 'chart.js';
-// import '../styles/subscription.css'
-
-// ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-// const SubscriptionChart = () => {
-//   // Hardcoded data
-//   const data = {
-//     labels: ['January', 'February', 'March', 'April', 'May', 'June','July','August','September','October','November','December'],
-//     datasets: [
-//       {
-//         label: 'Monthly Subscriptions',
-//         data: [10, 15, 12, 18, 20, 25,23,27,29,19,31,32], // Hardcoded subscription counts
-//         backgroundColor: 'darkyellow',
-//         borderColor: 'darkorange',
-//         borderWidth: 1,
-//       },
-//     ],
-//   };
-
-//   const options = {
-//     responsive: true,
-//     maintainAspectRatio: true, // Important for resizing
-//     plugins: {
-//       legend: {
-//         position: 'top',
-//         labels: {
-//           font: {
-//             size: 14, // Adjust font size for labels
-//           },
-//           color: 'darkorange', // Legend label color
-//         },
-//       },
-//       title: {
-//         display: true,
-//         text: 'Coach Subscriptions Analysis (Monthly)',
-//         font: {
-//           size: 25, // Adjust title font size
-//         },
-//         color: 'black', // Title color
-//       },
-//     },
-//     scales: {
-//       x: {
-//         ticks: {
-//           font: {
-//             size: 12, // Adjust font size for x-axis labels
-//           },
-//           color: 'black', // X-axis label color
-//         },
-//         grid: {
-//           color: 'rgba(0, 0, 0, 1)', // X-axis gridline color
-//         },
-//       },
-//       y: {
-//         ticks: {
-//           font: {
-//             size: 12, // Adjust font size for y-axis labels
-//           },
-//           color: 'black', // Y-axis label color
-//         },
-//         grid: {
-//           color: 'rgba(0, 0, 0, 1)', // Y-axis gridline color
-//         },
-//       },
-//     },
-//   };
-  
-//   return <div className='subscription'>
-//   <Bar data={data} options={options} />
-//         </div>
-// };
-
-// export default SubscriptionChart;
-
 import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useSelector} from 'react-redux';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -97,6 +20,7 @@ axios.interceptors.response.use(
 );
 
 const SubscriptionChart = () => {
+  const coachId = useSelector((state) => state.user.userId);
   const navigate = useNavigate();
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [subscriptionData, setSubscriptionData] = useState({});
@@ -138,15 +62,15 @@ const SubscriptionChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const coachId = localStorage.getItem('userId');
-        const token = document.cookie
-          .split('; ')
-          .find(row => row.startsWith('authorization='))
-          ?.split('=')[1];
+        // const coachId = localStorage.getItem('userId');
+        // const token = document.cookie
+        //   .split('; ')
+        //   .find(row => row.startsWith('authorization='))
+        //   ?.split('=')[1];
     
-        console.log('Coach ID:', coachId, 'Token:', token);
+        // console.log('Coach ID:', coachId, 'Token:', token);
     
-        if (!coachId || !token) {
+        if (!coachId) {
           setError('Authentication required. Please login again.');
           navigate('/login');
           return;
@@ -156,7 +80,7 @@ const SubscriptionChart = () => {
           `http://localhost:3000/coach/subscribedPlayers/${coachId}`,
           {
             headers: {
-              'Authorization': `Bearer ${token}`, // Add Bearer prefix back
+              // 'Authorization': `Bearer ${token}`, // Add Bearer prefix back
               'Content-Type': 'application/json'
             },
             withCredentials: true

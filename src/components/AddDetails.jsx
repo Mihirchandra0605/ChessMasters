@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setError, clearError } from "../redux/errorSlice";
 
 const AddCoachForm = () => {
+    const dispatch = useDispatch();
+    const coachId = useSelector((state) => state.user.userId);
     const [formData, setFormData] = useState({
         quote: "",
         location: "",
@@ -16,7 +20,6 @@ const AddCoachForm = () => {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const coachId = localStorage.getItem("userId");
 
     const validateField = (name, value) => {
         let errorMessage = "";
@@ -58,57 +61,19 @@ const AddCoachForm = () => {
 
     useEffect(() => {
         const fetchCoachProfile = async () => {
-            const wasSubmitted = localStorage.getItem("formSubmitted");
-            if (wasSubmitted) {
-                setLoading(false);
-                return;
-            }
-
             try {
-                // Get token more reliably
-                let token;
-                const cookies = document.cookie.split(';');
-                for (const cookie of cookies) {
-                    const [name, value] = cookie.trim().split('=');
-                    if (name === 'authorization') {
-                        token = value;
-                        break;
-                    }
-                }
-                
-                if (!token) {
-                    console.error("No token found in cookies");
-                    setError("Authentication error: No token found");
-                    setLoading(false);
-                    return;
-                }
-                
-                console.log("Using token:", token);
-                
                 const response = await fetch(`http://localhost:3000/coach/details`, {
                     credentials: "include",
                     method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${token}`
-                    },
                 });
-                
-                console.log("Response status:", response.status);
-                
+
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error("Error response:", errorText);
-                    throw new Error(`Failed to fetch profile data: ${response.status} ${errorText}`);
+                    throw new Error("Failed to fetch profile data");
                 }
-                
+
                 const data = await response.json();
-                console.log("Fetched data:", data);
-                
-                // Rest of your code remains the same
-                const languages = Array.isArray(data.languages)
-                    ? data.languages.join(", ")
-                    : data.languages || "";
-                
+                const languages = Array.isArray(data.languages) ? data.languages.join(", ") : data.languages || "";
+
                 setFormData({
                     quote: data.quote || "",
                     location: data.location || "",
@@ -121,15 +86,15 @@ const AddCoachForm = () => {
                     teachingMethodology: data.teachingMethodology || "",
                 });
                 setLoading(false);
+                dispatch(clearError());
             } catch (error) {
-                console.error("Error fetching coach profile:", error);
-                setError("Failed to load coach profile");
+                dispatch(setError(error.message));
                 setLoading(false);
             }
         };
-        
+
         fetchCoachProfile();
-    }, []);
+    }, [dispatch]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -144,63 +109,28 @@ const AddCoachForm = () => {
         });
     };
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) {
-            return;
-        }
         try {
             const formattedData = {
                 ...formData,
-                languages: formData.languages
-                    ? formData.languages.split(",").map((lang) => lang.trim())
-                    : [],
+                languages: formData.languages.split(",").map((lang) => lang.trim()),
             };
-            
-            // Get token more reliably
-            let token;
-            const cookies = document.cookie.split(';');
-            for (const cookie of cookies) {
-                const [name, value] = cookie.trim().split('=');
-                if (name === 'authorization') {
-                    token = value;
-                    break;
-                }
-            }
-            
-            if (!token) {
-                console.error("No token found in cookies");
-                setError("Authentication error: No token found");
-                return;
-            }
-            
-            console.log("Using token for profile update:", token);
-            
+
             const response = await fetch(`http://localhost:3000/coach/completeProfile`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
                 },
                 body: JSON.stringify(formattedData),
             });
-            
-            console.log("Profile update response status:", response.status);
-            
+
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Error response:", errorText);
-                try {
-                    const errorData = JSON.parse(errorText);
-                    throw new Error(errorData.message || "Error updating profile");
-                } catch (jsonError) {
-                    throw new Error(`Error updating profile: ${response.status} ${errorText}`);
-                }
+                throw new Error("Error updating profile");
             }
 
-            // Rest of your success handling code
-            localStorage.setItem("formSubmitted", "true");
             alert("Profile updated successfully!");
             setFormData({
                 quote: "",
@@ -215,8 +145,7 @@ const AddCoachForm = () => {
             });
             setErrors({});
         } catch (error) {
-            console.error("Error updating profile:", error);
-            setError(error.message || "Error updating profile");
+            dispatch(setError(error.message));
         }
     };
 

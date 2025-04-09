@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux';
+
 import { 
   ChevronLeft, 
   AlertTriangle, 
@@ -17,7 +19,10 @@ import {
 } from "lucide-react";
 import axios from "axios";
 
+
+
 const Rules = () => {
+  const role = useSelector((state) => state.user.role);
   const navigate = useNavigate();
   const [details, setDetails] = React.useState(null);
 
@@ -33,7 +38,6 @@ const Rules = () => {
   }, []);
 
   const handleBack = () => {
-    const role = localStorage.getItem('role');
     if (role === 'player') {
       navigate('/Index?role=player');
     } else {

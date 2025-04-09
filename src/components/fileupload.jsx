@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from "react-redux";
+import { setError, clearError } from "../redux/errorSlice";
 
 const FileUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState(null);
@@ -7,7 +9,7 @@ const FileUpload = () => {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [uploadMessage, setUploadMessage] = useState('');
-  const coachId = localStorage.getItem('userId');
+  const coachId = useSelector((state) => state.user.userId);
 
   const handleFileChange = (event) => {
     setSelectedFiles(event.target.files);

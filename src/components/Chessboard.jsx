@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Chessboard } from "react-chessboard";
 import { Chess } from "chess.js";
 import MoveHistory from "./MoveHistory";
+import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +11,8 @@ const FIXED_BOARD_WIDTH = 715; // Set to a comfortable size for most screens
 
 function ChessBoard() {
   const navigate = useNavigate();
+  const userId = useSelector((state) => state.user.userId); // Using Redux for userId
+  const role = useSelector((state) => state.user.role);
   const [game, setGame] = useState(new Chess());
   const [history, setHistory] = useState([]);
   const [winner, setWinner] = useState(null);
@@ -67,22 +70,24 @@ function ChessBoard() {
 
   // Socket connection and game setup
   useEffect(() => {
+    if (!userId) {
+      console.error('User ID not found. Please log in.');
+      return;
+    }
+
     socket.current = io("http://localhost:3000", {
       withCredentials: true,
+      query: { userId }, // Send userId through query using Redux
     });
 
-    const userId = localStorage.getItem("userId");
-    
-    // First check if this is a reconnection
-    socket.current.emit("checkReconnection", { userId });
-    
+    socket.current.emit("checkReconnection", userId );
+
     socket.current.on("reconnected", ({ room, color, fen, players }) => {
       setRoom(room);
       setColor(color);
       setIsConnected(true);
       setGame(new Chess(fen));
-      
-      // Set player usernames and ELO
+
       const whitePlayers = players.find((p) => p.color === "w");
       const blackPlayers = players.find((p) => p.color === "b");
 
@@ -99,10 +104,9 @@ function ChessBoard() {
         },
       });
     });
-    
+
     socket.current.on("notReconnected", () => {
-      // If not a reconnection, proceed with normal join
-      socket.current.emit("joinGame", userId);
+      socket.current.emit("joinGame", userId );
     });
 
     // IMPORTANT CHANGE: Replace the beforeunload event with a custom handler
@@ -205,7 +209,7 @@ function ChessBoard() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       socket.current.disconnect();
     };
-  }, []);
+  }, [userId]);
 
   // Function to check for game ending conditions
   function checkGameEndingConditions() {
@@ -512,7 +516,7 @@ function ChessBoard() {
     setGameEndReason(null);
     setEloChange(0);
     setShowEloAnimation(false);
-    socket.current.emit("joinGame", localStorage.getItem("userId"));
+    socket.current.emit("joinGame", userId);
   };
 
   // Restart game on Enter key
@@ -818,19 +822,18 @@ function ChessBoard() {
                     </button>
                     <button
                       onClick={() => {
-                        const role = localStorage.getItem("role");
-                        console.log("User role from localStorage:", role);
+                        // const role = localStorage.getItem("role");
+                        console.log("User role from redux:", role);
                         
                         // Default to player route if role is missing or not recognized
-                        if (!role || (role !== "coach" && role !== "admin")) {
-                          console.log("Navigating to /Index?role=player (default)");
-                          navigate("/Index?role=player");
+                        if (role === "coach") {
+                          console.log("Navigating to /Index?role=coach");
+                          navigate("/Index?role=coach");
                         } else if (role === "player") {
                           console.log("Navigating to /Index?role=player");
                           navigate("/Index?role=player");
                         } else {
-                          console.log(`Navigating to /Index, role was ${role}`);
-                          navigate("/Index");
+                          console.log("Error navigating, found no proper role");                          
                         }
                       }}
                       className="px-5 py-2.5 bg-purple-500 hover:bg-purple-600 rounded-lg transition-all text-white font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
