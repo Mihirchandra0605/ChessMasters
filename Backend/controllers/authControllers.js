@@ -28,7 +28,7 @@ export const registerUser = async (req, res) => {
     const user = new UserModel({
       UserName,
       Email,
-      Password: hashedPassword,
+      Password,
       Role,
     });
 
@@ -53,52 +53,55 @@ export const signIn = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    let user = null;
+    let user;
     let isAdmin = false;
 
-    // Admin login hardcoded (consider using ENV variables for better security)
-    if (username === "admin" && password === "secret") {
+    if (username === "admin"  && password === "secret" ) {
+      // Check admin credentials (no bcrypt comparison, since password is plaintext in the DB)
+      // user = await AdminModel.findOne({ UserName: username });
+      // if (!user) {
+      //   console.log("user not found")
+      //   return res.status(401).json({ message: "Invalid admin credentials" });
+      // }
+
+      // if (password !== user.Password) {
+      //   console.log("incorrect admin password");
+      //   return res.status(401).json({ message: "Invalid admin credentials" });
+      // }
+
+      // Admin is authenticated
       isAdmin = true;
     } else {
+      // Check regular user credentials (still use bcrypt for user)
       user = await UserModel.findOne({ UserName: username });
-
       if (!user) {
-        return res.status(401).json({ message: "Invalid username" });
+        return res.status(401).json({ message: "Invalid user credentials" });
       }
 
-      const isMatch = await bcrypt.compare(password, user.Password);
-      if (!isMatch) {
-        return res.status(401).json({ message: "Invalid password" });
+      const match = await bcrypt.compare(password, user.Password);
+      if (!match) {
+        return res.status(401).json({ message: "Invalid user credentials" });
       }
     }
 
-    // Generate JWT with appropriate payload
-    const payloadId = isAdmin ? "admin" : user._id;
-    const role = isAdmin ? "admin" : user.Role;
-    const token = generateToken(payloadId, role);
-
-    // Set token in a secure cookie
-    res.cookie("authorization", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000 // Optional: 7 days
-    });
+    // Generate token based on user or admin role
+    const token = generateToken(user ? user._id : "admin", isAdmin ? "admin" : user?.Role);
+    res.cookie("authorization", token);
 
     return res.status(200).json({
       message: "Signed in successfully",
-      userType: role,
-      token, // Optional to send, since it's stored in cookie
+      userType: isAdmin ? "admin" : user?.Role,
+      token,
     });
   } catch (error) {
     console.error("Error during sign-in:", error);
-    return res.status(500).json({ message: "Internal server error" });
+    res.status(500).send({ message: "Internal server error" });
   }
 };
 
+
 export const logout = (req, res) => {
-  // Clear authorization cookie
-  res.clearCookie("authorization");
+  res.clearCookie("authorization") || req.cookie.token;
   return res.status(200).json({ message: "Logged out successfully" });
 };
 
@@ -119,95 +122,21 @@ export const editDetails = async (req, res) => {
 
 export const getUserDetails = async (req, res) => {
   try {
-    console.log("Fetching user details...");
-    console.log("Request cookies:", req.cookies);
-    console.log("Request headers:", req.headers);
+    const token = req.cookies.authorization || req.headers.token;
+    if (!token) return res.status(403).json({ message: "No token provided." });
 
-    // Check if we already have a parsed user from middleware
-    if (req.user && req.user.id) {
-      console.log("User already authenticated via middleware:", req.user);
-      const user = await UserModel.findById(req.user.id).select("-Password");
-      
-      if (!user) {
-        console.log("User not found in database:", req.user.id);
-        return res.status(404).json({ message: "User not found." });
-      }
-      
-      console.log("User found:", user._id);
-      return res.status(200).json(user);
+    const decoded = jwt.verify(token, jwtSecretKey);
+
+    if (decoded.role === "admin") {
+      return res.status(200).json({ message: "Admin access granted." });
     }
 
-    // If not, extract and verify the token manually
-    let token = null;
-
-    // Try to get token from authorization header
-    if (req.headers.authorization) {
-      if (req.headers.authorization.startsWith('Bearer ')) {
-        token = req.headers.authorization.split(' ')[1];
-      } else {
-        token = req.headers.authorization;
-      }
-    } 
-    // If not in header, try to get from cookies
-    else if (req.cookies && req.cookies.authorization) {
-      token = req.cookies.authorization;
-      // Remove any trailing semicolons
-      if (token.endsWith(';')) {
-        token = token.slice(0, -1);
-      }
-      // Remove 'Bearer ' prefix if present
-      if (token.startsWith('Bearer ')) {
-        token = token.substring(7);
-      }
-    }
-
-    console.log("Extracted token:", token ? "Token found" : "No token");
-
-    if (!token) {
-      return res.status(401).json({ message: "No token provided. Access denied." });
-    }
-
-    // Clean up the token if needed
-    if (token.includes("Bearer ")) {
-      token = token.split("Bearer ")[1];
-    } else if (token.includes("=")) {
-      token = token.split("=")[1];
-    }
-
-    // Verify the token
-    let decoded;
-    try {
-      decoded = jwt.verify(token, jwtSecretKey);
-      console.log("Token decoded successfully:", decoded);
-    } catch (error) {
-      console.error("Token verification error:", error);
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ message: "Token expired. Please login again." });
-      }
-      return res.status(401).json({ message: "Invalid token. Please login again." });
-    }
-
-    // For admin, just return acknowledgment
-    if (decoded.role === "admin" || decoded.userId === "admin") {
-      return res.status(200).json({ 
-        _id: "admin",
-        UserName: "Administrator",
-        Email: "admin@example.com",
-        Role: "admin"
-      });
-    }
-
-    // For regular users, fetch from database
-    const user = await UserModel.findById(decoded.userId).select("-Password");
-    
+    const user = await UserModel.findById(decoded.userId).select("-password");
     if (!user) {
-      console.log("User not found in database after token verification:", decoded.userId);
       return res.status(404).json({ message: "User not found." });
     }
 
-    console.log("User details fetched successfully:", user._id);
     return res.status(200).json(user);
-
   } catch (error) {
     console.error("Error fetching user details:", error);
     return res.status(500).json({ message: "Internal server error." });
