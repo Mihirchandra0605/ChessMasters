@@ -92,9 +92,9 @@ export const signIn = async (req, res) => {
     // Set token in a secure cookie
     res.cookie("authorization", token, {
       httpOnly: true,
-      // secure: process.env.NODE_ENV === "production",
+      secure: true,
       sameSite: "None",
-      // maxAge: 7 * 24 * 60 * 60 * 1000 // Optional: 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000 // Optional: 7 days
     });
 
     return res.status(200).json({
