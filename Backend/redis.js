@@ -5,12 +5,12 @@ const client = createClient({
 });
 
 // Handle error events
-client.on('error', (err) => console.error('Redis Client Error', err));
+// client.on('error', (err) => console.error('Redis Client Error', err));
 
 // Function to connect to Redis
 async function connectRedis() {
     if (!client.isOpen) {
-        await client.connect();
+        // await client.connect();
     }
 }
 
