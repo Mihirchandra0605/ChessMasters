@@ -9,8 +9,8 @@ import axios from 'axios';
 import morgan from 'morgan'
 import { startSubscriptionCleanupJob } from './jobs/subscriptionJobs.js';
 import ErrorHandler, { errorMiddleware } from './middlewares/errorHandler.js';
-import { port, frontendUrl, mongodbUri } from './config.js';
-import { mihirBackend }  from "../config.js";
+import { port, frontendUrl, mongodbUri, mihirBackend } from './config.js';
+// import { mihirBackend }  from "../config.js";
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
 import playerRoutes from './routes/playerRoutes.js';
