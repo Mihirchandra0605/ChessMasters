@@ -84,9 +84,18 @@ export const signIn = async (req, res) => {
       }
     }
 
-    // Generate token based on user or admin role
-    const token = generateToken(user ? user._id : "admin", isAdmin ? "admin" : user?.Role);
-    res.cookie("authorization", token);
+    // Generate JWT with appropriate payload
+    const payloadId = isAdmin ? "admin" : user._id;
+    const role = isAdmin ? "admin" : user.Role;
+    const token = generateToken(payloadId, role);
+
+    // Set token in a secure cookie
+    res.cookie("authorization", token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: "Strict",
+      // maxAge: 7 * 24 * 60 * 60 * 1000 // Optional: 7 days
+    });
 
     return res.status(200).json({
       message: "Signed in successfully",
