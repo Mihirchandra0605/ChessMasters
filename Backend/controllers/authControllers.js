@@ -94,7 +94,7 @@ export const signIn = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      domain: "chessmasters.onrender.com",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000 // Optional: 7 days
     });
 
