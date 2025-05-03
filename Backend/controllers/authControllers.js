@@ -53,47 +53,46 @@ export const signIn = async (req, res) => {
   try {
     const { username, password } = req.body;
 
-    let user;
+    let user = null;
     let isAdmin = false;
 
+    // Admin login hardcoded (consider using ENV variables for better security)
     if (username === "admin" && password === "secret") {
-      // Admin authentication logic
       isAdmin = true;
     } else {
-      // Regular user authentication logic
       user = await UserModel.findOne({ UserName: username });
+
       if (!user) {
-        return res.status(401).json({ message: "Invalid user credentials" });
+        return res.status(401).json({ message: "Invalid username or password" });
       }
 
-      const match = await bcrypt.compare(password, user.Password);
-      if (!match) {
-        return res.status(401).json({ message: "Invalid user credentials" });
+      const isMatch = await bcrypt.compare(password, user.Password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Invalid username or password" });
       }
     }
 
-    // Ensure user exists before generating token
-    if (!user && !isAdmin) {
-      return res.status(401).json({ message: "Invalid user credentials" });
-    }
+    // Generate JWT with appropriate payload
+    const payloadId = isAdmin ? "admin" : user._id;
+    const role = isAdmin ? "admin" : user.Role;
+    const token = generateToken(payloadId, role);
 
-    // Generate token based on user or admin role
-    const token = generateToken(user ? user._id : "admin", isAdmin ? "admin" : user?.Role);
-    
-    // Set JWT token in cookies securely
+    // Set token in a secure cookie
     res.cookie("authorization", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Ensure this is set in production
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000 // Optional: 7 days
     });
 
     return res.status(200).json({
       message: "Signed in successfully",
-      userType: isAdmin ? "admin" : user?.Role,
-      token,
+      userType: role,
+      token, // Optional to send, since it's stored in cookie
     });
   } catch (error) {
     console.error("Error during sign-in:", error);
-    res.status(500).send({ message: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

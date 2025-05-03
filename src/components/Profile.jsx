@@ -35,7 +35,12 @@ const Profile = () => {
     let isMounted = true;
 
     const fetchPlayerDetails = async () => {
-      const token = document.cookie.split("=")[1];
+      const getCookie = (name) => {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? match[2] : null;
+      };
+      const token = getCookie('token'); 
+      
       try {
         const response = await axios.get(`${mihirBackend}/auth/details`, {
           withCredentials: true,
