@@ -42,24 +42,25 @@ const Profile = () => {
     let isMounted = true;
 
     const fetchPlayerDetails = async () => {
-      const token = getAuthToken();
-      console.log('Token:', token); // Debugging Log
+      // const token = getAuthToken();
+      // console.log('Token:', token); // Debugging Log
       
-      if (!token) {
-        console.error('No authentication token found');
-        setLoading(false);
-        return;
-      }
+      // if (!token) {
+      //   console.error('No authentication token found');
+      //   setLoading(false);
+      //   return;
+      // }
       
       try {
         // Request user details
         const response = await axios.get(`${mihirBackend}/auth/details`, {
           withCredentials: true,
-          headers: { 
-            Authorization: `Bearer ${token}`
-          }
+          // headers: { 
+          //   Authorization: `Bearer ${token}`
+          // }
         });
         
+        console.log("User details response:", response.data); // Debugging Log
         if (isMounted) {
           const player = response.data;
           setFormData({
@@ -75,7 +76,7 @@ const Profile = () => {
               const coachesResponse = await axios.get(
                 `${mihirBackend}/player/${player._id}/subscribedCoaches`,
                 {
-                  headers: { Authorization: `Bearer ${token}` },
+                  // headers: { Authorization: `Bearer ${token}` },
                   withCredentials: true,
                 }
               );
