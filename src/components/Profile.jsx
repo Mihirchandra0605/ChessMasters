@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -31,21 +30,50 @@ const Profile = () => {
     isOpen: false
   });
 
+  // Helper function to properly extract token from cookies
+  const getAuthToken = () => {
+    // First try to get the token from cookies
+    const cookies = document.cookie.split(';');
+    let token = null;
+    
+    // Look for the authorization cookie
+    for (const cookie of cookies) {
+      const [name, value] = cookie.trim().split('=');
+      if (name === 'authorization') {
+        token = value;
+        break;
+      }
+    }
+    
+    // If token is not found in cookies, try to get it from localStorage or sessionStorage
+    if (!token) {
+      token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    }
+    
+    return token;
+  };
+
   useEffect(() => {
     let isMounted = true;
 
     const fetchPlayerDetails = async () => {
-      const getCookie = (name) => {
-        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-        return match ? match[2] : null;
-      };
-      const token = getCookie('token'); 
+      const token = getAuthToken();
+      
+      if (!token) {
+        console.error('No authentication token found');
+        setLoading(false);
+        return;
+      }
       
       try {
+        // Request user details
         const response = await axios.get(`${mihirBackend}/auth/details`, {
           withCredentials: true,
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { 
+            Authorization: `Bearer ${token}`
+          }
         });
+        
         if (isMounted) {
           const player = response.data;
           setFormData({
@@ -54,21 +82,35 @@ const Profile = () => {
             password: '********'
           });
           setEloData(player.eloHistory || []);
-          setLoading(false);
-
-          const coachesResponse = await axios.get(
-            `${mihirBackend}/player/${id}/subscribedCoaches`,
-            {
-              headers: { Authorization: `Bearer ${token}` },
-              withCredentials: true,
+          
+          // Only fetch subscribed coaches if we have a user ID
+          if (player._id) {
+            try {
+              const coachesResponse = await axios.get(
+                `${mihirBackend}/player/${player._id}/subscribedCoaches`,
+                {
+                  headers: { Authorization: `Bearer ${token}` },
+                  withCredentials: true,
+                }
+              );
+              if (isMounted) {
+                console.log('Subscribed coaches:', coachesResponse.data);
+                setSubscribedCoaches(coachesResponse.data);
+              }
+            } catch (coachError) {
+              console.error('Error fetching subscribed coaches:', coachError);
             }
-          );
-          console.log('coach',coachesResponse.data)
-          if (isMounted) setSubscribedCoaches(coachesResponse.data);
+          }
+          
+          setLoading(false);
         }
       } catch (error) {
         if (isMounted) {
           console.error('Error fetching player details:', error);
+          if (error.response) {
+            console.error('Response data:', error.response.data);
+            console.error('Response status:', error.response.status);
+          }
           setLoading(false);
         }
       }
@@ -79,12 +121,18 @@ const Profile = () => {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, []);
 
   const handleEdit = async (field) => {
     // If currently editing and trying to save
     if (isEditing[field]) {
-      const token = document.cookie.split("=")[1];
+      const token = getAuthToken();
+      
+      if (!token) {
+        setUpdateMessage('Authentication error. Please login again.');
+        setTimeout(() => setUpdateMessage(''), 3000);
+        return;
+      }
       
       try {
         // Map frontend field names to backend field names
@@ -148,7 +196,13 @@ const Profile = () => {
   const coachScrollContainerRef = useRef(null);
 
   const handleUnsubscribe = async (coachUserId) => {
-    const token = document.cookie.split("=")[1];
+    const token = getAuthToken();
+
+    if (!token) {
+      setUpdateMessage('Authentication error. Please login again.');
+      setTimeout(() => setUpdateMessage(''), 3000);
+      return;
+    }
 
     // Debugging Log
     console.log("Attempting to unsubscribe from coach userId:", coachUserId);
@@ -170,6 +224,8 @@ const Profile = () => {
 
     } catch (error) {
       console.error('Error unsubscribing from coach:', error);
+      setUpdateMessage('Failed to unsubscribe. Please try again.');
+      setTimeout(() => setUpdateMessage(''), 3000);
     }
   };
 
@@ -218,7 +274,13 @@ const Profile = () => {
   };
 
   const confirmDeleteAccount = async () => {
-    const token = document.cookie.split("=")[1];
+    const token = getAuthToken();
+    
+    if (!token) {
+      setUpdateMessage('Authentication error. Please login again.');
+      setTimeout(() => setUpdateMessage(''), 3000);
+      return;
+    }
     
     try {
       // First unsubscribe from all coaches

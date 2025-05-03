@@ -4,51 +4,76 @@ import { jwtSecretKey } from "../config.js";
 export const authMiddleware = (req, res, next) => {
   try {
     console.log("🔹 Checking authentication...");
+    console.log("🔹 Request cookies:", req.cookies);
+    console.log("🔹 Request headers:", req.headers);
 
     const authHeader = req.headers.authorization;
-    const cookieToken = req.cookies.authorization;
+    const cookieToken = req.cookies ? req.cookies.authorization : null;
     let token;
 
+    // Try to get token from authorization header
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.split(' ')[1];
-    } else if (cookieToken) {
+      console.log("🔹 Token found in Authorization header");
+    } 
+    // If not in header, try cookies
+    else if (cookieToken) {
+      token = cookieToken;
       // Check if the cookie token has a semicolon at the end and remove it
-      token = cookieToken.endsWith(';') ? cookieToken.slice(0, -1) : cookieToken;
+      if (token.endsWith(';')) {
+        token = token.slice(0, -1);
+      }
+      console.log("🔹 Token found in cookies");
     }
 
     if (!token) {
-      console.error("❌ No token found.");
+      console.error("❌ No token found in headers or cookies");
       return res.status(401).json({ message: "No token provided. Access denied." });
     }
 
-    console.log("🔹 Token found:", token);
+    console.log("🔹 Raw token:", token);
 
-    if (token.includes("Bearer ")) {
+    // Clean up the token if needed
+    if (token.startsWith("Bearer ")) {
       token = token.split("Bearer ")[1];
     } else if (token.includes("=")) {
       token = token.split("=")[1];
     }
-    
 
-    const decoded = jwt.verify(token, jwtSecretKey);
-    console.log("✅ Token decoded:", decoded);
+    console.log("🔹 Processed token:", token);
 
-    // ✅ Attach user object properly
-    req.user = { id: decoded.userId, role: decoded.role };
-    req.userId = decoded.userId; // Also set userId for backward compatibility
+    try {
+      const decoded = jwt.verify(token, jwtSecretKey);
+      console.log("✅ Token decoded:", decoded);
 
-    if (!req.user.id) {
-      console.error("❌ Error: User ID missing in token.");
-      return res.status(403).json({ message: "Invalid token: No user ID found." });
+      // Make sure we're consistent with the field names
+      const userId = decoded.userId || decoded.id; 
+      
+      // Attach user object
+      req.user = { 
+        id: userId, 
+        role: decoded.role 
+      };
+      
+      // Also set userId for backward compatibility
+      req.userId = userId;
+
+      if (!req.user.id) {
+        console.error("❌ Error: User ID missing in token.");
+        return res.status(403).json({ message: "Invalid token: No user ID found." });
+      }
+
+      next();
+    } catch (jwtError) {
+      console.error("🔥 JWT verify error:", jwtError);
+      if (jwtError.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: "Token expired. Please login again." });
+      }
+      return res.status(403).json({ message: "Invalid token. Access denied." });
     }
-
-    next();
   } catch (error) {
-    console.error("🔥 Token verification error:", error);
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ message: "Token expired. Please login again." });
-    }
-    res.status(403).json({ message: "Invalid token. Access denied." });
+    console.error("🔥 General error in auth middleware:", error);
+    res.status(500).json({ message: "Server error in authentication." });
   }
 };
 
