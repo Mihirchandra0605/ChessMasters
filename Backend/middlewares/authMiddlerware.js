@@ -23,13 +23,12 @@ export const authMiddleware = (req, res, next) => {
 
     console.log("🔹 Token found:", token);
 
-    // Handle the case where token might be in cookie format
-    if (token.includes('=')) {
-      const parts = token.split('=');
-      if (parts.length > 1) {
-        token = parts[1];
-      }
+    if (token.includes("Bearer ")) {
+      token = token.split("Bearer ")[1];
+    } else if (token.includes("=")) {
+      token = token.split("=")[1];
     }
+    
 
     const decoded = jwt.verify(token, jwtSecretKey);
     console.log("✅ Token decoded:", decoded);

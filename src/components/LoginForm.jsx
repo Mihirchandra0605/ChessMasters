@@ -10,78 +10,45 @@ import { mihirBackend } from "../../config.js";
 function LoginForm({ onLoginSuccess }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [authResponse, setAuthResponse] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-
   const dispatch = useDispatch();
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
     if (!username || !password) {
       alert("Please enter both username and password.");
       return;
     }
-    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${mihirBackend}/auth/signin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // important for cookies
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Login failed");
+
+      const decodedToken = jwtDecode(data.token);
+      const userId = decodedToken.userId;
+      const role = data.userType || data.role;
+
+      dispatch(setUser({ userId, role }));
+      onLoginSuccess();
+
+      if (role === "admin") navigate("/AdminDashboard");
+      else if (role === "player") navigate(`/player/${userId}/profile`);
+      else if (role === "coach") navigate(`/coach/${userId}/CoachDashboard?role=coach`);
+    } catch (err) {
+      alert(err.message || "Login failed");
+      console.error("Login error:", err);
+    }
   };
 
-  useEffect(() => {
-    if (isSubmitting) {
-      const login = async () => {
-        try {
-          const response = await fetch(`${mihirBackend}/auth/signin`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ username, password }),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) throw new Error(data.message || "Unknown error occurred");
-
-          const token = data.token;
-          const decodedToken = jwtDecode(token);
-          const userId = decodedToken.userId;
-          const role = data.userType || data.role;
-
-          console.log("Login successful: userId =", userId, "role =", role);
-          dispatch(setUser({ userId, role }));
-
-          setAuthResponse({ data, ok: true });
-        } catch (error) {
-          console.error("Error during sign-in:", error);
-          setAuthResponse({ data: null, ok: false, error });
-        } finally {
-          setIsSubmitting(false);
-        }
-      };
-      login();
-    }
-  }, [isSubmitting, username, password, dispatch]);
-
-  useEffect(() => {
-    if (authResponse) {
-      const { data, ok } = authResponse;
-      if (ok) {
-        const decodedToken = jwtDecode(data.token);
-        const role = data.userType || data.role;
-        const userId = decodedToken.userId;
-
-        onLoginSuccess();
-
-        if (role === "admin") {
-          navigate("/AdminDashboard");
-        } else if (role === "player") {
-          navigate(`/player/${userId}/profile`);
-        } else if (role === "coach") {
-          navigate(`/coach/${userId}/CoachDashboard?role=coach`);
-        }
-      } else {
-        alert(data?.message || "Login failed");
-      }
-    }
-  }, [authResponse, onLoginSuccess, navigate]);
 
   return (
     <motion.div

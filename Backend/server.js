@@ -133,7 +133,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: 'frontendUrl',
+    origin: frontendUrl,
     methods: ['GET', 'POST'],
     credentials: true,
   },
