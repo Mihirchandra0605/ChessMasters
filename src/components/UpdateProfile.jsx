@@ -83,7 +83,7 @@ const UpdateProfile = () => {
                 
                 console.log("Using token:", token);
                 
-                const response = await fetch(`http://${mihirBackend}/coach/details`, {
+                const response = await fetch(`${mihirBackend}/coach/details`, {
                     credentials: "include",
                     method: "GET",
                     headers: {
@@ -200,7 +200,7 @@ const UpdateProfile = () => {
             console.log("Updating profile with data:", updatedFields);
             
             // Use the completeProfile endpoint instead of updateProfile
-            const response = await fetch(`http://${mihirBackend}/coach/completeProfile`, {
+            const response = await fetch(`${mihirBackend}/coach/completeProfile`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {

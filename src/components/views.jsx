@@ -89,7 +89,7 @@ const ViewChart = () => {
         console.log("🔍 Fetching coach content data...");
         
         // Get user details to get coach ID if not available from URL
-        const userResponse = await axios.get(`http://${mihirBackend}/auth/details`, { 
+        const userResponse = await axios.get(`${mihirBackend}/auth/details`, { 
           withCredentials: true 
         });
         
@@ -107,10 +107,10 @@ const ViewChart = () => {
         
         // Fetch videos and articles for this coach specifically
         const [videosResponse, articlesResponse] = await Promise.all([
-          axios.get(`http://${mihirBackend}/video/coach/${activeCoachId}`, {
+          axios.get(`${mihirBackend}/video/coach/${activeCoachId}`, {
             withCredentials: true
           }),
-          axios.get(`http://${mihirBackend}/article/coach/${activeCoachId}`, {
+          axios.get(`${mihirBackend}/article/coach/${activeCoachId}`, {
             withCredentials: true
           })
         ]);

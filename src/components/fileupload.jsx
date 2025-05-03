@@ -26,8 +26,8 @@ const FileUpload = () => {
 
       try {
         const endpoint = fileType === 'article'
-          ? `http://${mihirBackend}/coach/addArticle`
-          : `http://${mihirBackend}/coach/addVideo`;
+          ? `${mihirBackend}/coach/addArticle`
+          : `${mihirBackend}/coach/addVideo`;
 
         const response = await fetch(endpoint, {
           method: 'POST',

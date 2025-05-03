@@ -10,7 +10,7 @@ const ArticleDetail = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const response = await fetch(`http://${mihirBackend}/coach/ArticleDetail/${id}`, {
+        const response = await fetch(`${mihirBackend}/coach/ArticleDetail/${id}`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -95,7 +95,7 @@ const ArticleDetail = () => {
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24" 
-                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns="www.w3.org/2000/svg"
                 >
                   <path 
                     strokeLinecap="round" 

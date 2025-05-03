@@ -64,9 +64,9 @@ const Dashboard = () => {
     try {
       let response;
       if (title === 'Players') {
-        response = await axios.get(`http://${mihirBackend}/player/${id}/game-stats`, { withCredentials: true });
+        response = await axios.get(`${mihirBackend}/player/${id}/game-stats`, { withCredentials: true });
       } else if (title === 'Coaches') {
-        response = await axios.get(`http://${mihirBackend}/admin/coach/${id}/game-stats`, { withCredentials: true });
+        response = await axios.get(`${mihirBackend}/admin/coach/${id}/game-stats`, { withCredentials: true });
       }
       console.log('Stats data:', response.data);
       setStats(response.data); // Update stats state
@@ -80,7 +80,7 @@ const Dashboard = () => {
   const handleFormSubmit = (formData) => {
     // Handle form submission logic here
     console.log('Form Submitted:', formData);
-    fetch("http://${mihirBackend}/auth/register", {
+    fetch("${mihirBackend}/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -122,7 +122,7 @@ const Dashboard = () => {
 
   const fetchData = async (endpoint, setterFunction) => {
     try {
-      const response = await axios.get(`http://${mihirBackend}/admin/${endpoint}`);
+      const response = await axios.get(`${mihirBackend}/admin/${endpoint}`);
       console.log(`${endpoint} data:`, response.data);
       setterFunction(response.data);
       if (endpoint === 'coaches') {
@@ -135,7 +135,7 @@ const Dashboard = () => {
 
   const fetchGamesCount = async () => {
     try {
-      const response = await axios.get("http://${mihirBackend}/game/allgames");
+      const response = await axios.get("${mihirBackend}/game/allgames");
       const games = Array.isArray(response.data.games) ? response.data.games : [];
       console.log("Games data:", games);
       setGamesCount(games.length);
@@ -150,7 +150,7 @@ const Dashboard = () => {
 
   const fetchTotalRevenue = async () => {
     try {
-      const response = await axios.get("http://${mihirBackend}/admin/total-revenue", { withCredentials: true });
+      const response = await axios.get("${mihirBackend}/admin/total-revenue", { withCredentials: true });
       console.log("Total revenue data:", response.data);
       setTotalRevenue(response.data.totalRevenue || 0);
     } catch (error) {
@@ -172,7 +172,7 @@ const Dashboard = () => {
     if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
     try {
       const endpoint = type === 'coach' ? 'coaches' : `${type}s`;
-      await axios.delete(`http://${mihirBackend}/admin/${endpoint}/${id}`);
+      await axios.delete(`${mihirBackend}/admin/${endpoint}/${id}`);
       fetchData(
         type === 'coach' ? 'coaches' : `${type}s`,
         type === 'player' ? setPlayers : type === 'coach' ? setCoaches : type === 'article' ? setArticles : setVideos
@@ -542,7 +542,7 @@ const Dashboard = () => {
   const handleDeleteAllGames = async () => {
     setDeleteAllStatus({ isDeleting: true, message: 'Deleting all games...' });
     try {
-      const response = await axios.delete('http://${mihirBackend}/admin/games', { withCredentials: true });
+      const response = await axios.delete('${mihirBackend}/admin/games', { withCredentials: true });
       console.log('Delete all games response:', response.data);
       setDeleteAllStatus({ 
         isDeleting: false, 
@@ -639,7 +639,7 @@ const Dashboard = () => {
                           transform hover:scale-105 flex items-center justify-center whitespace-nowrap"
               >
                 <span className="mr-2">Delete All Games</span>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>

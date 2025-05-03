@@ -31,23 +31,23 @@ const CoachDashboard = () => {
       try {
         // Fetch all articles and videos first
         const [articlesResponse, videosResponse, playersResponse, revenueResponse, profileResponse] = await Promise.all([
-          axios.get(`http://${mihirBackend}/admin/articles`, {
+          axios.get(`${mihirBackend}/admin/articles`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://${mihirBackend}/admin/videos`,{
+          axios.get(`${mihirBackend}/admin/videos`,{
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://${mihirBackend}/coach/subscribedPlayers/${coachId}`, {
+          axios.get(`${mihirBackend}/coach/subscribedPlayers/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://${mihirBackend}/coach/revenue/${coachId}`, {
+          axios.get(`${mihirBackend}/coach/revenue/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://${mihirBackend}/coach/details`, {
+          axios.get(`${mihirBackend}/coach/details`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           })
@@ -118,8 +118,8 @@ const CoachDashboard = () => {
       
       // Make sure endpoint is correct
       const endpoint = type === 'article' 
-        ? `http://${mihirBackend}/coach/article/${itemId}` 
-        : `http://${mihirBackend}/coach/video/${itemId}`;
+        ? `${mihirBackend}/coach/article/${itemId}` 
+        : `${mihirBackend}/coach/video/${itemId}`;
       
       const response = await axios.delete(
         endpoint,
@@ -376,7 +376,7 @@ const CoachDashboard = () => {
                             onClick={() => handleUpdate('video', video._id)}
                             className="px-3 py-1.5 bg-gradient-to-r from-teal-400 to-teal-500 text-white rounded-md hover:from-teal-500 hover:to-teal-600 transition duration-300 shadow-sm flex items-center text-sm"
                           >
-                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             Edit
@@ -385,7 +385,7 @@ const CoachDashboard = () => {
                             onClick={() => handleDeleteClick('video', video._id, video.title)}
                             className="px-3 py-1.5 bg-gradient-to-r from-red-400 to-red-500 text-white rounded-md hover:from-red-500 hover:to-red-600 transition duration-300 shadow-sm flex items-center text-sm"
                           >
-                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                             Delete
@@ -427,7 +427,7 @@ const CoachDashboard = () => {
                             onClick={() => handleUpdate('article', article._id)}
                             className="px-3 py-1.5 bg-gradient-to-r from-indigo-400 to-indigo-500 text-white rounded-md hover:from-indigo-500 hover:to-indigo-600 transition duration-300 shadow-sm flex items-center text-sm"
                           >
-                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             Edit
@@ -436,7 +436,7 @@ const CoachDashboard = () => {
                             onClick={() => handleDeleteClick('article', article._id, article.title)}
                             className="px-3 py-1.5 bg-gradient-to-r from-rose-400 to-rose-500 text-white rounded-md hover:from-rose-500 hover:to-rose-600 transition duration-300 shadow-sm flex items-center text-sm"
                           >
-                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                             Delete

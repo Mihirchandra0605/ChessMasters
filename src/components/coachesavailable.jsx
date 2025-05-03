@@ -76,7 +76,7 @@ const CoachesAvailable = () => {
                            duration-300 ease-out group-hover:-translate-x-4">
               <svg
                 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6"
-                xmlns="http://www.w3.org/2000/svg"
+                xmlns="www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"

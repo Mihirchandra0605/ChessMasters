@@ -29,7 +29,7 @@ function LoginForm({ onLoginSuccess }) {
     if (isSubmitting) {
       const login = async () => {
         try {
-          const response = await fetch(`http://${mihirBackend}/auth/signin`, {
+          const response = await fetch(`${mihirBackend}/auth/signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

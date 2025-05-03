@@ -17,7 +17,7 @@ const PricingPlans = () => {
     const fetchCoachDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://${mihirBackend}/coach/${coachId}`);
+        const response = await axios.get(`${mihirBackend}/coach/${coachId}`);
         // Get the coach's name from the user field that's populated
         const coach = response.data;
         setCoachName(coach.user.UserName || "Coach");

@@ -8,7 +8,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(`http://${mihirBackend}/auth/logout`, {
+      const response = await fetch(`${mihirBackend}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

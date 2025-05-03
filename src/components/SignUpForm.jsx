@@ -72,7 +72,7 @@ function SignupForm({ onSignupSuccess }) {
       ...(role === "coach" && { Fide_id: fideId }),
     };
 
-    fetch(`http://${mihirBackend}/auth/register`, {
+    fetch(`${mihirBackend}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

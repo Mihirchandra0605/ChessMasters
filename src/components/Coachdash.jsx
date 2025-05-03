@@ -16,7 +16,7 @@ const Coachdash = () => {
   // useEffect(() => {
   //   const fetchCoachDetails = async () => {
   //     try {
-  //       const response = await axios.get(`http://${mihirBackend}/coach/${id}`);
+  //       const response = await axios.get(`${mihirBackend}/coach/${id}`);
   //       setProfileData(response.data);      
   //       setsubscribedcoaches(response.data.subscribers);
 
@@ -28,7 +28,7 @@ const Coachdash = () => {
   //   };
   //   const fetchDtails = async()=>{
   //     try {
-  //       const response = await axios.get(`http://${mihirBackend}/auth/details`, { withCredentials: true });
+  //       const response = await axios.get(`${mihirBackend}/auth/details`, { withCredentials: true });
   //       setuser(response.data._id)        
   //     } catch (err) {
   //       console.log(err);
@@ -44,7 +44,7 @@ const Coachdash = () => {
   useEffect(() => {
     const fetchCoachDetails = async () => {
       try {
-        const response = await axios.get(`http://${mihirBackend}/coach/${id}`);
+        const response = await axios.get(`${mihirBackend}/coach/${id}`);
         
         // Extract only the user IDs from the subscribers array
         const subscribersList = response.data.subscribers.map(subscriber => subscriber.user);
@@ -61,7 +61,7 @@ const Coachdash = () => {
 
     const fetchDtails = async () => {
       try {
-        const response = await axios.get(`http://${mihirBackend}/auth/details`, { withCredentials: true });
+        const response = await axios.get(`${mihirBackend}/auth/details`, { withCredentials: true });
         setuser(response.data._id);        
       } catch (err) {
         console.log(err);

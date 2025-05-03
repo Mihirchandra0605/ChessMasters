@@ -29,7 +29,7 @@ const Rules = () => {
 
   useEffect(() => {
     axios
-      .get(`http://${mihirBackend}/auth/details`, { withCredentials: true })
+      .get(`${mihirBackend}/auth/details`, { withCredentials: true })
       .then((resp) => {
         setDetails(resp.data);
       })

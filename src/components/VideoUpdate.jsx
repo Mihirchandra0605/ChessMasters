@@ -21,7 +21,7 @@ const VideoUpdate = () => {
     const fetchVideo = async () => {
       const token = document.cookie.split("=")[1];
       try {
-        const response = await axios.get(`http://${mihirBackend}/coach/Videodetail/${id}`, {
+        const response = await axios.get(`${mihirBackend}/coach/Videodetail/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         });
@@ -101,7 +101,7 @@ const VideoUpdate = () => {
       });
       
       const response = await axios.put(
-        `http://${mihirBackend}/coach/video/${id}`,
+        `${mihirBackend}/coach/video/${id}`,
         updateData,
         {
           headers: { 

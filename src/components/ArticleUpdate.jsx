@@ -21,7 +21,7 @@ const ArticleUpdate = () => {
     const fetchArticle = async () => {
       const token = document.cookie.split("=")[1];
       try {
-        const response = await axios.get(`http://${mihirBackend}/coach/Articledetail/${id}`, {
+        const response = await axios.get(`${mihirBackend}/coach/Articledetail/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         });
@@ -101,7 +101,7 @@ const ArticleUpdate = () => {
       });
       
       const response = await axios.put(
-        `http://${mihirBackend}/coach/article/${id}`,
+        `${mihirBackend}/coach/article/${id}`,
         updateData,
         {
           headers: { 

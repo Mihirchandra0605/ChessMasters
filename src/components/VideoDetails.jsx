@@ -10,7 +10,7 @@ const VideoDetail = () => {
   useEffect(() => {
     const fetchVideo = async () => {
       try {
-        const response = await fetch(`http://${mihirBackend}/coach/VideoDetail/${id}`, {
+        const response = await fetch(`${mihirBackend}/coach/VideoDetail/${id}`, {
           method: 'GET',
           credentials: 'include',
         });
@@ -84,7 +84,7 @@ const VideoDetail = () => {
                   fill="none" 
                   stroke="currentColor" 
                   viewBox="0 0 24 24" 
-                  xmlns="http://www.w3.org/2000/svg"
+                  xmlns="www.w3.org/2000/svg"
                 >
                   <path 
                     strokeLinecap="round" 

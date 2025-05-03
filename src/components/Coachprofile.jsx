@@ -15,7 +15,7 @@ const Coachprofile = () => {
     const fetchCoaches = async () => {
       try {
         const token = document.cookie.split("=")[1];
-        const response = await axios.get(`http://${mihirBackend}/coach/coaches`, {
+        const response = await axios.get(`${mihirBackend}/coach/coaches`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         });

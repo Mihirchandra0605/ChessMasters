@@ -79,7 +79,7 @@ const SubscriptionChart = () => {
         }
     
         const response = await axios.get(
-          `http://${mihirBackend}/coach/subscribedPlayers/${coachId}`,
+          `${mihirBackend}/coach/subscribedPlayers/${coachId}`,
           {
             headers: {
               // 'Authorization': `Bearer ${token}`, // Add Bearer prefix back

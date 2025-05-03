@@ -63,7 +63,7 @@ const AddCoachForm = () => {
     useEffect(() => {
         const fetchCoachProfile = async () => {
             try {
-                const response = await fetch(`http://${mihirBackend}/coach/details`, {
+                const response = await fetch(`${mihirBackend}/coach/details`, {
                     credentials: "include",
                     method: "GET",
                 });
@@ -119,7 +119,7 @@ const AddCoachForm = () => {
                 languages: formData.languages.split(",").map((lang) => lang.trim()),
             };
 
-            const response = await fetch(`http://${mihirBackend}/coach/completeProfile`, {
+            const response = await fetch(`${mihirBackend}/coach/completeProfile`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {
