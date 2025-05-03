@@ -9,7 +9,7 @@ const {
   PORT,
   FRONTEND_URL,
   MONGODB_URI,
-  MIHIR_BACKEND,
+  VITE_MIHIR_BACKEND,
 } = process.env;
 
 // Validate required variables
@@ -21,5 +21,5 @@ export const jwtSecretKey = JWT_SECRET_KEY;
 export const port = PORT || 3000; // default fallback
 export const frontendUrl = FRONTEND_URL || "http://localhost:3000"; // default fallback
 export const mongodbUri = MONGODB_URI || "mongodb://localhost:27017/chessmasters"; // default fallback
-export const mihirBackend = MIHIR_BACKEND
+export const mihirBackend = VITE_MIHIR_BACKEND
 //  || "http://localhost:3000"; // default fallback

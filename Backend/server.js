@@ -37,12 +37,15 @@ app.use(cookieParser());
 //   process.env.FRONTEND_URL // e.g., 'https://your-vercel-app.vercel.app'
 // ];
 
-app.use(cors({
-  origin: frontendUrl,
+const corsOptions = {
+  origin: frontendUrl, // or frontendUrl
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
 
 app.use(morgan("dev")); //morgan used here
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded payloads
