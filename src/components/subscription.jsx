@@ -4,7 +4,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useSelector} from 'react-redux';
-import { mihirBackend } from '../../config';
+import { mihirBackend } from '../../config.js';
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);

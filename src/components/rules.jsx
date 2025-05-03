@@ -18,7 +18,7 @@ import {
   Shuffle
 } from "lucide-react";
 import axios from "axios";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 
 

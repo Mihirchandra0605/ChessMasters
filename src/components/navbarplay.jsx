@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { clearUser } from '../redux/userSlice';
-import { mihirBackend } from '../../config';
+import { mihirBackend } from '../../config.js';
 
 const LogoutButton = () => {
   const navigate = useNavigate();

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { mihirBackend } from '../../config';
+import { mihirBackend } from '../../config.js';
 
 const Profile = () => {
   const { id } = useParams();

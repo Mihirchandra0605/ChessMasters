@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 const UpdateProfile = () => {
     const navigate = useNavigate();

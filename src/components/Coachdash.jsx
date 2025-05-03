@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import NavbarPlay from "./navbarplay";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 const Coachdash = () => {
   const { id } = useParams();

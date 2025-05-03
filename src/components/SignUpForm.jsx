@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 function AlertMessage({ message, duration = 3000 }) {
   const controls = useAnimation();

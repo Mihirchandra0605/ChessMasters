@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setError, clearError } from "../redux/errorSlice";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js"
 
 const AddCoachForm = () => {
     const dispatch = useDispatch();

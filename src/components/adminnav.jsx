@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { mihirBackend } from '../../config';
+import { mihirBackend } from '../../config.js';
 
 // Logout Button Component
 const LogoutButton = () => {

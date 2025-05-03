@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { mihirBackend } from '../../config';
+import { mihirBackend } from '../../config.js';
 
 const VideoDetail = () => {
   const { id } = useParams();

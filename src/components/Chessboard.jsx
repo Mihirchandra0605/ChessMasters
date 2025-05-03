@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 const FIXED_BOARD_WIDTH = 715; // Set to a comfortable size for most screens
 

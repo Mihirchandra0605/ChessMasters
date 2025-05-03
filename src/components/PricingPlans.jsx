@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 const PricingPlans = () => {
   const location = useLocation();

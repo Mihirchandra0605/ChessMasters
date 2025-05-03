@@ -4,7 +4,7 @@ import { setUser } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 
 function LoginForm({ onLoginSuccess }) {

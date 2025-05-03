@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom"; 
 import { updatePaymentDetails, submitPayment } from "../redux/paymentSlice"; 
 import axios from "axios"; 
-import { mihirBackend } from "../../config";
+import { mihirBackend } from "../../config.js";
 
 const PaymentPage = () => { 
     const dispatch = useDispatch(); 
