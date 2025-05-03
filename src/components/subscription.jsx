@@ -4,6 +4,8 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useSelector} from 'react-redux';
+import { mihirBackend } from '../../config';
+
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -77,7 +79,7 @@ const SubscriptionChart = () => {
         }
     
         const response = await axios.get(
-          `http://localhost:3000/coach/subscribedPlayers/${coachId}`,
+          `http://${mihirBackend}/coach/subscribedPlayers/${coachId}`,
           {
             headers: {
               // 'Authorization': `Bearer ${token}`, // Add Bearer prefix back

@@ -38,7 +38,7 @@ const CProfile = () => {
     const fetchCoachDetails = async () => {
       const token = document.cookie.split("=")[1];
       try {
-        const response = await axios.get('http://localhost:3000/auth/details', {
+        const response = await axios.get(`http://${mihirBackend}/auth/details`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -53,7 +53,7 @@ const CProfile = () => {
           setLoading(false);
   
           const playersResponse = await axios.get(
-            `http://localhost:3000/coach/subscribedPlayers/${coachId}`,
+            `http://${mihirBackend}/coach/subscribedPlayers/${coachId}`,
             {
               headers: { Authorization: `Bearer ${token}` },
               withCredentials: true,
@@ -97,7 +97,7 @@ const CProfile = () => {
         
         // Send update request to backend
         const response = await axios.put(
-          'http://localhost:3000/coach/update-profile',
+          `http://${mihirBackend}/coach/update-profile`,
           updateData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -169,7 +169,7 @@ const CProfile = () => {
     try {
       // Delete the coach account through our API
       const response = await axios.delete(
-        'http://localhost:3000/coach/delete-account',
+        `http://${mihirBackend}/coach/delete-account`,
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true

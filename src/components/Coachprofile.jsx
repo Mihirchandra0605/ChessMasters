@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaStar, FaMapMarkerAlt, FaLanguage, FaDollarSign } from "react-icons/fa";
+import { mihirBackend } from "../../config";
 
 const Coachprofile = () => {
   const [coachData, setCoachData] = useState([]);
@@ -14,7 +15,7 @@ const Coachprofile = () => {
     const fetchCoaches = async () => {
       try {
         const token = document.cookie.split("=")[1];
-        const response = await axios.get("http://localhost:3000/coach/coaches", {
+        const response = await axios.get(`http://${mihirBackend}/coach/coaches`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` },
         });

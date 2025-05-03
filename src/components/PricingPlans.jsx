@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { mihirBackend } from "../../config";
 
 const PricingPlans = () => {
   const location = useLocation();
@@ -16,7 +17,7 @@ const PricingPlans = () => {
     const fetchCoachDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:3000/coach/${coachId}`);
+        const response = await axios.get(`http://${mihirBackend}/coach/${coachId}`);
         // Get the coach's name from the user field that's populated
         const coach = response.data;
         setCoachName(coach.user.UserName || "Coach");

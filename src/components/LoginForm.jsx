@@ -4,6 +4,7 @@ import { setUser } from "../redux/userSlice";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { jwtDecode } from "jwt-decode";
+import { mihirBackend } from "../../config";
 
 
 function LoginForm({ onLoginSuccess }) {
@@ -28,7 +29,7 @@ function LoginForm({ onLoginSuccess }) {
     if (isSubmitting) {
       const login = async () => {
         try {
-          const response = await fetch("http://localhost:3000/auth/signin", {
+          const response = await fetch(`http://${mihirBackend}/auth/signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             credentials: "include",

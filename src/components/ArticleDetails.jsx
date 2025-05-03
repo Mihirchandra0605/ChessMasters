@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { mihirBackend } from '../../config';
 
 const ArticleDetail = () => {
   const { id } = useParams();
@@ -9,7 +10,7 @@ const ArticleDetail = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/coach/ArticleDetail/${id}`, {
+        const response = await fetch(`http://${mihirBackend}/coach/ArticleDetail/${id}`, {
           method: 'GET',
           credentials: 'include',
         });

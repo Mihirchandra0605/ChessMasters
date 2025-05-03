@@ -10,6 +10,7 @@ import morgan from 'morgan'
 import { startSubscriptionCleanupJob } from './jobs/subscriptionJobs.js';
 import ErrorHandler, { errorMiddleware } from './middlewares/errorHandler.js';
 import { port, frontendUrl, mongodbUri } from './config.js';
+import { mihirBackend }  from "../config.js";
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
 import playerRoutes from './routes/playerRoutes.js';
@@ -277,7 +278,7 @@ io.on('connection', (socket) => {
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
             
             // Save the game result with complete move history
-            axios.post('http://localhost:3000/game/saveGameResult', {
+            axios.post(`http://${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
               playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
               moves: {
@@ -298,12 +299,12 @@ io.on('connection', (socket) => {
             });
 
             // Update game stats for winner and loser
-            axios.post('http://localhost:3000/updateGameStats', {
+            axios.post(`http://${mihirBackend}/updateGameStats`, {
               userId: winnerPlayer.userId,
               result: 'win'
             }).catch(console.error);
 
-            axios.post('http://localhost:3000/updateGameStats', {
+            axios.post(`http://${mihirBackend}/updateGameStats`, {
               userId: loserPlayer.userId,
               result: 'loss'
             }).catch(console.error);
@@ -318,7 +319,7 @@ io.on('connection', (socket) => {
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
             
             // Save the game result with complete move history
-            axios.post('http://localhost:3000/game/saveGameResult', {
+            axios.post(`http://${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
               playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
               moves: {
@@ -339,7 +340,7 @@ io.on('connection', (socket) => {
 
             // Update game stats for both players with no ELO change
             gameRoom.players.forEach(player => {
-              axios.post('http://localhost:3000/updateGameStats', {
+              axios.post(`http://${mihirBackend}/updateGameStats`, {
                 userId: player.userId,
                 result: 'draw',
                 eloChange: 0
@@ -357,7 +358,7 @@ io.on('connection', (socket) => {
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
             
             // Save the game result with complete move history
-            axios.post('http://localhost:3000/game/saveGameResult', {
+            axios.post(`http://${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
               playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
               moves: {
@@ -378,7 +379,7 @@ io.on('connection', (socket) => {
 
             // Update game stats for both players with no ELO change
             gameRoom.players.forEach(player => {
-              axios.post('http://localhost:3000/updateGameStats', {
+              axios.post(`http://${mihirBackend}/updateGameStats`, {
                 userId: player.userId,
                 result: 'draw',
                 eloChange: 0
@@ -395,7 +396,7 @@ io.on('connection', (socket) => {
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
             
             // Save the game result with complete move history
-            axios.post('http://localhost:3000/game/saveGameResult', {
+            axios.post(`http://${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
               playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
               moves: {
@@ -418,7 +419,7 @@ io.on('connection', (socket) => {
 
             // Update game stats for both players with no ELO change
             gameRoom.players.forEach(player => {
-              axios.post('http://localhost:3000/updateGameStats', {
+              axios.post(`http://${mihirBackend}/updateGameStats`, {
                 userId: player.userId,
                 result: 'draw',
                 eloChange: 0
@@ -448,7 +449,7 @@ io.on('connection', (socket) => {
         console.log("Resignation - saving with move history:", {whiteMoves, blackMoves});
         
         // Save game result to database
-        axios.post('http://localhost:3000/game/saveGameResult', {
+        axios.post(`http://${mihirBackend}/game/saveGameResult`, {
           playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
           playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
           moves: {
@@ -470,12 +471,12 @@ io.on('connection', (socket) => {
         });
 
         // Update game stats for winner and loser
-        axios.post('http://localhost:3000/updateGameStats', {
+        axios.post(`http://${mihirBackend}/updateGameStats`, {
           userId: winnerPlayer.userId,
           result: 'win'
         }).catch(console.error);
 
-        axios.post('http://localhost:3000/updateGameStats', {
+        axios.post(`http://${mihirBackend}/updateGameStats`, {
           userId: loserPlayer.userId,
           result: 'loss'
         }).catch(console.error);
@@ -514,7 +515,7 @@ io.on('connection', (socket) => {
           console.log("Draw agreement - saving with move history:", {whiteMoves, blackMoves});
           
           // Save game result to database
-          axios.post('http://localhost:3000/game/saveGameResult', {
+          axios.post(`http://${mihirBackend}/game/saveGameResult`, {
             playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
             playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
             moves: {
@@ -534,13 +535,13 @@ io.on('connection', (socket) => {
           io.to(room).emit('drawAccepted', { reason: 'Agreement' });
           
           // Update game stats for both players with no ELO change
-          axios.post('http://localhost:3000/updateGameStats', {
+          axios.post(`http://${mihirBackend}/updateGameStats`, {
             userId: requester.userId,
             result: 'draw',
             eloChange: 0
           }).catch(console.error);
           
-          axios.post('http://localhost:3000/updateGameStats', {
+          axios.post(`http://${mihirBackend}/updateGameStats`, {
             userId: responder.userId,
             result: 'draw',
             eloChange: 0
@@ -585,7 +586,7 @@ io.on('connection', (socket) => {
               console.log("Disconnection - saving with move history:", {whiteMoves, blackMoves});
               
               // Save game result with complete move history for disconnection
-              axios.post('http://localhost:3000/game/saveGameResult', {
+              axios.post(`http://${mihirBackend}/game/saveGameResult`, {
                 playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
                 playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
                 moves: {
@@ -608,13 +609,13 @@ io.on('connection', (socket) => {
               });
 
               // Update game stats for remaining player as winner
-              axios.post('http://localhost:3000/updateGameStats', {
+              axios.post(`http://${mihirBackend}/updateGameStats`, {
                 userId: remainingPlayer.userId,
                 result: 'win'
               }).catch(console.error);
               
               // Update game stats for disconnected player as loser
-              axios.post('http://localhost:3000/updateGameStats', {
+              axios.post(`http://${mihirBackend}/updateGameStats`, {
                 userId: disconnectedPlayer.userId,
                 result: 'loss'
               }).catch(console.error);
@@ -658,7 +659,7 @@ io.on('connection', (socket) => {
         const gameEndReason = reason || 'Unknown';
         
         // Save game result with complete move history
-        axios.post('http://localhost:3000/game/saveGameResult', {
+        axios.post(`http://${mihirBackend}/game/saveGameResult`, {
           playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
           playerBlack: gameRoom.players.find(p => p.color === 'b').userId,
           moves: gameHistory,
@@ -678,7 +679,7 @@ io.on('connection', (socket) => {
         if (winner === 'Draw') {
           // For draws, update both players with no ELO change
           gameRoom.players.forEach(player => {
-            axios.post('http://localhost:3000/updateGameStats', {
+            axios.post(`http://${mihirBackend}/updateGameStats`, {
               userId: player.userId,
               result: 'draw',
               eloChange: 0
@@ -691,13 +692,13 @@ io.on('connection', (socket) => {
           const loserPlayer = gameRoom.players.find(p => p.color !== winnerColor);
           
           // Update winner stats
-          axios.post('http://localhost:3000/updateGameStats', {
+          axios.post(`http://${mihirBackend}/updateGameStats`, {
             userId: winnerPlayer.userId,
             result: 'win'
           }).catch(console.error);
           
           // Update loser stats
-          axios.post('http://localhost:3000/updateGameStats', {
+          axios.post(`http://${mihirBackend}/updateGameStats`, {
             userId: loserPlayer.userId,
             result: 'loss'
           }).catch(console.error);

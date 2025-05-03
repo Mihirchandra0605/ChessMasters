@@ -8,6 +8,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { toast } from 'react-toastify';
 import { Book } from 'lucide-react';
 import { motion } from "framer-motion";
+import { mihirBackend } from "../../config.js";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -105,13 +106,13 @@ function HomePage() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/auth/details", { withCredentials: true })
+      .get(`http://${mihirBackend}/auth/details`, { withCredentials: true })
       .then((resp) => {
         setDetails(resp.data);
   
         if (resp.data.Role === "player" || resp.data.Role === "coach"){
           axios
-            .get("http://localhost:3000/game/mygames", { withCredentials: true })
+            .get(`http://${mihirBackend}/game/mygames`, { withCredentials: true })
             .then((resp) => {
               setGames(Array.isArray(resp.data.games) ? resp.data.games : []);
             })
@@ -122,7 +123,7 @@ function HomePage() {
           }
           if (resp.data.Role === "player"){
           axios
-            .get("http://localhost:3000/player/subscribed-articles", { withCredentials: true })
+            .get(`http://${mihirBackend}/player/subscribed-articles`, { withCredentials: true })
             .then((resp) => {
               console.log('articles data', resp.data);
               setArticles(resp.data);
@@ -133,7 +134,7 @@ function HomePage() {
             });
   
           axios
-            .get("http://localhost:3000/player/subscribed-videos", { withCredentials: true })
+            .get(`http://${mihirBackend}/player/subscribed-videos`, { withCredentials: true })
             .then((resp) => {
               console.log('videos data', resp.data);
               setVideos(resp.data);
@@ -146,7 +147,7 @@ function HomePage() {
           setArticles([]);
           setVideos([]);
           axios
-            .get("http://localhost:3000/admin/getvideos", { withCredentials: true })
+            .get(`http://${mihirBackend}/admin/getvideos`, { withCredentials: true })
             .then((resp) => {
               setVideos(resp.data);
             })
@@ -163,7 +164,7 @@ function HomePage() {
   
   const fetchStats = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/player/${details._id}/game-stats`, { withCredentials: true });
+      const response = await axios.get(`http://${mihirBackend}/player/${details._id}/game-stats`, { withCredentials: true });
       console.log('stats data', response.data);
       setStats(response.data);
     } catch (error) {
@@ -191,7 +192,7 @@ function HomePage() {
   const recordVideoView = async (videoId) => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/video/${videoId}/view`,
+        `http://${mihirBackend}/video/${videoId}/view`,
         {},
         { withCredentials: true }
       );
@@ -209,7 +210,7 @@ function HomePage() {
   const recordArticleView = async (articleId) => {
     try {
       const response = await axios.post(
-        `http://localhost:3000/article/${articleId}/view`,
+        `http://${mihirBackend}/article/${articleId}/view`,
         {},
         { withCredentials: true }
       );

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom"; 
 import { updatePaymentDetails, submitPayment } from "../redux/paymentSlice"; 
 import axios from "axios"; 
+import { mihirBackend } from "../../config";
 
 const PaymentPage = () => { 
     const dispatch = useDispatch(); 
@@ -21,7 +22,7 @@ const PaymentPage = () => {
         const fetchCoachDetails = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`http://localhost:3000/coach/${coachId}`);
+                const response = await axios.get(`http://${mihirBackend}/coach/${coachId}`);
                 // Get the coach's name from the user field that's populated
                 const coach = response.data;
                 setCoachName(coach.user.UserName || "Coach");
@@ -111,7 +112,7 @@ const PaymentPage = () => {
 
                 // First, process the subscription
                 const response = await axios.post( 
-                    "http://localhost:3000/player/subscribe", {
+                    `http://${mihirBackend}/player/subscribe`, {
                         coachId,
                         plan
                     }, {
@@ -126,7 +127,7 @@ const PaymentPage = () => {
 
                 // Now update admin revenue - add a fixed amount of $4.95 per successful payment
                 await axios.post(
-                    "http://localhost:3000/admin/update-revenue",
+                    `http://${mihirBackend}/admin/update-revenue`,
                     { amount: 4.95 }, // Admin gets $4.95 per subscription
                     {
                         headers: {

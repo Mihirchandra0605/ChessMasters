@@ -18,6 +18,7 @@ import {
   Shuffle
 } from "lucide-react";
 import axios from "axios";
+import { mihirBackend } from "../../config";
 
 
 
@@ -28,7 +29,7 @@ const Rules = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:3000/auth/details", { withCredentials: true })
+      .get(`http://${mihirBackend}/auth/details`, { withCredentials: true })
       .then((resp) => {
         setDetails(resp.data);
       })

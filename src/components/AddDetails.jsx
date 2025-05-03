@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { setError, clearError } from "../redux/errorSlice";
+import { mihirBackend } from "../../config";
 
 const AddCoachForm = () => {
     const dispatch = useDispatch();
@@ -62,7 +63,7 @@ const AddCoachForm = () => {
     useEffect(() => {
         const fetchCoachProfile = async () => {
             try {
-                const response = await fetch(`http://localhost:3000/coach/details`, {
+                const response = await fetch(`http://${mihirBackend}/coach/details`, {
                     credentials: "include",
                     method: "GET",
                 });
@@ -118,7 +119,7 @@ const AddCoachForm = () => {
                 languages: formData.languages.split(",").map((lang) => lang.trim()),
             };
 
-            const response = await fetch(`http://localhost:3000/coach/completeProfile`, {
+            const response = await fetch(`http://${mihirBackend}/coach/completeProfile`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {

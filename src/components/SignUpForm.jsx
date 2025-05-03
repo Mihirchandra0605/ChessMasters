@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
+import { mihirBackend } from "../../config";
 
 function AlertMessage({ message, duration = 3000 }) {
   const controls = useAnimation();
@@ -71,7 +72,7 @@ function SignupForm({ onSignupSuccess }) {
       ...(role === "coach" && { Fide_id: fideId }),
     };
 
-    fetch("http://localhost:3000/auth/register", {
+    fetch(`http://${mihirBackend}/auth/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

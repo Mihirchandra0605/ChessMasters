@@ -5,6 +5,7 @@ import SubscriptionChart from './subscription.jsx';
 import Viewchart from './views.jsx';
 import EarningsChart from './earnings.jsx';
 import axios from "axios";
+import { mihirBackend } from '../../config.js';
 
 const CoachDashboard = () => {
   const { coachId } = useParams();
@@ -30,23 +31,23 @@ const CoachDashboard = () => {
       try {
         // Fetch all articles and videos first
         const [articlesResponse, videosResponse, playersResponse, revenueResponse, profileResponse] = await Promise.all([
-          axios.get('http://localhost:3000/admin/articles', {
+          axios.get(`http://${mihirBackend}/admin/articles`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get('http://localhost:3000/admin/videos', {
+          axios.get(`http://${mihirBackend}/admin/videos`,{
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://localhost:3000/coach/subscribedPlayers/${coachId}`, {
+          axios.get(`http://${mihirBackend}/coach/subscribedPlayers/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://localhost:3000/coach/revenue/${coachId}`, {
+          axios.get(`http://${mihirBackend}/coach/revenue/${coachId}`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
-          axios.get(`http://localhost:3000/coach/details`, {
+          axios.get(`http://${mihirBackend}/coach/details`, {
             headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           })
@@ -117,8 +118,8 @@ const CoachDashboard = () => {
       
       // Make sure endpoint is correct
       const endpoint = type === 'article' 
-        ? `http://localhost:3000/coach/article/${itemId}` 
-        : `http://localhost:3000/coach/video/${itemId}`;
+        ? `http://${mihirBackend}/coach/article/${itemId}` 
+        : `http://${mihirBackend}/coach/video/${itemId}`;
       
       const response = await axios.delete(
         endpoint,

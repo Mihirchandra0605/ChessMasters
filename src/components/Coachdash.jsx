@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import NavbarPlay from "./navbarplay";
 import axios from "axios";
 import { motion } from "framer-motion";
+import { mihirBackend } from "../../config";
 
 const Coachdash = () => {
   const { id } = useParams();
@@ -15,7 +16,7 @@ const Coachdash = () => {
   // useEffect(() => {
   //   const fetchCoachDetails = async () => {
   //     try {
-  //       const response = await axios.get(`http://localhost:3000/coach/${id}`);
+  //       const response = await axios.get(`http://${mihirBackend}/coach/${id}`);
   //       setProfileData(response.data);      
   //       setsubscribedcoaches(response.data.subscribers);
 
@@ -27,7 +28,7 @@ const Coachdash = () => {
   //   };
   //   const fetchDtails = async()=>{
   //     try {
-  //       const response = await axios.get(`http://localhost:3000/auth/details`, { withCredentials: true });
+  //       const response = await axios.get(`http://${mihirBackend}/auth/details`, { withCredentials: true });
   //       setuser(response.data._id)        
   //     } catch (err) {
   //       console.log(err);
@@ -43,7 +44,7 @@ const Coachdash = () => {
   useEffect(() => {
     const fetchCoachDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/coach/${id}`);
+        const response = await axios.get(`http://${mihirBackend}/coach/${id}`);
         
         // Extract only the user IDs from the subscribers array
         const subscribersList = response.data.subscribers.map(subscriber => subscriber.user);
@@ -60,7 +61,7 @@ const Coachdash = () => {
 
     const fetchDtails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/auth/details`, { withCredentials: true });
+        const response = await axios.get(`http://${mihirBackend}/auth/details`, { withCredentials: true });
         setuser(response.data._id);        
       } catch (err) {
         console.log(err);

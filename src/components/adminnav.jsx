@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { mihirBackend } from '../../config';
 
 // Logout Button Component
 const LogoutButton = () => {
@@ -7,7 +8,7 @@ const LogoutButton = () => {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('http://localhost:3000/auth/logout', {
+      const response = await fetch(`http://${mihirBackend}/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });

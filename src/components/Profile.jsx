@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { mihirBackend } from '../../config';
 
 const Profile = () => {
   const { id } = useParams();
@@ -36,7 +37,7 @@ const Profile = () => {
     const fetchPlayerDetails = async () => {
       const token = document.cookie.split("=")[1];
       try {
-        const response = await axios.get('http://localhost:3000/auth/details', {
+        const response = await axios.get(`http://${mihirBackend}/auth/details`, {
           withCredentials: true,
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -51,7 +52,7 @@ const Profile = () => {
           setLoading(false);
 
           const coachesResponse = await axios.get(
-            `http://localhost:3000/player/${id}/subscribedCoaches`,
+            `http://${mihirBackend}/player/${id}/subscribedCoaches`,
             {
               headers: { Authorization: `Bearer ${token}` },
               withCredentials: true,
@@ -95,7 +96,7 @@ const Profile = () => {
         
         // Send update request to backend
         const response = await axios.put(
-          'http://localhost:3000/player/update-profile',
+          `http://${mihirBackend}/player/update-profile`,
           updateData,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -149,7 +150,7 @@ const Profile = () => {
 
     try {
       const response = await axios.post(
-        'http://localhost:3000/player/unsubscribe',
+        `http://${mihirBackend}/player/unsubscribe`,
         { coachId: coachUserId },  // Send the user ID of the coach
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -222,7 +223,7 @@ const Profile = () => {
       
       // Then delete the account
       const response = await axios.delete(
-        'http://localhost:3000/player/delete-account',
+        `http://${mihirBackend}/player/delete-account`,
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true

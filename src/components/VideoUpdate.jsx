@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { mihirBackend } from '../../config';
 
 const VideoUpdate = () => {
   const { id } = useParams();
@@ -20,7 +21,7 @@ const VideoUpdate = () => {
     const fetchVideo = async () => {
       const token = document.cookie.split("=")[1];
       try {
-        const response = await axios.get(`http://localhost:3000/coach/Videodetail/${id}`, {
+        const response = await axios.get(`http://${mihirBackend}/coach/Videodetail/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true
         });
@@ -100,7 +101,7 @@ const VideoUpdate = () => {
       });
       
       const response = await axios.put(
-        `http://localhost:3000/coach/video/${id}`,
+        `http://${mihirBackend}/coach/video/${id}`,
         updateData,
         {
           headers: { 

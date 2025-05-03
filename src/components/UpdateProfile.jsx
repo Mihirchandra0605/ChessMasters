@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { mihirBackend } from "../../config";
 
 const UpdateProfile = () => {
     const navigate = useNavigate();
@@ -82,7 +83,7 @@ const UpdateProfile = () => {
                 
                 console.log("Using token:", token);
                 
-                const response = await fetch(`http://localhost:3000/coach/details`, {
+                const response = await fetch(`http://${mihirBackend}/coach/details`, {
                     credentials: "include",
                     method: "GET",
                     headers: {
@@ -199,7 +200,7 @@ const UpdateProfile = () => {
             console.log("Updating profile with data:", updatedFields);
             
             // Use the completeProfile endpoint instead of updateProfile
-            const response = await fetch(`http://localhost:3000/coach/completeProfile`, {
+            const response = await fetch(`http://${mihirBackend}/coach/completeProfile`, {
                 credentials: "include",
                 method: "PUT",
                 headers: {

@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import io from "socket.io-client";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { mihirBackend } from "../../config";
 
 const FIXED_BOARD_WIDTH = 715; // Set to a comfortable size for most screens
 
@@ -75,7 +76,7 @@ function ChessBoard() {
       return;
     }
 
-    socket.current = io("http://localhost:3000", {
+    socket.current = io(`http://${mihirBackend}`, {
       withCredentials: true,
       query: { userId }, // Send userId through query using Redux
     });
@@ -347,7 +348,7 @@ function ChessBoard() {
       console.log("Saving game result with move history and reason:", gameResult);
 
       axios
-        .post("http://localhost:3000/game/saveGameResult", gameResult)
+        .post(`http://${mihirBackend}/game/saveGameResult`, gameResult)
         .then(() => console.log("Game result saved successfully"))
         .catch((err) => console.error("Error saving game result:", err));
     }
@@ -582,7 +583,7 @@ function ChessBoard() {
         
         // Use a synchronous request to ensure it completes before page unload
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'http://localhost:3000/game/saveGameResult', false); // false makes it synchronous
+        xhr.open('POST', `http://${mihirBackend}/game/saveGameResult`, false); // false makes it synchronous
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify({
           playerWhite: players.white.userId,

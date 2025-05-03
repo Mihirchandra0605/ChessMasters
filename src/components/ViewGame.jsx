@@ -6,6 +6,7 @@ import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "./Navbar.jsx";
 import NavbarPlay from "./navbarplay.jsx";
+import { mihirBackend } from "../../config.js";
 
 const FIXED_BOARD_WIDTH = 650;
 
@@ -36,7 +37,7 @@ function ViewGame() {
   useEffect(() => {
     async function fetchGameData() {
       try {
-        const response = await axios.get(`http://localhost:3000/game/${gameId}`, {
+        const response = await axios.get(`http://${mihirBackend}/game/${gameId}`, {
           withCredentials: true,
         });
         setGameData(response.data.game);
@@ -60,7 +61,7 @@ function ViewGame() {
         if (whitePlayerId) {
           try {
             // Using the getPlayerGameStats endpoint which includes ELO
-            const whitePlayerStatsResponse = await axios.get(`http://localhost:3000/player/${whitePlayerId}/game-stats`, {
+            const whitePlayerStatsResponse = await axios.get(`http://${mihirBackend}/player/${whitePlayerId}/game-stats`, {
               withCredentials: true,
             });
             setPlayerElos(prev => ({
@@ -75,7 +76,7 @@ function ViewGame() {
         if (blackPlayerId) {
           try {
             // Using the getPlayerGameStats endpoint which includes ELO
-            const blackPlayerStatsResponse = await axios.get(`http://localhost:3000/player/${blackPlayerId}/game-stats`, {
+            const blackPlayerStatsResponse = await axios.get(`http://${mihirBackend}/player/${blackPlayerId}/game-stats`, {
               withCredentials: true,
             });
             setPlayerElos(prev => ({
@@ -88,7 +89,7 @@ function ViewGame() {
         }
         
         // Get user role for navbar
-        const userDetails = await axios.get("http://localhost:3000/auth/details", { 
+        const userDetails = await axios.get(`http://${mihirBackend}/auth/details`, { 
           withCredentials: true 
         });
         setIsPlayer(userDetails.data.Role === "player");

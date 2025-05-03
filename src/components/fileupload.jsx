@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 import { setError, clearError } from "../redux/errorSlice";
+import { mihirBackend } from '../../config';
 
 const FileUpload = () => {
   const [selectedFiles, setSelectedFiles] = useState(null);
@@ -25,8 +26,8 @@ const FileUpload = () => {
 
       try {
         const endpoint = fileType === 'article'
-          ? 'http://localhost:3000/coach/addArticle'
-          : 'http://localhost:3000/coach/addVideo';
+          ? `http://${mihirBackend}/coach/addArticle`
+          : `http://${mihirBackend}/coach/addVideo`;
 
         const response = await fetch(endpoint, {
           method: 'POST',
