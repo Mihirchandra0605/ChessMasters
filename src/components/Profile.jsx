@@ -32,25 +32,10 @@ const Profile = () => {
 
   // Helper function to properly extract token from cookies
   const getAuthToken = () => {
-    // First try to get the token from cookies
-    const cookies = document.cookie.split(';');
-    let token = null;
-    
-    // Look for the authorization cookie
-    for (const cookie of cookies) {
-      const [name, value] = cookie.trim().split('=');
-      if (name === 'authorization') {
-        token = value;
-        break;
-      }
-    }
-    
-    // If token is not found in cookies, try to get it from localStorage or sessionStorage
-    if (!token) {
-      token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    }
-    
-    return token;
+    // Try to get the token from cookies using a more robust approach
+    const cookieString = document.cookie;
+    const match = cookieString.match(/(^|;)\s*authorization=([^;]+)/);
+    return match ? match[2] : null;
   };
 
   useEffect(() => {
@@ -58,6 +43,7 @@ const Profile = () => {
 
     const fetchPlayerDetails = async () => {
       const token = getAuthToken();
+      console.log('Token:', token); // Debugging Log
       
       if (!token) {
         console.error('No authentication token found');
