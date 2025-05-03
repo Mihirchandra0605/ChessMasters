@@ -63,12 +63,12 @@ export const signIn = async (req, res) => {
       user = await UserModel.findOne({ UserName: username });
 
       if (!user) {
-        return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid username" });
       }
 
       const isMatch = await bcrypt.compare(password, user.Password);
       if (!isMatch) {
-        return res.status(401).json({ message: "Invalid username or password" });
+        return res.status(401).json({ message: "Invalid password" });
       }
     }
 
