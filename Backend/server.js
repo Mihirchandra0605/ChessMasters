@@ -9,7 +9,7 @@ import axios from 'axios';
 import morgan from 'morgan'
 import { startSubscriptionCleanupJob } from './jobs/subscriptionJobs.js';
 import ErrorHandler, { errorMiddleware } from './middlewares/errorHandler.js';
-
+import { port, frontendUrl, mongodbUri } from './config.js';
 // Import routes
 import authRoutes from "./routes/authRoutes.js";
 import playerRoutes from './routes/playerRoutes.js';
@@ -22,14 +22,22 @@ import articleRoutes from "./routes/articleRoutes.js";
 // Import models
 import UserModel from "./models/userModel.js";
 
+import { connectRedis } from './redis.js';
+
 const app = express();
-const PORT = 3000;
+// const PORT = process.env.PORT || 3000;
+
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+// const allowedOrigins = [
+//   'http://localhost:5173',
+//   process.env.FRONTEND_URL // e.g., 'https://your-vercel-app.vercel.app'
+// ];
+
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
+  origin: frontendUrl,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -46,6 +54,12 @@ app.use("/game", gameRoutes);
 app.use("/admin", adminRoutes);
 app.use("/video", videoRoutes);
 app.use("/article", articleRoutes);
+
+connectRedis().then(() => {
+  console.log('Connected to Redis successfully');
+}).catch((err) => {
+  console.error('Redis connection error', err);
+});
 
 // Game stats update endpoint
 app.post("/updateGameStats", async (req, res, next) => {
@@ -118,7 +132,7 @@ const server = http.createServer(app);
 // Initialize Socket.IO
 const io = new Server(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'frontendUrl',
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -697,20 +711,22 @@ io.on('connection', (socket) => {
   });
 });
 
-// Database connection
-mongoose.connect("mongodb://0.0.0.0:27017/chessApp", {
+// const MONGODB_URI = process.env.MONGODB_URI || "mongodb://0.0.0.0:27017/chessApp";
+
+mongoose.connect(mongodbUri, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-}).then(() => {
-  console.log("Connected to MongoDB");
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log("Connected to MongoDB database");
+  console.log(`Using database: ${mongoose.connection.name}`);
+})
+.catch(error => {
+  console.error("MongoDB connection error:", error);
+  process.exit(1); // Exit with failure if DB connection fails
+});
 
-  // Start subscription cleanup job
-  startSubscriptionCleanupJob();
-
-  // Start server only after successful database connection
-  server.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-  });
-}).catch((error) => {
-  console.error("Error connecting to MongoDB:", error);
+server.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+  console.log(`Frontend URL: ${frontendUrl}`);
 });

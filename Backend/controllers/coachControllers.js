@@ -12,6 +12,8 @@ import Video from "../models/videoModel.js";
 import Article from "../models/articleModel.js";
 import ErrorHandler, { catchAsync } from "../middlewares/errorHandler.js";
 
+import { client } from "../redis.js"; // Import the Redis client
+
 export const getCoachDetails = async (req, res) => {
   try {
     // Check token from cookies or headers
@@ -57,13 +59,27 @@ export const getCoachDetails = async (req, res) => {
 
 export const getAllCoaches = async (req, res) => {
   try {
+    const cacheKey = "allCoaches";
+    const cachedCoaches = await client.get(cacheKey);
+
+    if (cachedCoaches) {
+      console.log("Serving from Redis Cache ");
+      return res.status(200).json(JSON.parse(cachedCoaches));
+    }
+
     const coaches = await CoachDetails.find()
       .populate("user", "UserName")
       .select("-password");
+
     if (!coaches.length)
       return res.status(404).json({ message: "No coaches found" });
 
+    // Save to Redis before responding
+    await client.set(cacheKey, JSON.stringify(coaches), { EX: 3600 }); // expires in 1 hour
+
+    console.log("Serving from MongoDB ");
     res.status(200).json(coaches);
+    
   } catch (error) {
     console.error("Error fetching all coach details:", error);
     res.status(500).json({ message: "Internal server error" });
