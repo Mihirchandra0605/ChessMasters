@@ -1,2 +1,2 @@
-export const mihirBackend = import.meta.env.MIHIR_BACKEND 
+export const mihirBackend = import.meta.env.VITE_MIHIR_BACKEND 
 // || "http://localhost:3000";
