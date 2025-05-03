@@ -5,7 +5,7 @@ import CoachDetails from '../models/CoachModel.js';
 import ArticleModel from '../models/articleModel.js';
 import VideoModel from '../models/videoModel.js';
 import GameModel from '../models/gameModel.js';
-import AdminModel from '../models/AdminModel.js';
+import AdminModel from '../models/adminModel.js';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { jwtSecretKey } from '../config.js';
