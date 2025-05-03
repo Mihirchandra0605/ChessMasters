@@ -28,7 +28,7 @@ export const registerUser = async (req, res) => {
     const user = new UserModel({
       UserName,
       Email,
-      Password,
+      Password: hashedPassword,
       Role,
     });
 
@@ -56,23 +56,11 @@ export const signIn = async (req, res) => {
     let user;
     let isAdmin = false;
 
-    if (username === "admin"  && password === "secret" ) {
-      // Check admin credentials (no bcrypt comparison, since password is plaintext in the DB)
-      // user = await AdminModel.findOne({ UserName: username });
-      // if (!user) {
-      //   console.log("user not found")
-      //   return res.status(401).json({ message: "Invalid admin credentials" });
-      // }
-
-      // if (password !== user.Password) {
-      //   console.log("incorrect admin password");
-      //   return res.status(401).json({ message: "Invalid admin credentials" });
-      // }
-
-      // Admin is authenticated
+    if (username === "admin" && password === "secret") {
+      // Admin authentication logic
       isAdmin = true;
     } else {
-      // Check regular user credentials (still use bcrypt for user)
+      // Regular user authentication logic
       user = await UserModel.findOne({ UserName: username });
       if (!user) {
         return res.status(401).json({ message: "Invalid user credentials" });
@@ -84,9 +72,19 @@ export const signIn = async (req, res) => {
       }
     }
 
+    // Ensure user exists before generating token
+    if (!user && !isAdmin) {
+      return res.status(401).json({ message: "Invalid user credentials" });
+    }
+
     // Generate token based on user or admin role
     const token = generateToken(user ? user._id : "admin", isAdmin ? "admin" : user?.Role);
-    res.cookie("authorization", token);
+    
+    // Set JWT token in cookies securely
+    res.cookie("authorization", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Ensure this is set in production
+    });
 
     return res.status(200).json({
       message: "Signed in successfully",
@@ -99,9 +97,9 @@ export const signIn = async (req, res) => {
   }
 };
 
-
 export const logout = (req, res) => {
-  res.clearCookie("authorization") || req.cookie.token;
+  // Clear authorization cookie
+  res.clearCookie("authorization");
   return res.status(200).json({ message: "Logged out successfully" });
 };
 
@@ -122,10 +120,18 @@ export const editDetails = async (req, res) => {
 
 export const getUserDetails = async (req, res) => {
   try {
-    const token = req.cookies.authorization || req.headers.token;
+    const token = req.cookies.authorization || req.headers['authorization']?.split(' ')[1];
     if (!token) return res.status(403).json({ message: "No token provided." });
 
-    const decoded = jwt.verify(token, jwtSecretKey);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, jwtSecretKey);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        return res.status(401).json({ message: "Token expired" });
+      }
+      return res.status(500).json({ message: "Invalid token" });
+    }
 
     if (decoded.role === "admin") {
       return res.status(200).json({ message: "Admin access granted." });
