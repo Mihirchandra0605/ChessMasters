@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios'; // For API requests
-
+import { mihirBackend } from '../../config.js';
 
 // const sampleData = [
 //   { name: 'Game 1', elo: 400 },
