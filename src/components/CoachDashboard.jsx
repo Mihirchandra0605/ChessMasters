@@ -32,23 +32,23 @@ const CoachDashboard = () => {
         // Fetch all articles and videos first
         const [articlesResponse, videosResponse, playersResponse, revenueResponse, profileResponse] = await Promise.all([
           axios.get(`${mihirBackend}/admin/articles`, {
-            headers: { Authorization: `Bearer ${token}` },
+            // headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
           axios.get(`${mihirBackend}/admin/videos`,{
-            headers: { Authorization: `Bearer ${token}` },
+            // headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
           axios.get(`${mihirBackend}/coach/subscribedPlayers/${coachId}`, {
-            headers: { Authorization: `Bearer ${token}` },
+            // headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
           axios.get(`${mihirBackend}/coach/revenue/${coachId}`, {
-            headers: { Authorization: `Bearer ${token}` },
+            // headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           }),
           axios.get(`${mihirBackend}/coach/details`, {
-            headers: { Authorization: `Bearer ${token}` },
+            // headers: { Authorization: `Bearer ${token}` },
             withCredentials: true,
           })
         ]);
