@@ -27,6 +27,30 @@ import UserModel from "./models/userModel.js";
 
 const app = express();
 // const PORT = process.env.PORT || 3000;
+//================== For CORS =============
+
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://chess-masters.vercel.app'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
+
+//===========================================
 
 
 // Middleware
@@ -37,14 +61,6 @@ app.use(cookieParser());
 //   process.env.FRONTEND_URL // e.g., 'https://your-vercel-app.vercel.app'
 // ];
 
-const corsOptions = {
-  origin: frontendUrl, // or frontendUrl
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors(corsOptions));
 
 
 app.use(morgan("dev")); //morgan used here
