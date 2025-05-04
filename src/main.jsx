@@ -30,46 +30,46 @@ import ViewGame from "./components/ViewGame.jsx";
 import Rules from "./components/rules.jsx";
 
 // Set up axios defaults
-axios.defaults.withCredentials = true;
+// axios.defaults.withCredentials = true;
 
 // Intercept requests to add Authorization header
-axios.interceptors.request.use(
-    (config) => {
-        const token = document.cookie
-            .split('; ')
-            .find(row => row.startsWith('authorization='))
-            ?.split('=')[1];
+// axios.interceptors.request.use(
+//     (config) => {
+//         const token = document.cookie
+//             .split('; ')
+//             .find(row => row.startsWith('authorization='))
+//             ?.split('=')[1];
 
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        console.error('Request error:', error); // Log request error for debugging
-        return Promise.reject(error);
-    }
-);
+//         if (token) {
+//             config.headers.Authorization = `Bearer ${token}`;
+//         }
+//         return config;
+//     },
+//     (error) => {
+//         console.error('Request error:', error); // Log request error for debugging
+//         return Promise.reject(error);
+//     }
+// );
 
 // Intercept responses for error handling
-axios.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response) {
-            if (error.response.status === 401 || error.response.status === 403) {
-                localStorage.removeItem('userId');
-                window.location.href = '/login';
-            } else {
-                alert(`Error: ${error.response.status} - ${error.response.statusText}`);
-            }
-        } else if (error.request) {
-            alert('Network error, please check your connection.');
-        } else {
-            alert(`Error: ${error.message}`);
-        }
-        return Promise.reject(error);
-    }
-);
+// axios.interceptors.response.use(
+//     (response) => response,
+//     (error) => {
+//         if (error.response) {
+//             if (error.response.status === 401 || error.response.status === 403) {
+//                 localStorage.removeItem('userId');
+//                 window.location.href = '/login';
+//             } else {
+//                 alert(`Error: ${error.response.status} - ${error.response.statusText}`);
+//             }
+//         } else if (error.request) {
+//             alert('Network error, please check your connection.');
+//         } else {
+//             alert(`Error: ${error.message}`);
+//         }
+//         return Promise.reject(error);
+//     }
+// );
 
 function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
