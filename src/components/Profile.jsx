@@ -42,14 +42,7 @@ const Profile = () => {
     let isMounted = true;
 
     const fetchPlayerDetails = async () => {
-      // const token = getAuthToken();
-      // console.log('Token:', token); // Debugging Log
-      
-      // if (!token) {
-      //   console.error('No authentication token found');
-      //   setLoading(false);
-      //   return;
-      // }
+
       
       try {
         // Request user details
