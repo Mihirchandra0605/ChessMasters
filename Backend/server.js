@@ -23,7 +23,7 @@ import articleRoutes from "./routes/articleRoutes.js";
 // Import models
 import UserModel from "./models/userModel.js";
 
-import { connectRedis } from './redis.js';
+// import { connectRedis } from './redis.js';
 
 const app = express();
 // const PORT = process.env.PORT || 3000;
@@ -50,6 +50,10 @@ app.use(cors(corsOptions));
 app.use(morgan("dev")); //morgan used here
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded payloads
 
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Welcome to the Chess App API" });
+},);
+
 // Routes
 app.use("/auth", authRoutes);
 app.use("/player", playerRoutes);
@@ -59,11 +63,11 @@ app.use("/admin", adminRoutes);
 app.use("/video", videoRoutes);
 app.use("/article", articleRoutes);
 
-connectRedis().then(() => {
-  console.log('Connected to Redis successfully');
-}).catch((err) => {
-  console.error('Redis connection error', err);
-});
+// connectRedis().then(() => {
+//   console.log('Connected to Redis successfully');
+// }).catch((err) => {
+//   console.error('Redis connection error', err);
+// });
 
 // Game stats update endpoint
 app.post("/updateGameStats", async (req, res, next) => {

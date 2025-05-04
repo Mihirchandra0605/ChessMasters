@@ -12,7 +12,7 @@ import Video from "../models/videoModel.js";
 import Article from "../models/articleModel.js";
 import ErrorHandler, { catchAsync } from "../middlewares/errorHandler.js";
 
-import { client } from "../redis.js"; // Import the Redis client
+
 
 export const getCoachDetails = async (req, res) => {
   try {
@@ -59,13 +59,6 @@ export const getCoachDetails = async (req, res) => {
 
 export const getAllCoaches = async (req, res) => {
   try {
-    const cacheKey = "allCoaches";
-    const cachedCoaches = await client.get(cacheKey);
-
-    if (cachedCoaches) {
-      console.log("Serving from Redis Cache ");
-      return res.status(200).json(JSON.parse(cachedCoaches));
-    }
 
     const coaches = await CoachDetails.find()
       .populate("user", "UserName")
@@ -74,9 +67,7 @@ export const getAllCoaches = async (req, res) => {
     if (!coaches.length)
       return res.status(404).json({ message: "No coaches found" });
 
-    // Save to Redis before responding
-    await client.set(cacheKey, JSON.stringify(coaches), { EX: 3600 }); // expires in 1 hour
-
+   
     console.log("Serving from MongoDB ");
     res.status(200).json(coaches);
     
