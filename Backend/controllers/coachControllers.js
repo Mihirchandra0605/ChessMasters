@@ -28,9 +28,9 @@ export const getCoachDetails = async (req, res) => {
     let decoded;
     try {
       // Ensure the token format is "Bearer <token>"
-      // const actualToken = token.startsWith("Bearer ")
-      //   ? token.split(" ")[1]
-      //   : token;
+      const actualToken = token.startsWith("Bearer ")
+        ? token.split(" ")[1]
+        : token;
       decoded = jwt.verify(actualToken, process.env.JWT_SECRET_KEY);
       console.log("Decoded Token:", decoded); // Debugging statement
     } catch (err) {
