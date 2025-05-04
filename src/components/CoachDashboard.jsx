@@ -27,7 +27,7 @@ const CoachDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const token = document.cookie.split("=")[1];
+      // const token = document.cookie.split("=")[1];
       try {
         // Fetch all articles and videos first
         const [articlesResponse, videosResponse, playersResponse, revenueResponse, profileResponse] = await Promise.all([

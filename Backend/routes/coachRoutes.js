@@ -32,7 +32,7 @@ const router = Router();
 
 // Specific routes first
 router.get("/coaches", getAllCoaches);
-router.get("/details", authMiddleware, getCoachDetails);
+router.get("/details", isCoach, getCoachDetails);
 router.get("/videos", authMiddleware, getCoachVideos);
 router.get("/articles", authMiddleware, getCoachArticles);
 router.get("/content/:coachId", getCoachContent);

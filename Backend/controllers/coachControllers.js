@@ -16,36 +16,13 @@ import { client } from "../redis.js"; // Import the Redis client
 
 export const getCoachDetails = async (req, res) => {
   try {
-    // Check token from cookies or headers
-    const token = req.cookies.authorization || req.headers.authorization;
-    console.log("Token received from client:", token); // Debugging statement
+    const userId = req.userId; // already set by authMiddleware
+    console.log("User ID from middleware:", userId); // Debugging statement
 
-    if (!token) {
-      console.error("No token provided."); // Debugging statement
-      return res.status(403).json({ message: "No token provided." });
-    }
-
-    let decoded;
-    try {
-      // Ensure the token format is "Bearer <token>"
-      // const actualToken = token.startsWith("Bearer ")
-      //   ? token.split(" ")[1]
-      //   : token;
-      decoded = jwt.verify(actualToken, process.env.JWT_SECRET_KEY);
-      console.log("Decoded Token:", decoded); // Debugging statement
-    } catch (err) {
-      console.error("Token verification failed:", err); // Debugging statement
-      return res.status(403).json({ message: "Invalid token." });
-    }
-
-    console.log("User ID from token:", decoded.userId); // Debugging statement
-
-    const coachDetails = await CoachDetails.findOne({
-      user: decoded.userId,
-    }).select("-password");
+    const coachDetails = await CoachDetails.findOne({ user: userId }).select("-password");
 
     if (!coachDetails) {
-      console.error("No coach found with user ID:", decoded.userId); // Debugging statement
+      console.error("No coach found with user ID:", userId); // Debugging statement
       return res.status(404).json({ message: "Coach details not found" });
     }
 
@@ -56,6 +33,7 @@ export const getCoachDetails = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 export const getAllCoaches = async (req, res) => {
   try {
