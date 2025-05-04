@@ -32,23 +32,23 @@ const router = Router();
 
 // Specific routes first
 router.get("/coaches", getAllCoaches);
-router.get("/details", authMiddleware, getCoachDetails);
-router.get("/videos", authMiddleware, getCoachVideos);
-router.get("/articles", authMiddleware, getCoachArticles);
+router.get("/details", getCoachDetails);
+router.get("/videos", getCoachVideos);
+router.get("/articles", getCoachArticles);
 router.get("/content/:coachId", getCoachContent);
-router.get("/subscribedPlayers/:coachId", authMiddleware, isCoach, getSubscribedPlayers);
-router.post("/addArticle", authMiddleware, isCoach, addArticle);
-router.post("/addVideo", authMiddleware, isCoach, addVideo);
-router.put("/completeProfile", authMiddleware, isCoach, completeProfile);
+router.get("/subscribedPlayers/:coachId", isCoach, getSubscribedPlayers);
+router.post("/addArticle", isCoach, addArticle);
+router.post("/addVideo", isCoach, addVideo);
+router.put("/completeProfile", isCoach, completeProfile);
 router.get("/Articledetail/:id", getArticleById);
 router.get("/Videodetail/:id", getVideoById);
-router.get("/revenue/:coachId", authMiddleware, isCoach, getCoachRevenue);
-router.put("/update-profile", authMiddleware, isCoach, updateCoachProfile);
-router.delete("/delete-account", authMiddleware, isCoach, deleteCoachAccount);
-router.put("/article/:id", authMiddleware, isCoach, updateArticle);
-router.put("/video/:id", authMiddleware, isCoach, updateVideo);
-router.delete("/article/:id", authMiddleware, isCoach, deleteArticle);
-router.delete("/video/:id", authMiddleware, isCoach, deleteVideo);
+router.get("/revenue/:coachId", isCoach, getCoachRevenue);
+router.put("/update-profile", isCoach, updateCoachProfile);
+router.delete("/delete-account", isCoach, deleteCoachAccount);
+router.put("/article/:id", isCoach, updateArticle);
+router.put("/video/:id", isCoach, updateVideo);
+router.delete("/article/:id", isCoach, deleteArticle);
+router.delete("/video/:id", isCoach, deleteVideo);
 
 // Generic ID route last
 router.get("/:id", getCoachById);
