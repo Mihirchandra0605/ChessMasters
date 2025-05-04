@@ -27,13 +27,24 @@ import UserModel from "./models/userModel.js";
 
 const app = express();
 // const PORT = process.env.PORT || 3000;
-//================== For CORS =============
+
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
+
+
+//------------------------------------------------------
+// Origins allowed for both Socket and Backend
 
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
   'https://chess-masters.vercel.app'
 ];
+
+
+//================== For CORS =============
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -51,17 +62,6 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 //===========================================
-
-
-// Middleware
-app.use(express.json());
-app.use(cookieParser());
-// const allowedOrigins = [
-//   'localhost:5173',
-//   process.env.FRONTEND_URL // e.g., 'https://your-vercel-app.vercel.app'
-// ];
-
-
 
 app.use(morgan("dev")); //morgan used here
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded payloads
@@ -102,7 +102,7 @@ app.post("/updateGameStats", async (req, res, next) => {
 
     // Calculate ELO change and determine the next game number
     let actualEloChange;
-    
+
     if (result === "draw") {
       // For draws, use the provided eloChange
       actualEloChange = eloChange || 0;
@@ -110,12 +110,12 @@ app.post("/updateGameStats", async (req, res, next) => {
       // For wins and losses, use the standard calculation
       actualEloChange = result === "win" ? 100 : -100;
     }
-    
+
     const nextGameNumber = (user.eloHistory?.length || 0) + 1;
 
     // Prepare the update object
     let update;
-    
+
     if (result === "win") {
       update = {
         $inc: { gamesWon: 1, elo: actualEloChange },
@@ -150,17 +150,30 @@ app.all('*', (req, res, next) => {
 // Error handling middleware - must be last
 app.use(errorMiddleware);
 
+
+//========================== Setting up socket IO =================
+
 // Create an HTTP server
 const server = http.createServer(app);
 
-// Initialize Socket.IO
+
+// Initialize Socket.IO with dynamic CORS handling
 const io = new Server(server, {
   cors: {
-    origin: frontendUrl,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },
 });
+
+
+//==========================================================
 
 // Socket.IO logic
 let games = {}; // Structure: { roomId: { players: [{socketId, userId, color, username, elo}], game: ChessInstance, isGameOver: false } }
@@ -182,13 +195,13 @@ io.on('connection', (socket) => {
         isReconnection = true;
         reconnectedRoom = roomId;
         reconnectedPlayer = games[roomId].players[playerIndex];
-        
+
         // Update the socket ID for the reconnected player
         games[roomId].players[playerIndex].socketId = socket.id;
-        
+
         // Rejoin the room
         socket.join(roomId);
-        
+
         // Send current game state
         socket.emit('reconnected', {
           room: roomId,
@@ -201,11 +214,11 @@ io.on('connection', (socket) => {
             elo: p.elo
           }))
         });
-        
+
         return;
       }
     }
-    
+
     // If not a reconnection, proceed with normal join
     socket.emit('notReconnected');
   });
@@ -217,7 +230,7 @@ io.on('connection', (socket) => {
       if (isReconnection) {
         return;
       }
-      
+
       // Find user details
       const user = await UserModel.findById(userId);
       if (!user) {
@@ -226,18 +239,18 @@ io.on('connection', (socket) => {
       }
 
       // Find a room with only one player
-      let room = Object.keys(games).find((key) => 
-        games[key].players.length === 1 && 
+      let room = Object.keys(games).find((key) =>
+        games[key].players.length === 1 &&
         games[key].players[0].userId !== userId
       );
 
       // If no available room, create a new one
       if (!room) {
         room = `room-${userId}-${Date.now()}`;
-        games[room] = { 
-          players: [], 
+        games[room] = {
+          players: [],
           game: new Chess(),
-          isGameOver: false 
+          isGameOver: false
         };
       }
 
@@ -248,9 +261,9 @@ io.on('connection', (socket) => {
       const color = games[room].players.length === 0 ? 'w' : 'b';
 
       // Add player to the room with ELO
-      games[room].players.push({ 
-        socketId: socket.id, 
-        userId, 
+      games[room].players.push({
+        socketId: socket.id,
+        userId,
         color,
         username: user.UserName,
         elo: user.elo || 1200
@@ -283,9 +296,9 @@ io.on('connection', (socket) => {
         const result = gameRoom.game.move(move);
         if (result) {
           // Send the move to all clients with the SAN notation
-          io.to(room).emit('move', { 
-            move: result, 
-            san: result.san 
+          io.to(room).emit('move', {
+            move: result,
+            san: result.san
           });
 
           // Check for game over conditions
@@ -294,12 +307,12 @@ io.on('connection', (socket) => {
             const winnerColor = gameRoom.game.turn() === 'w' ? 'Black' : 'White';
             const winnerPlayer = gameRoom.players.find(p => p.color !== gameRoom.game.turn());
             const loserPlayer = gameRoom.players.find(p => p.color === gameRoom.game.turn());
-            
+
             // Get the full history including the winning move
             const history = gameRoom.game.history();
             const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-            
+
             // Save the game result with complete move history
             axios.post(`${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -314,8 +327,8 @@ io.on('connection', (socket) => {
                 reason: 'Checkmate'
               },
             }).catch(console.error);
-            
-            io.to(room).emit('gameOver', { 
+
+            io.to(room).emit('gameOver', {
               winner: winnerColor,
               winnerId: winnerPlayer.userId,
               reason: 'Checkmate'
@@ -335,12 +348,12 @@ io.on('connection', (socket) => {
           // Check for stalemate
           else if (gameRoom.game.in_stalemate()) {
             gameRoom.isGameOver = true;
-            
+
             // Get the full history
             const history = gameRoom.game.history();
             const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-            
+
             // Save the game result with complete move history
             axios.post(`${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -355,8 +368,8 @@ io.on('connection', (socket) => {
                 reason: 'Stalemate'
               },
             }).catch(console.error);
-            
-            io.to(room).emit('gameOver', { 
+
+            io.to(room).emit('gameOver', {
               winner: 'Draw',
               reason: 'Stalemate'
             });
@@ -374,12 +387,12 @@ io.on('connection', (socket) => {
           else if (gameRoom.game.in_threefold_repetition()) {
             console.log("Server detected threefold repetition");
             gameRoom.isGameOver = true;
-            
+
             // Get the full history
             const history = gameRoom.game.history();
             const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-            
+
             // Save the game result with complete move history
             axios.post(`${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -394,8 +407,8 @@ io.on('connection', (socket) => {
                 reason: 'Threefold Repetition'
               },
             }).catch(console.error);
-            
-            io.to(room).emit('gameOver', { 
+
+            io.to(room).emit('gameOver', {
               winner: 'Draw',
               reason: 'Threefold Repetition'
             });
@@ -412,12 +425,12 @@ io.on('connection', (socket) => {
           // Check for insufficient material
           else if (gameRoom.game.insufficient_material()) {
             gameRoom.isGameOver = true;
-            
+
             // Get the full history
             const history = gameRoom.game.history();
             const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
             const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-            
+
             // Save the game result with complete move history
             axios.post(`${mihirBackend}/game/saveGameResult`, {
               playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -432,10 +445,10 @@ io.on('connection', (socket) => {
                 reason: 'Insufficient Material'
               },
             })
-            .then(() => console.log("Game saved successfully on insufficient material with moves:", {whiteMoves, blackMoves}))
-            .catch(err => console.error("Error saving game on insufficient material:", err));
-            
-            io.to(room).emit('gameOver', { 
+              .then(() => console.log("Game saved successfully on insufficient material with moves:", { whiteMoves, blackMoves }))
+              .catch(err => console.error("Error saving game on insufficient material:", err));
+
+            io.to(room).emit('gameOver', {
               winner: 'Draw',
               reason: 'Insufficient Material'
             });
@@ -456,21 +469,21 @@ io.on('connection', (socket) => {
       socket.on('playerResigned', ({ winner, room, moves }) => {
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
-        
+
         gameRoom.isGameOver = true;
-        
+
         // Find winner and loser based on the winner color
         const winnerColor = winner === 'White' ? 'w' : 'b';
         const winnerPlayer = gameRoom.players.find(p => p.color === winnerColor);
         const loserPlayer = gameRoom.players.find(p => p.color !== winnerColor);
-        
+
         // Get move history directly from the game instance for accuracy
         const history = gameRoom.game.history();
         const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
         const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-        
-        console.log("Resignation - saving with move history:", {whiteMoves, blackMoves});
-        
+
+        console.log("Resignation - saving with move history:", { whiteMoves, blackMoves });
+
         // Save game result to database
         axios.post(`${mihirBackend}/game/saveGameResult`, {
           playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -485,10 +498,10 @@ io.on('connection', (socket) => {
             reason: 'Resignation'
           },
         })
-        .then(() => console.log("Game saved successfully on resignation"))
-        .catch(err => console.error("Error saving game on resignation:", err));
-        
-        io.to(room).emit('playerResigned', { 
+          .then(() => console.log("Game saved successfully on resignation"))
+          .catch(err => console.error("Error saving game on resignation:", err));
+
+        io.to(room).emit('playerResigned', {
           winner,
           winnerId: winnerPlayer.userId
         });
@@ -509,7 +522,7 @@ io.on('connection', (socket) => {
       socket.on('drawRequest', ({ room, from }) => {
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
-        
+
         // Find the opponent socket
         const opponent = gameRoom.players.find(p => p.color !== from.color);
         if (opponent) {
@@ -522,21 +535,21 @@ io.on('connection', (socket) => {
       socket.on('drawResponse', ({ room, accepted, requesterElo, responderElo, requesterColor, responderColor, moves }) => {
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
-        
+
         if (accepted) {
           gameRoom.isGameOver = true;
-          
+
           // Find both players
           const requester = gameRoom.players.find(p => p.color === requesterColor);
           const responder = gameRoom.players.find(p => p.color === responderColor);
-          
+
           // Get complete move history directly from game instance to ensure accuracy
           const history = gameRoom.game.history();
           const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
           const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-          
-          console.log("Draw agreement - saving with move history:", {whiteMoves, blackMoves});
-          
+
+          console.log("Draw agreement - saving with move history:", { whiteMoves, blackMoves });
+
           // Save game result to database
           axios.post(`${mihirBackend}/game/saveGameResult`, {
             playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -551,19 +564,19 @@ io.on('connection', (socket) => {
               reason: 'Agreement'
             },
           })
-          .then(() => console.log("Game saved successfully on draw agreement"))
-          .catch(err => console.error("Error saving game on draw agreement:", err));
-          
+            .then(() => console.log("Game saved successfully on draw agreement"))
+            .catch(err => console.error("Error saving game on draw agreement:", err));
+
           // Notify both players
           io.to(room).emit('drawAccepted', { reason: 'Agreement' });
-          
+
           // Update game stats for both players with no ELO change
           axios.post(`${mihirBackend}/updateGameStats`, {
             userId: requester.userId,
             result: 'draw',
             eloChange: 0
           }).catch(console.error);
-          
+
           axios.post(`${mihirBackend}/updateGameStats`, {
             userId: responder.userId,
             result: 'draw',
@@ -585,7 +598,7 @@ io.on('connection', (socket) => {
         for (const roomId in games) {
           const gameRoom = games[roomId];
           if (!gameRoom) continue;
-          
+
           const disconnectedPlayerIndex = gameRoom.players.findIndex(
             p => p.socketId === socket.id
           );
@@ -600,14 +613,14 @@ io.on('connection', (socket) => {
               // Declare remaining player as winner
               gameRoom.isGameOver = true; // Mark game as over
               const winnerColor = remainingPlayer.color === 'w' ? 'White' : 'Black';
-              
+
               // Get the move history directly from game instance
               const history = gameRoom.game.history();
               const whiteMoves = history.filter((_, idx) => idx % 2 === 0);
               const blackMoves = history.filter((_, idx) => idx % 2 !== 0);
-              
-              console.log("Disconnection - saving with move history:", {whiteMoves, blackMoves});
-              
+
+              console.log("Disconnection - saving with move history:", { whiteMoves, blackMoves });
+
               // Save game result with complete move history for disconnection
               axios.post(`${mihirBackend}/game/saveGameResult`, {
                 playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -622,10 +635,10 @@ io.on('connection', (socket) => {
                   reason: 'Disconnection'
                 },
               })
-              .then(() => console.log("Game saved successfully on disconnection"))
-              .catch(err => console.error("Error saving game on disconnection:", err));
-              
-              io.to(roomId).emit('playerDisconnected', { 
+                .then(() => console.log("Game saved successfully on disconnection"))
+                .catch(err => console.error("Error saving game on disconnection:", err));
+
+              io.to(roomId).emit('playerDisconnected', {
                 winner: winnerColor,
                 winnerId: remainingPlayer.userId,
                 message: 'Opponent disconnected or refreshed the page'
@@ -636,7 +649,7 @@ io.on('connection', (socket) => {
                 userId: remainingPlayer.userId,
                 result: 'win'
               }).catch(console.error);
-              
+
               // Update game stats for disconnected player as loser
               axios.post(`${mihirBackend}/updateGameStats`, {
                 userId: disconnectedPlayer.userId,
@@ -662,9 +675,9 @@ io.on('connection', (socket) => {
         console.log(`Game over received from client: ${winner}, reason: ${reason}`);
         const gameRoom = games[room];
         if (!gameRoom || gameRoom.isGameOver) return;
-        
+
         gameRoom.isGameOver = true;
-        
+
         // Get complete move history - either use the provided history or extract from game instance
         let gameHistory;
         if (moves && moves.whiteMoves && moves.blackMoves) {
@@ -677,10 +690,10 @@ io.on('connection', (socket) => {
             blackMoves: history.filter((_, idx) => idx % 2 !== 0)
           };
         }
-        
+
         // Make sure we have a valid reason
         const gameEndReason = reason || 'Unknown';
-        
+
         // Save game result with complete move history
         axios.post(`${mihirBackend}/game/saveGameResult`, {
           playerWhite: gameRoom.players.find(p => p.color === 'w').userId,
@@ -692,12 +705,12 @@ io.on('connection', (socket) => {
             reason: gameEndReason
           },
         })
-        .then(() => console.log("Game saved successfully with reason:", gameEndReason))
-        .catch(err => console.error("Error saving game:", err));
-        
+          .then(() => console.log("Game saved successfully with reason:", gameEndReason))
+          .catch(err => console.error("Error saving game:", err));
+
         // Broadcast to all players in the room
         io.to(room).emit('gameOver', { winner, reason: gameEndReason });
-        
+
         // Update player stats
         if (winner === 'Draw') {
           // For draws, update both players with no ELO change
@@ -713,13 +726,13 @@ io.on('connection', (socket) => {
           const winnerColor = winner === 'White' ? 'w' : 'b';
           const winnerPlayer = gameRoom.players.find(p => p.color === winnerColor);
           const loserPlayer = gameRoom.players.find(p => p.color !== winnerColor);
-          
+
           // Update winner stats
           axios.post(`${mihirBackend}/updateGameStats`, {
             userId: winnerPlayer.userId,
             result: 'win'
           }).catch(console.error);
-          
+
           // Update loser stats
           axios.post(`${mihirBackend}/updateGameStats`, {
             userId: loserPlayer.userId,
@@ -741,14 +754,14 @@ mongoose.connect(mongodbUri, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-.then(() => {
-  console.log("Connected to MongoDB database");
-  console.log(`Using database: ${mongoose.connection.name}`);
-})
-.catch(error => {
-  console.error("MongoDB connection error:", error);
-  process.exit(1); // Exit with failure if DB connection fails
-});
+  .then(() => {
+    console.log("Connected to MongoDB database");
+    console.log(`Using database: ${mongoose.connection.name}`);
+  })
+  .catch(error => {
+    console.error("MongoDB connection error:", error);
+    process.exit(1); // Exit with failure if DB connection fails
+  });
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
