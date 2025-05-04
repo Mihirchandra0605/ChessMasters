@@ -103,7 +103,7 @@ function App() {
         { path: '/update-profile', element: <UpdateProfile /> },
         { path: '/ViewGame/:gameId', element: <ViewGame /> },
         { path: '/rules', element: <Rules /> },
-        { path: '*', element: <Navigate to="/404" /> }, // Handle undefined routes
+        // { path: '*', element: <Navigate to="/404" /> }, // Handle undefined routes
     ]);
 
     return (
