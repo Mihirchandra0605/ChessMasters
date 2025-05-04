@@ -75,7 +75,7 @@ function LoginForm({ onLoginSuccess }) {
         } else if (role === "player") {
           navigate(`/player/${userId}/profile`);
         } else if (role === "coach") {
-          navigate(`/coach/${userId}/CoachDashboard?role=coach`);
+          navigate(`/coach/${userId}/CoachDashboard`);
         }
       } else {
         alert(data?.message || "Login failed");
