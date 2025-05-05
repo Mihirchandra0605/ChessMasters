@@ -9,10 +9,6 @@ services:
       - Backend/.env
     ports:
       - '3000:3000'
-    volumes:
-      # (optional) for live-reload in dev, but don't include node_modules:
-      - ./Backend:/app:delegated
-      - /app/node_modules
     depends_on:
       - mongo
     networks:
