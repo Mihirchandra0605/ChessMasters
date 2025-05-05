@@ -77,8 +77,12 @@ function ChessBoard() {
     }
 
     socket.current = io(`${mihirBackend}`, {
+      transports: ['websocket'], 
       withCredentials: true,
       query: { userId }, // Send userId through query using Redux
+      upgrade: false,
+      forceNew: true,
+      path: "/socket.io",
     });
 
     socket.current.emit("checkReconnection", userId );
