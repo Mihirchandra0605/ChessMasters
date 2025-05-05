@@ -192,7 +192,7 @@ const CoachDashboard = () => {
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <img src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png" 
+            <img src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png" 
                  alt="Logo" 
                  className="h-8 w-8 sm:h-10 sm:w-10 rounded-full" />
             <h1 className="text-xl sm:text-2xl font-bold text-white">Coach Dashboard</h1>

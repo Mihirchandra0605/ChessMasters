@@ -101,7 +101,9 @@ app.use(cookieParser());
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:4173',
-  'https://chess-masters.vercel.app'
+  'https://chess-masters.vercel.app',
+  'http://localhost:80',
+  'http://localhost'
 ];
 
 

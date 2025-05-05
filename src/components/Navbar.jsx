@@ -64,7 +64,7 @@ const NavButton = ({ to, children }) => (
 
 const Navbar = () => {
   const coachId = useSelector((state) => state.user.userId);
-  const logoSrc = "/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png";
+  const logoSrc = "/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png";
 
   return (
     <nav className="bg-purple-800 shadow-lg">

@@ -115,7 +115,7 @@ function SignupForm({ onSignupSuccess }) {
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8"
-            src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+            src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
             alt="rook"
           />
           <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-[#E4EfE9]">Sign Up</h1>
@@ -123,7 +123,7 @@ function SignupForm({ onSignupSuccess }) {
             animate={{ rotate: -360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
             className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8"
-            src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+            src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
             alt="rook"
           />
         </div>

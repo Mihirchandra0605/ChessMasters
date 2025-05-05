@@ -95,7 +95,7 @@ function LoginForm({ onLoginSuccess }) {
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           className="w-6 h-6 sm:w-8 sm:h-8"
-          src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+          src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
           alt="rook"
         />
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[#E4EfE9]">Login</h1>
@@ -103,7 +103,7 @@ function LoginForm({ onLoginSuccess }) {
           animate={{ rotate: -360 }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           className="w-6 h-6 sm:w-8 sm:h-8"
-          src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+          src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
           alt="rook"
         />
       </div>

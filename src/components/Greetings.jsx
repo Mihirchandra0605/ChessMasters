@@ -44,7 +44,7 @@ function Greeting({ onLoginSuccess }) {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
-                  src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+                  src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
                   alt="rook"
                 />
                 <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#E4EfE9]">Welcome to ChessMasters</h1>
@@ -52,7 +52,7 @@ function Greeting({ onLoginSuccess }) {
                   animate={{ rotate: -360 }}
                   transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12"
-                  src="/public/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
+                  src="/pngtree-chess-rook-front-view-png-image_7505306-2460555070.png"
                   alt="rook"
                 />
               </div>
