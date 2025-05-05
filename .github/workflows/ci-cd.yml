@@ -17,10 +17,12 @@ jobs:
       with:
         node-version: '18'
         
-    - name: Install dependencies
+    - name: Install backend dependencies
+      working-directory: ./backend
       run: npm ci
       
-    - name: Run tests
+    - name: Run backend tests
+      working-directory: ./backend
       run: npm test
       
     - name: Log test completion
