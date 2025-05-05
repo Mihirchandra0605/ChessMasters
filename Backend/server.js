@@ -352,6 +352,7 @@ io.on('connection', (socket) => {
         if (!gameRoom || gameRoom.isGameOver) return;
 
         const result = gameRoom.game.move(move);
+        console.log("Move made:", move, result);
         if (result) {
           // Send the move to all clients with the SAN notation
           io.to(room).emit('move', {

@@ -474,6 +474,9 @@ function ChessBoard() {
   }
 
   function makeMove(sourceSquare, targetSquare) {
+    console.log('sourceSquare', sourceSquare)
+    console.log('targetSquare', targetSquare)
+    console.log('game color', game.turn())
     if (game.turn() !== color) return;
     if (gameOver) return;
 
@@ -484,6 +487,7 @@ function ChessBoard() {
     };
 
     const result = game.move(move);
+    console.log('result', result)
     if (result === null) return;
 
     // Only emit move to server but DON'T update history locally
