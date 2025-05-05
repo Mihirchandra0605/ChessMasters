@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const slides = [
-  { image: '/public/vishy.jpg', text: 'Vishwanath Anand', quote:'"In chess, knowledge is a very transient thing. It changes so fast that even a single mouse-slip sometimes changes the evaluation."'},
-  { image: '/public/Hikaru.jpg', text: 'Hikaru Nakamura', quote: '"In chess, you try to do your best, but there are instances where you make mistakes or take risks that you shouldn\'t. Losing games is a good thing because you learn more from losses than wins."'},
-  { image: '/public/carl.jpg', text: 'Magnus Carlsen', quote: '"You need to have that edge, you need to have that confidence, you need to have that absolute belief that you’re – you’re the best and you’ll win every time."'},
-  { image: '/public/Vidit.jpg', text: 'Vidit Gujrathi', quote: '“Chess is war over the board. The object is to crush the opponent’s mind.”'},
+  { image: '/vishy.jpg', text: 'Vishwanath Anand', quote:'"In chess, knowledge is a very transient thing. It changes so fast that even a single mouse-slip sometimes changes the evaluation."'},
+  { image: '/Hikaru.jpg', text: 'Hikaru Nakamura', quote: '"In chess, you try to do your best, but there are instances where you make mistakes or take risks that you shouldn\'t. Losing games is a good thing because you learn more from losses than wins."'},
+  { image: '/carl.jpg', text: 'Magnus Carlsen', quote: '"You need to have that edge, you need to have that confidence, you need to have that absolute belief that you’re – you’re the best and you’ll win every time."'},
+  { image: '/Vidit.jpg', text: 'Vidit Gujrathi', quote: '“Chess is war over the board. The object is to crush the opponent’s mind.”'},
 ];
 
 function SlideShow() {
