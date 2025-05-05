@@ -6,12 +6,18 @@ import coachRoutes from '../../routes/coachRoutes.js';
 const app = express();
 app.use(express.json());
 
-// Mock middleware to bypass authentication and coach verification
+// Mock middleware to properly bypass authentication and coach verification
 app.use((req, res, next) => {
   req.userId = '123456789012345678901234'; // Fake MongoDB ObjectId
   req.user = {
     id: '123456789012345678901234',
     role: 'coach'
+  };
+  req.cookies = { 
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE2MTYxNTE4MzMsImV4cCI6MTYxNjIzODIzM30.fake-signature'
+  };
+  req.headers = { 
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQiLCJyb2xlIjoiY29hY2giLCJpYXQiOjE2MTYxNTE4MzMsImV4cCI6MTYxNjIzODIzM30.fake-signature'
   };
   next();
 });
@@ -19,8 +25,21 @@ app.use((req, res, next) => {
 // Apply routes to our test app
 app.use('/coach', coachRoutes);
 
+// Mock database models to prevent timeouts
+jest.mock('../../models/CoachModel.js', () => ({
+  __esModule: true,
+  default: {
+    find: jest.fn().mockResolvedValue([]),
+    findOne: jest.fn().mockResolvedValue({
+      _id: '123456789012345678901234',
+      user: '123456789012345678901234',
+      populate: jest.fn().mockReturnThis()
+    })
+  }
+}));
+
 describe('Coach Controller Tests', () => {
-  // Test GET endpoints existence
+  // Test GET endpoints existence with longer timeout
   test('GET endpoints exist', async () => {
     const endpoints = [
       '/coach/coaches',
@@ -40,9 +59,9 @@ describe('Coach Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test POST endpoints existence
+  // Test POST endpoints existence with longer timeout
   test('POST endpoints exist', async () => {
     const endpoints = [
       '/coach/addArticle',
@@ -60,9 +79,9 @@ describe('Coach Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test PUT endpoints existence
+  // Test PUT endpoints existence with longer timeout
   test('PUT endpoints exist', async () => {
     const endpoints = [
       '/coach/completeProfile',
@@ -82,9 +101,9 @@ describe('Coach Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test DELETE endpoints existence
+  // Test DELETE endpoints existence with longer timeout
   test('DELETE endpoints exist', async () => {
     const endpoints = [
       '/coach/delete-account',
@@ -97,5 +116,5 @@ describe('Coach Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 });

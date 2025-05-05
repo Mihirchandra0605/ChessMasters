@@ -6,13 +6,13 @@ import authRoutes from '../../routes/authRoutes.js';
 const app = express();
 app.use(express.json());
 
-// Mock middleware for cookies
+// Mock middleware for cookies and headers with proper authorization format
 app.use((req, res, next) => {
   req.cookies = {
-    authorization: 'fake-token'
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQiLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjE2MTUxODMzLCJleHAiOjE2MTYyMzgyMzN9.fake-signature'
   };
   req.headers = {
-    token: 'fake-token'
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQiLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjE2MTUxODMzLCJleHAiOjE2MTYyMzgyMzN9.fake-signature'
   };
   next();
 });
@@ -20,8 +20,29 @@ app.use((req, res, next) => {
 // Apply routes to our test app
 app.use('/auth', authRoutes);
 
+// Mock the UserModel to prevent database timeouts
+jest.mock('../../models/userModel.js', () => ({
+  __esModule: true,
+  default: {
+    findOne: jest.fn().mockResolvedValue(null),
+    findById: jest.fn().mockResolvedValue({
+      _id: '123456789012345678901234',
+      UserName: 'testuser',
+      Email: 'test@example.com',
+      Role: 'player',
+      select: jest.fn().mockReturnThis()
+    })
+  }
+}));
+
+// Mock jwt verification
+jest.mock('jsonwebtoken', () => ({
+  sign: jest.fn().mockReturnValue('fake-token'),
+  verify: jest.fn().mockReturnValue({ userId: '123456789012345678901234', role: 'player' })
+}));
+
 describe('Auth Controller Tests', () => {
-  // Test for user registration
+  // Test for user registration with longer timeout
   test('POST /register endpoint exists', async () => {
     const response = await request(app)
       .post('/auth/register')
@@ -34,9 +55,9 @@ describe('Auth Controller Tests', () => {
     
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test for user sign in
+  // Test for user sign in with longer timeout
   test('POST /signin endpoint exists', async () => {
     const response = await request(app)
       .post('/auth/signin')
@@ -47,9 +68,9 @@ describe('Auth Controller Tests', () => {
     
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test for user logout
+  // Test for user logout with longer timeout
   test('POST /logout endpoint exists', async () => {
     const response = await request(app)
       .post('/auth/logout')
@@ -57,9 +78,9 @@ describe('Auth Controller Tests', () => {
     
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test for editing user details
+  // Test for editing user details with longer timeout
   test('PUT /editdetails endpoint exists', async () => {
     const response = await request(app)
       .put('/auth/editdetails')
@@ -70,14 +91,14 @@ describe('Auth Controller Tests', () => {
     
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test for getting user details
+  // Test for getting user details with longer timeout
   test('GET /details endpoint exists', async () => {
     const response = await request(app)
       .get('/auth/details');
     
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 });

@@ -6,21 +6,44 @@ import playerRoutes from '../../routes/playerRoutes.js';
 const app = express();
 app.use(express.json());
 
-// Mock middleware to bypass authentication and player verification
+// Mock middleware to properly bypass authentication and player verification
 app.use((req, res, next) => {
   req.userId = '123456789012345678901234'; // Fake MongoDB ObjectId
   req.user = {
     id: '123456789012345678901234',
     role: 'player'
   };
+  req.cookies = { 
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQiLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjE2MTUxODMzLCJleHAiOjE2MTYyMzgyMzN9.fake-signature'
+  };
+  req.headers = { 
+    authorization: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwMTIzNDU2Nzg5MDEyMzQiLCJyb2xlIjoicGxheWVyIiwiaWF0IjoxNjE2MTUxODMzLCJleHAiOjE2MTYyMzgyMzN9.fake-signature'
+  };
   next();
 });
+
+// Mock database models to prevent timeouts
+jest.mock('../../models/userModel.js', () => ({
+  __esModule: true,
+  default: {
+    findById: jest.fn().mockResolvedValue({
+      _id: '123456789012345678901234',
+      UserName: 'testplayer',
+      Email: 'player@example.com',
+      Role: 'player'
+    }),
+    findOne: jest.fn().mockResolvedValue({
+      _id: '123456789012345678901234',
+      UserName: 'testplayer'
+    })
+  }
+}));
 
 // Apply routes to our test app
 app.use('/player', playerRoutes);
 
 describe('Player Controller Tests', () => {
-  // Test GET endpoints existence
+  // Test GET endpoints existence with longer timeout
   test('GET endpoints exist', async () => {
     const endpoints = [
       '/player/details',
@@ -40,9 +63,9 @@ describe('Player Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test POST endpoints existence
+  // Test POST endpoints existence with longer timeout
   test('POST endpoints exist', async () => {
     const endpoints = [
       '/player/subscribe',
@@ -59,9 +82,9 @@ describe('Player Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test PUT endpoints existence
+  // Test PUT endpoints existence with longer timeout
   test('PUT endpoints exist', async () => {
     const response = await request(app)
       .put('/player/update-profile')
@@ -72,12 +95,12 @@ describe('Player Controller Tests', () => {
     
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test DELETE endpoints existence
+  // Test DELETE endpoints existence with longer timeout
   test('DELETE endpoints exist', async () => {
     const response = await request(app).delete('/player/delete-account');
     // Just checking that the endpoint responds
     expect(response).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 });

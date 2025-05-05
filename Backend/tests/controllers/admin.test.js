@@ -1,3 +1,66 @@
+// // tests/admin.test.js
+// import request from 'supertest';
+// import express from 'express';
+// import adminRoutes from '../../routes/adminRoutes.js';
+
+// const app = express();
+
+// // Mock middleware to bypass authentication
+// app.use((req, res, next) => {
+//   req.userId = '123456789012345678901234';
+//   next();
+// });
+
+// // Apply routes to our test app without /api prefix
+// app.use('/admin', adminRoutes);
+
+// describe('Admin Controller Tests', () => {
+//   // Simple test for login endpoint
+//   test('Admin login endpoint exists', async () => {
+//     // We're not testing functionality, just that the route exists
+//     const response = await request(app)
+//       .post('/admin/login')
+//       .send({});
+    
+//     // This will pass as long as the endpoint responds with any status
+//     expect(response.status).toBeDefined();
+//   });
+
+//   // Test GET endpoints existence
+//   test('GET endpoints exist', async () => {
+//     const endpoints = [
+//       '/admin/coaches',
+//       '/admin/players',
+//       '/admin/games',
+//       '/admin/articles',
+//       '/admin/videos'
+//     ];
+    
+//     for (const endpoint of endpoints) {
+//       const response = await request(app).get(endpoint);
+//       // Just checking that the endpoint responds
+//       expect(response).toBeDefined();
+//     }
+//   });
+
+//   // Test DELETE endpoints existence
+//   test('DELETE endpoints exist', async () => {
+//     const endpoints = [
+//       '/admin/players/123',
+//       '/admin/coaches/123',
+//       '/admin/articles/123',
+//       '/admin/videos/123',
+//       '/admin/games/123'
+//     ];
+    
+//     for (const endpoint of endpoints) {
+//       const response = await request(app).delete(endpoint);
+//       // Just checking that the endpoint responds
+//       expect(response).toBeDefined();
+//     }
+//   });
+// });
+
 // tests/admin.test.js
 import request from 'supertest';
 import express from 'express';
@@ -5,9 +68,15 @@ import adminRoutes from '../../routes/adminRoutes.js';
 
 const app = express();
 
+// Add body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Mock middleware to bypass authentication
 app.use((req, res, next) => {
   req.userId = '123456789012345678901234';
+  req.cookies = { authorization: 'fake-token' };
+  req.headers = { authorization: 'Bearer fake-token' };
   next();
 });
 
@@ -15,18 +84,18 @@ app.use((req, res, next) => {
 app.use('/admin', adminRoutes);
 
 describe('Admin Controller Tests', () => {
-  // Simple test for login endpoint
+  // Simple test for login endpoint with longer timeout
   test('Admin login endpoint exists', async () => {
     // We're not testing functionality, just that the route exists
     const response = await request(app)
       .post('/admin/login')
-      .send({});
+      .send({ email: 'admin@example.com', password: 'password123' });
     
     // This will pass as long as the endpoint responds with any status
     expect(response.status).toBeDefined();
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test GET endpoints existence
+  // Test GET endpoints existence with longer timeout
   test('GET endpoints exist', async () => {
     const endpoints = [
       '/admin/coaches',
@@ -41,9 +110,9 @@ describe('Admin Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 
-  // Test DELETE endpoints existence
+  // Test DELETE endpoints existence with longer timeout
   test('DELETE endpoints exist', async () => {
     const endpoints = [
       '/admin/players/123',
@@ -58,5 +127,6 @@ describe('Admin Controller Tests', () => {
       // Just checking that the endpoint responds
       expect(response).toBeDefined();
     }
-  });
+  }, 15000); // Increased timeout to 15 seconds
 });
+
