@@ -355,13 +355,14 @@ io.on('connection', (socket) => {
         console.log("Move made:", move, result);
         if (result) {
           // Send the move to all clients with the SAN notation
+          console.log('gameRoom', gameRoom)
           io.to(room).emit('move', {
             move: result,
             san: result.san
           });
 
           // Check for game over conditions
-          if (gameRoom.game.in_checkmate()) {
+          if (gameRoom.game.isCheckmate()) {
             gameRoom.isGameOver = true;
             const winnerColor = gameRoom.game.turn() === 'w' ? 'Black' : 'White';
             const winnerPlayer = gameRoom.players.find(p => p.color !== gameRoom.game.turn());
