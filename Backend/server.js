@@ -222,14 +222,8 @@ const server = http.createServer(app);
 // Initialize Socket.IO with dynamic CORS handling
 const io = new Server(server, {
   cors: {
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: ['GET', 'POST'],
+    origin: allowedOrigins,
+    // methods: ['GET', 'POST'],
     credentials: true,
   }, // <== ADD THIS LINE IF NOT PRESENT
 });
