@@ -451,6 +451,7 @@ function ChessBoard() {
   }
 
   function onSquareClick(square) {
+    console.log('square', square)
     if (selectedSquare === square) {
       setSelectedSquare(null);
       setLegalMoves([]);
@@ -458,16 +459,21 @@ function ChessBoard() {
     }
 
     const piece = game.get(square);
+    console.log('piece', piece)
+
     if (piece && piece.color === game.turn() && piece.color === color) {
+      console.log('first')
       setSelectedSquare(square);
       const moves = game.moves({ square, verbose: true });
       const newLegalMoves = moves.map((move) => move.to);
       setLegalMoves(newLegalMoves);
     } else if (selectedSquare && legalMoves.includes(square)) {
+      console.log('second')
       makeMove(selectedSquare, square);
       setSelectedSquare(null);
       setLegalMoves([]);
     } else {
+      console.log('third')
       setSelectedSquare(null);
       setLegalMoves([]);
     }
