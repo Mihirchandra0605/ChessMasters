@@ -231,8 +231,7 @@ const io = new Server(server, {
     },
     methods: ['GET', 'POST'],
     credentials: true,
-  },
-  transports: ['websocket'], // <== ADD THIS LINE IF NOT PRESENT
+  }, // <== ADD THIS LINE IF NOT PRESENT
 });
 
 
@@ -331,6 +330,8 @@ io.on('connection', (socket) => {
         username: user.UserName,
         elo: user.elo || 1200
       });
+
+      console.log('Players', games[room].players);
 
       // Emit room and color to the client
       socket.emit('roomAssigned', room);
