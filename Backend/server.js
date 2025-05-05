@@ -7,6 +7,8 @@ import { Server } from 'socket.io';
 import { Chess } from 'chess.js';
 import axios from 'axios';
 import morgan from 'morgan'
+import swaggerJsDoc from 'swagger-jsdoc'; // Add this import
+import swaggerUI from 'swagger-ui-express'; // Add this import
 import { startSubscriptionCleanupJob } from './jobs/subscriptionJobs.js';
 import ErrorHandler, { errorMiddleware } from './middlewares/errorHandler.js';
 import { port, frontendUrl, mongodbUri, mihirBackend } from './config.js';
@@ -28,6 +30,65 @@ import UserModel from "./models/userModel.js";
 const app = express();
 // const PORT = process.env.PORT || 3000;
 
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Chess Masters API',
+      version: '1.0.0',
+      description: 'API documentation for Chess Masters platform',
+      contact: {
+        name: 'Chess Masters Team'
+      }
+    },
+    servers: [{
+      url: mihirBackend,
+      description: 'Production Server'
+    }],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        }
+      }
+    },
+    security: [{
+      bearerAuth: []
+    }]
+  },
+  apis: ['./routes/*.js'] // Path to the API docs
+};
+
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+
+// Create a function to modify Swagger paths
+function removeApiPrefixFromPaths(swaggerDocument) {
+  const modifiedSwagger = JSON.parse(JSON.stringify(swaggerDocument));
+  
+  if (modifiedSwagger.paths) {
+    const newPaths = {};
+    
+    // Replace all /api/ prefixes in paths
+    Object.keys(modifiedSwagger.paths).forEach(path => {
+      const newPath = path.replace(/^\/api\//, '/');
+      newPaths[newPath] = modifiedSwagger.paths[path];
+    });
+    
+    modifiedSwagger.paths = newPaths;
+  }
+  
+  return modifiedSwagger;
+}
+
+// First serve the Swagger UI static files, then set up with the modified docs
+app.use('/api-docs', swaggerUI.serve);
+app.get('/api-docs', (req, res) => {
+  const modifiedDocs = removeApiPrefixFromPaths(swaggerDocs);
+  const swaggerHtml = swaggerUI.generateHTML(modifiedDocs);
+  res.send(swaggerHtml);
+});
 
 // Middleware
 app.use(express.json());

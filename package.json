@@ -30,7 +30,9 @@
     "react-router-dom": "^6.28.0",
     "react-toastify": "^11.0.5",
     "recharts": "^2.12.7",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
