@@ -406,7 +406,7 @@ io.on('connection', (socket) => {
             }).catch(console.error);
           }
           // Check for stalemate
-          else if (gameRoom.game.in_stalemate()) {
+          else if (gameRoom.game.isStalemate()) {
             gameRoom.isGameOver = true;
 
             // Get the full history
@@ -444,7 +444,7 @@ io.on('connection', (socket) => {
             });
           }
           // Check for threefold repetition
-          else if (gameRoom.game.in_threefold_repetition()) {
+          else if (gameRoom.game.isThreefoldRepetition()) {
             console.log("Server detected threefold repetition");
             gameRoom.isGameOver = true;
 
@@ -483,7 +483,7 @@ io.on('connection', (socket) => {
             });
           }
           // Check for insufficient material
-          else if (gameRoom.game.insufficient_material()) {
+          else if (gameRoom.game.isInsufficientMaterial()) {
             gameRoom.isGameOver = true;
 
             // Get the full history
