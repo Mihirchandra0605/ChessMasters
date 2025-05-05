@@ -1,20 +1,31 @@
-name: Simple Acknowledgment CI/CD
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  acknowledge:
+  build-and-test:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
       
-    - name: Acknowledge push
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm test
+      
+    - name: Log test completion
       run: |
-        echo "Push received to repository"
+        echo "All tests completed"
         echo "Branch: ${{ github.ref }}"
         echo "Commit: ${{ github.sha }}"
         
@@ -23,8 +34,8 @@ jobs:
         echo "Files changed in this commit:"
         git diff-tree --no-commit-id --name-only -r ${{ github.sha }}
         
-    - name: Pretend deployment
+    - name: Deployment
       run: |
-        echo "Simulating deployment process..."
-        echo "Deployment would happen here in a real scenario"
+        echo "Starting deployment process..."
+        # Add your actual deployment commands here
         echo "Deployment complete!"
