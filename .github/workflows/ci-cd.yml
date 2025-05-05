@@ -1,0 +1,30 @@
+name: Simple Acknowledgment CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  acknowledge:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Acknowledge push
+      run: |
+        echo "Push received to repository"
+        echo "Branch: ${{ github.ref }}"
+        echo "Commit: ${{ github.sha }}"
+        
+    - name: Log files changed
+      run: |
+        echo "Files changed in this commit:"
+        git diff-tree --no-commit-id --name-only -r ${{ github.sha }}
+        
+    - name: Pretend deployment
+      run: |
+        echo "Simulating deployment process..."
+        echo "Deployment would happen here in a real scenario"
+        echo "Deployment complete!"
