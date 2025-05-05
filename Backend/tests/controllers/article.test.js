@@ -1,7 +1,7 @@
 // tests/article.test.js
 import request from 'supertest';
 import express from 'express';
-import articleRoutes from '../routes/articleRoutes.js';
+import articleRoutes from '../../routes/articleRoutes.js';
 
 const app = express();
 

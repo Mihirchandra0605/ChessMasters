@@ -1,7 +1,7 @@
 // tests/coach.test.js
 import request from 'supertest';
 import express from 'express';
-import coachRoutes from '../routes/coachRoutes.js';
+import coachRoutes from '../../routes/coachRoutes.js';
 
 const app = express();
 app.use(express.json());

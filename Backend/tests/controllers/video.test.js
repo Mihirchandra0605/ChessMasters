@@ -1,7 +1,7 @@
 // tests/video.test.js
 import request from 'supertest';
 import express from 'express';
-import videoRoutes from '../routes/videoRoutes.js';
+import videoRoutes from '../../routes/videoRoutes.js';
 
 const app = express();
 app.use(express.json());

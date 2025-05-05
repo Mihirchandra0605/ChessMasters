@@ -1,7 +1,7 @@
 // tests/player.test.js
 import request from 'supertest';
 import express from 'express';
-import playerRoutes from '../routes/playerRoutes.js';
+import playerRoutes from '../../routes/playerRoutes.js';
 
 const app = express();
 app.use(express.json());
