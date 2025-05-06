@@ -80,7 +80,7 @@ const Dashboard = () => {
   const handleFormSubmit = (formData) => {
     // Handle form submission logic here
     console.log('Form Submitted:', formData);
-    fetch(`${mihirBackend}/auth/register`, {
+    fetch("${mihirBackend}/auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -135,7 +135,7 @@ const Dashboard = () => {
 
   const fetchGamesCount = async () => {
     try {
-      const response = await axios.get(`${mihirBackend}/game/allgames`);
+      const response = await axios.get("${mihirBackend}/game/allgames");
       const games = Array.isArray(response.data.games) ? response.data.games : [];
       console.log("Games data:", games);
       setGamesCount(games.length);
@@ -150,7 +150,7 @@ const Dashboard = () => {
 
   const fetchTotalRevenue = async () => {
     try {
-      const response = await axios.get(`${mihirBackend}/admin/total-revenue`, { withCredentials: true });
+      const response = await axios.get("${mihirBackend}/admin/total-revenue", { withCredentials: true });
       console.log("Total revenue data:", response.data);
       setTotalRevenue(response.data.totalRevenue || 0);
     } catch (error) {
@@ -542,7 +542,7 @@ const Dashboard = () => {
   const handleDeleteAllGames = async () => {
     setDeleteAllStatus({ isDeleting: true, message: 'Deleting all games...' });
     try {
-      const response = await axios.delete(`${mihirBackend}/admin/games`, { withCredentials: true });
+      const response = await axios.delete('${mihirBackend}/admin/games', { withCredentials: true });
       console.log('Delete all games response:', response.data);
       setDeleteAllStatus({ 
         isDeleting: false, 
