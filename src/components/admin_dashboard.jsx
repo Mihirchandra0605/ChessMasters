@@ -135,7 +135,7 @@ const Dashboard = () => {
 
   const fetchGamesCount = async () => {
     try {
-      const response = await axios.get("${mihirBackend}/game/allgames");
+      const response = await axios.get(`${mihirBackend}/game/allgames`);
       const games = Array.isArray(response.data.games) ? response.data.games : [];
       console.log("Games data:", games);
       setGamesCount(games.length);
@@ -150,7 +150,7 @@ const Dashboard = () => {
 
   const fetchTotalRevenue = async () => {
     try {
-      const response = await axios.get("${mihirBackend}/admin/total-revenue", { withCredentials: true });
+      const response = await axios.get(`${mihirBackend}/admin/total-revenue`, { withCredentials: true });
       console.log("Total revenue data:", response.data);
       setTotalRevenue(response.data.totalRevenue || 0);
     } catch (error) {
